@@ -1,0 +1,10 @@
+# robots.txt for OASIS AI
+User-agent: *
+Allow: /
+
+# Disallow admin and portal areas
+Disallow: /portal/
+Disallow: /admin/
+
+# Sitemap
+Sitemap: https://oasisai.work/sitemap.xml
