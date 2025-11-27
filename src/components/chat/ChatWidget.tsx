@@ -72,6 +72,7 @@ export const ChatWidget = () => {
         try {
             const response = await fetch(WEBHOOK_URL, {
                 method: 'POST',
+                mode: 'cors',
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -85,27 +86,48 @@ export const ChatWidget = () => {
                 })
             });
 
+            console.log('Response status:', response.status);
+            console.log('Response headers:', response.headers);
+
             if (!response.ok) {
-                throw new Error('Network response was not ok');
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
 
-            const data = await response.json();
+            // Get response as text first to see what we're dealing with
+            const responseText = await response.text();
+            console.log('Response text:', responseText);
 
-            // Extract response
+            // Try to parse as JSON, fall back to plain text
             let botResponse = '';
-            if (typeof data === 'string') {
-                botResponse = data;
-            } else if (data.output) {
-                botResponse = data.output;
-            } else if (data.response) {
-                botResponse = data.response;
-            } else if (data.text) {
-                botResponse = data.text;
-            } else if (data.message) {
-                botResponse = data.message;
-            } else {
-                botResponse = JSON.stringify(data);
+            try {
+                const data = JSON.parse(responseText);
+                console.log('Parsed JSON:', data);
+
+                // Handle various n8n response formats
+                if (typeof data === 'string') {
+                    botResponse = data;
+                } else if (data.output) {
+                    botResponse = data.output;
+                } else if (data.response) {
+                    botResponse = data.response;
+                } else if (data.text) {
+                    botResponse = data.text;
+                } else if (data.message) {
+                    botResponse = data.message;
+                } else if (data.data && typeof data.data === 'string') {
+                    botResponse = data.data;
+                } else if (data.data && data.data.output) {
+                    botResponse = data.data.output;
+                } else {
+                    // If none of the expected fields, stringify the whole thing
+                    botResponse = JSON.stringify(data);
+                }
+            } catch (e) {
+                // Not JSON, use as plain text
+                botResponse = responseText;
             }
+
+            console.log('Bot response:', botResponse);
 
             const botMessage: Message = { role: 'assistant', content: botResponse };
             const finalMessages = [...updatedMessages, botMessage];
@@ -113,10 +135,10 @@ export const ChatWidget = () => {
             saveHistory(finalMessages);
 
         } catch (error) {
-            console.error('Chat error:', error);
+            console.error('Chat error details:', error);
             const errorMessage: Message = {
                 role: 'assistant',
-                content: "Sorry, I'm having trouble connecting right now. Please try again or email us at oasisaisolutions@gmail.com"
+                content: `Sorry, I'm having trouble connecting right now. Error: ${error instanceof Error ? error.message : 'Unknown error'}. Please try again or email us at oasisaisolutions@gmail.com`
             };
             const finalMessages = [...updatedMessages, errorMessage];
             setMessages(finalMessages);
@@ -181,8 +203,8 @@ export const ChatWidget = () => {
                             <div
                                 key={idx}
                                 className={`max-w-[85%] px-4 py-3 rounded-2xl text-sm leading-relaxed animate-fade-in ${msg.role === 'user'
-                                        ? 'ml-auto bg-[#00D4FF] text-[#0A0A0F] rounded-br-sm'
-                                        : 'bg-[#00D4FF]/10 border border-[#00D4FF]/20 text-white rounded-bl-sm'
+                                    ? 'ml-auto bg-[#00D4FF] text-[#0A0A0F] rounded-br-sm'
+                                    : 'bg-[#00D4FF]/10 border border-[#00D4FF]/20 text-white rounded-bl-sm'
                                     }`}
                             >
                                 {msg.content}
