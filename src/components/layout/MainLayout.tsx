@@ -1,7 +1,6 @@
 import React from 'react';
 import { Header } from './Header';
 import { Footer } from './Footer';
-import { FloatingCTA } from './FloatingCTA';
 import { FloatingParticles } from '../animations/FloatingParticles';
 import { ChatWidget } from '../chat/ChatWidget';
 
@@ -18,7 +17,6 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
                 {children}
             </main>
             <Footer />
-            <FloatingCTA />
             <ChatWidget />
         </div>
     );
