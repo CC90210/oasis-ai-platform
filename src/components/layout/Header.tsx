@@ -10,11 +10,13 @@ export const Header = () => {
             <div className="section-container">
                 <div className="flex h-16 items-center justify-between">
                     {/* Logo */}
-                    <Link to="/" className="flex items-center gap-2 group">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-neon text-black font-bold text-xl group-hover:shadow-neon transition-all">
-                            O
-                        </div>
-                        <span className="text-2xl font-display font-bold tracking-tight">
+                    <Link to="/" className="flex items-center gap-3 group">
+                        <img
+                            src="/images/oasis-logo.jpg"
+                            alt="OASIS AI Solutions"
+                            className="h-10 w-auto transition-all duration-300 group-hover:drop-shadow-[0_0_10px_rgba(0,212,255,0.5)]"
+                        />
+                        <span className="text-2xl font-display font-bold tracking-tight hidden sm:inline">
                             <span className="text-white">OASIS</span>
                             <span className="text-neon ml-1">AI</span>
                         </span>

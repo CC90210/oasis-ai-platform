@@ -8,17 +8,22 @@ export const Footer = () => {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
                     {/* Brand */}
                     <div className="col-span-1 md:col-span-2">
-                        <Link to="/" className="flex items-center gap-2 mb-4">
-                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-neon text-black font-bold text-xl">
-                                O
-                            </div>
+                        <Link to="/" className="flex items-center gap-3 mb-4 group">
+                            <img
+                                src="/images/oasis-logo.jpg"
+                                alt="OASIS AI Solutions"
+                                className="h-12 w-auto transition-all duration-300 group-hover:drop-shadow-[0_0_10px_rgba(0,212,255,0.5)]"
+                            />
                             <span className="text-2xl font-display font-bold">
                                 <span className="text-white">OASIS</span>
                                 <span className="text-neon ml-1">AI Solutions</span>
                             </span>
                         </Link>
-                        <p className="text-light-gray mb-4 max-w-md">
-                            Enterprise-grade AI automation for businesses of any size. Work on your business, not in your business.
+                        <p className="text-neon text-sm font-medium mb-3">
+                            Work on your business, not in your business.
+                        </p>
+                        <p className="text-light-gray mb-4 max-w-md text-sm">
+                            Enterprise-grade AI automation for businesses of any size. Custom-engineered solutions that transform how you work.
                         </p>
                         <div className="space-y-2">
                             <div className="flex items-center gap-2 text-light-gray">

@@ -54,14 +54,14 @@ const ServicesPage = () => {
         },
         {
             icon: BarChart3,
-            title: "Dashboard & Analytics",
-            description: "Real-time monitoring and analytics dashboards that show exactly how your automations are performing.",
+            title: "Reporting & Insights",
+            description: "We compile all your automation data into comprehensive monthly reports. Every lead captured, every customer served, every task automated—we track it all and deliver clear insights so you can see exactly how your AI employees are performing.",
             features: [
-                "Real-time monitoring",
-                "Time and cost savings tracking",
-                "Custom KPI dashboards",
-                "Performance optimization insights",
-                "Monthly reporting"
+                "Monthly data compilation from all automations",
+                "Performance metrics and KPIs",
+                "Lead and customer interaction summaries",
+                "Recommendations for optimization",
+                "Delivered directly to your inbox"
             ]
         },
         {
@@ -150,7 +150,7 @@ const ServicesPage = () => {
                             { name: "Pinecone", desc: "Vector Database" },
                             { name: "Twilio", desc: "Communications" },
                             { name: "Stripe", desc: "Payments" },
-                            { name: "Make", desc: "Integrations" }
+                            { name: "Custom Code", desc: "Production-Grade Development" }
                         ].map((tech, index) => (
                             <motion.div
                                 key={index}
