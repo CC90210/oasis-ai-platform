@@ -15,7 +15,7 @@ export const ChatWidget = () => {
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
 
-    const WEBHOOK_URL = 'https://n8n.srv993801.hstgr.cloud/webhook/e420e879-d791-46df-8e50-23860faef20c';
+    const WEBHOOK_URL = 'https://n8n.srv993801.hstgr.cloud/webhook/bdd106dc-56bc-44ec-9aba-9f231783f750/chat';
 
     // Generate/load session ID
     useEffect(() => {
