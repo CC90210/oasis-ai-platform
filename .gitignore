@@ -35,3 +35,5 @@ build
 
 # Server logs
 *.log
+.vercel
+.env*.local

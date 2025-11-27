@@ -1,12 +1,16 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Bot, Zap, Clock, TrendingUp, CheckCircle, ArrowRight, Sparkles, Brain, MessageSquare, Calendar, Mail, Database } from 'lucide-react';
+import { NeuralNetworkBackground } from '../../components/animations/NeuralNetworkBackground';
 
 const LandingPage = () => {
     return (
         <div className="bg-deep-black min-h-screen">
             {/* Hero Section */}
             <section className="relative overflow-hidden bg-gradient-dark">
+                {/* Neural Network Background */}
+                <NeuralNetworkBackground />
+
                 {/* Animated Background */}
                 <div className="absolute inset-0">
                     <div className="absolute top-20 left-10 w-72 h-72 bg-neon/20 rounded-full blur-[100px] animate-pulse-glow" />
