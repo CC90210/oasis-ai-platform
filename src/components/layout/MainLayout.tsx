@@ -3,6 +3,7 @@ import { Header } from './Header';
 import { Footer } from './Footer';
 import { FloatingCTA } from './FloatingCTA';
 import { FloatingParticles } from '../animations/FloatingParticles';
+import { ChatWidget } from '../chat/ChatWidget';
 
 interface MainLayoutProps {
     children: React.ReactNode;
@@ -18,6 +19,7 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
             </main>
             <Footer />
             <FloatingCTA />
+            <ChatWidget />
         </div>
     );
 };
