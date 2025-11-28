@@ -136,9 +136,20 @@ export const ChatWidget = () => {
 
         } catch (error) {
             console.error('Chat error details:', error);
+
+            let errorMsg = "I'm having trouble connecting. ";
+
+            if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+                errorMsg += "Network error - please check your internet connection or try again.";
+            } else if (error instanceof Error) {
+                errorMsg += `Error: ${error.message}. `;
+            }
+
+            errorMsg += "\n\nYou can reach us directly at:\n📧 oasisaisolutions@gmail.com\n📞 705-440-3117";
+
             const errorMessage: Message = {
                 role: 'assistant',
-                content: `Sorry, I'm having trouble connecting right now. Error: ${error instanceof Error ? error.message : 'Unknown error'}. Please try again or email us at oasisaisolutions@gmail.com`
+                content: errorMsg
             };
             const finalMessages = [...updatedMessages, errorMessage];
             setMessages(finalMessages);
