@@ -171,3 +171,46 @@
 ::-webkit-scrollbar-thumb:hover {
   background: #374151;
 }
+
+/* FOOTER NUCLEAR FIX */
+footer {
+  background-color: #0A0A0F !important;
+  position: relative !important;
+  z-index: 50 !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+footer * {
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+footer h4 {
+  color: #FFFFFF !important;
+  font-weight: 700 !important;
+}
+
+footer p,
+footer span,
+footer a,
+footer li {
+  color: #94A3B8 !important;
+}
+
+footer a:hover {
+  color: #00D4FF !important;
+}
+
+footer svg {
+  color: #00D4FF !important;
+}
+
+/* Ensure bottom bar text is visible */
+footer .border-t p,
+footer .border-t a {
+  color: #64748B !important;
+}
+
+footer .border-t a:hover {
+  color: #FFFFFF !important;
+}
