@@ -22,6 +22,10 @@ export default defineConfig({
     // Optimize chunk size
     rollupOptions: {
       output: {
+        // Force new filenames to bust cache
+        entryFileNames: `assets/[name].${Date.now()}.js`,
+        chunkFileNames: `assets/[name].${Date.now()}.js`,
+        assetFileNames: `assets/[name].${Date.now()}.[ext]`,
         manualChunks: {
           // Vendor chunks for better caching
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
