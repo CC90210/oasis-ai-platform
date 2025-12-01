@@ -14,6 +14,29 @@ export default {
         },
         extend: {
             colors: {
+                // OASIS AI Brand Colors
+                oasis: {
+                    cyan: '#00D4FF',
+                    'cyan-dark': '#00A3CC',
+                    'cyan-glow': 'rgba(0, 212, 255, 0.3)',
+                },
+                bg: {
+                    primary: '#0A0A0F',
+                    secondary: '#0F1419',
+                    tertiary: '#1A1F2E',
+                    card: 'rgba(15, 20, 25, 0.6)',
+                },
+                text: {
+                    primary: '#FFFFFF',
+                    secondary: '#E2E8F0',
+                    tertiary: '#94A3B8',
+                    muted: '#64748B',
+                },
+                success: '#10B981',
+                warning: '#F59E0B',
+                error: '#EF4444',
+
+                // Keep shadcn/ui variables for compatibility if needed, but override where possible
                 border: "hsl(var(--border))",
                 input: "hsl(var(--input))",
                 ring: "hsl(var(--ring))",
@@ -47,17 +70,6 @@ export default {
                     DEFAULT: "hsl(var(--card))",
                     foreground: "hsl(var(--card-foreground))",
                 },
-                // OASIS AI Neon Blue Theme
-                neon: {
-                    blue: '#00D4FF',
-                    DEFAULT: '#00D4FF',
-                },
-                'deep-black': '#0A0A0F',
-                'dark-navy': '#0D1117',
-                charcoal: '#161B22',
-                'light-gray': '#E2E8F0',
-                'success-green': '#00FF88',
-                'warning-orange': '#FF6B35',
             },
             borderRadius: {
                 lg: "var(--radius)",
@@ -65,12 +77,12 @@ export default {
                 sm: "calc(var(--radius) - 4px)",
             },
             backgroundImage: {
-                'gradient-neon': 'linear-gradient(135deg, #00D4FF 0%, #0066FF 100%)',
+                'gradient-oasis': 'linear-gradient(135deg, #00D4FF 0%, #00A3CC 100%)',
                 'gradient-dark': 'linear-gradient(180deg, #0A0A0F 0%, #0D1117 100%)',
             },
             boxShadow: {
-                'neon': '0 0 20px rgba(0, 212, 255, 0.3), 0 0 40px rgba(0, 212, 255, 0.2)',
-                'neon-strong': '0 0 30px rgba(0, 212, 255, 0.5), 0 0 60px rgba(0,212, 255, 0.3)',
+                'oasis': '0 0 20px rgba(0, 212, 255, 0.3), 0 0 40px rgba(0, 212, 255, 0.2)',
+                'oasis-strong': '0 0 30px rgba(0, 212, 255, 0.5), 0 0 60px rgba(0, 212, 255, 0.3)',
             },
             keyframes: {
                 "accordion-down": {
@@ -86,8 +98,8 @@ export default {
                     '50%': { transform: 'translateY(-20px)' },
                 },
                 "pulse-glow": {
-                    '0%, 100%': { opacity: '1' },
-                    '50%': { opacity: '0.5' },
+                    '0%, 100%': { opacity: '1', boxShadow: '0 0 0 0 rgba(0, 212, 255, 0.4)' },
+                    '50%': { opacity: '0.8', boxShadow: '0 0 0 15px rgba(0, 212, 255, 0)' },
                 },
             },
             animation: {
@@ -103,5 +115,7 @@ export default {
             }
         },
     },
-    plugins: [],
+    plugins: [
+        require("tailwindcss-animate")
+    ],
 }

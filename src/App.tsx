@@ -4,9 +4,13 @@ import { PortalLayout } from '@/components/layout/PortalLayout';
 import LandingPage from '@/pages/landing/LandingPage';
 import AboutPage from '@/pages/about/AboutPage';
 import ServicesPage from '@/pages/services/ServicesPage';
+import AgentPage from '@/pages/services/AgentPage';
 import PricingPage from '@/pages/pricing/PricingPage';
 import CaseStudiesPage from '@/pages/case-studies/CaseStudiesPage';
 import ContactPage from '@/pages/contact/ContactPage';
+import CheckoutPage from '@/pages/checkout/CheckoutPage';
+import OrderSuccessPage from '@/pages/checkout/OrderSuccessPage';
+import BlogPage from '@/pages/blog/BlogPage';
 import LoginPage from '@/pages/portal/LoginPage';
 import DashboardPage from '@/pages/portal/DashboardPage';
 import AutomationsPage from '@/pages/portal/AutomationsPage';
@@ -37,9 +41,13 @@ function App() {
                     <Route path="/" element={<LandingPage />} />
                     <Route path="/about" element={<AboutPage />} />
                     <Route path="/services" element={<ServicesPage />} />
+                    <Route path="/services/:slug" element={<AgentPage />} />
                     <Route path="/pricing" element={<PricingPage />} />
                     <Route path="/case-studies" element={<CaseStudiesPage />} />
                     <Route path="/contact" element={<ContactPage />} />
+                    <Route path="/blog" element={<BlogPage />} />
+                    <Route path="/checkout" element={<CheckoutPage />} />
+                    <Route path="/checkout/success" element={<OrderSuccessPage />} />
                 </Route>
 
                 {/* Auth Routes */}

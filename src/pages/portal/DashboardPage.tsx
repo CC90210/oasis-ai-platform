@@ -37,8 +37,8 @@ const DashboardPage = () => {
     ];
 
     const pieData = [
-        { name: 'Success', value: 92, color: '#2DD4BF' },
-        { name: 'Error', value: 8, color: '#FB7185' },
+        { name: 'Success', value: 92, color: '#00D4FF' }, // oasis-cyan
+        { name: 'Error', value: 8, color: '#EF4444' },   // error
     ];
 
     const recentActivity = [
@@ -53,14 +53,14 @@ const DashboardPage = () => {
         <div className="space-y-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-oasis-midnight">Dashboard</h1>
-                    <p className="text-oasis-slate">Welcome back, CC. Here's what's happening today.</p>
+                    <h1 className="text-2xl font-display font-bold text-white">Dashboard</h1>
+                    <p className="text-text-secondary">Welcome back, CC. Here's what's happening today.</p>
                 </div>
                 <div className="flex gap-3">
-                    <Button variant="outline" className="border-oasis-slate/20">
+                    <Button variant="outline" className="border-white/10 text-text-secondary hover:text-white hover:bg-white/5">
                         View Reports
                     </Button>
-                    <Button className="bg-oasis-teal hover:bg-oasis-deep-ocean text-white">
+                    <Button className="bg-oasis-cyan hover:bg-oasis-cyan/80 text-bg-primary font-bold">
                         <Zap className="mr-2 h-4 w-4" />
                         New Automation
                     </Button>
@@ -75,41 +75,41 @@ const DashboardPage = () => {
                     { label: 'Time Saved', value: '156h', icon: Clock, change: '+12h', trend: 'up' },
                     { label: 'Cost Savings', value: '$4,680', icon: DollarSign, change: '+8%', trend: 'up' },
                 ].map((metric, i) => (
-                    <div key={i} className="bg-white p-6 rounded-xl border border-oasis-slate/10 shadow-sm">
+                    <div key={i} className="bg-bg-secondary p-6 rounded-xl border border-white/10 shadow-sm">
                         <div className="flex items-center justify-between mb-4">
-                            <div className="h-10 w-10 rounded-lg bg-oasis-pearl flex items-center justify-center text-oasis-teal">
+                            <div className="h-10 w-10 rounded-lg bg-bg-tertiary flex items-center justify-center text-oasis-cyan">
                                 <metric.icon className="h-5 w-5" />
                             </div>
-                            <div className={`flex items-center text-xs font-medium ${metric.trend === 'up' ? 'text-oasis-mint' : 'text-oasis-rose'}`}>
+                            <div className={`flex items-center text-xs font-medium ${metric.trend === 'up' ? 'text-success' : 'text-error'}`}>
                                 {metric.trend === 'up' ? <ArrowUpRight className="h-3 w-3 mr-1" /> : <ArrowDownRight className="h-3 w-3 mr-1" />}
                                 {metric.change}
                             </div>
                         </div>
-                        <div className="text-2xl font-bold text-oasis-midnight">{metric.value}</div>
-                        <div className="text-sm text-oasis-slate">{metric.label}</div>
+                        <div className="text-2xl font-bold text-white">{metric.value}</div>
+                        <div className="text-sm text-text-secondary">{metric.label}</div>
                     </div>
                 ))}
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Main Chart */}
-                <div className="lg:col-span-2 bg-white p-6 rounded-xl border border-oasis-slate/10 shadow-sm">
-                    <h3 className="text-lg font-bold text-oasis-midnight mb-6">Execution Volume</h3>
+                <div className="lg:col-span-2 bg-bg-secondary p-6 rounded-xl border border-white/10 shadow-sm">
+                    <h3 className="text-lg font-bold text-white mb-6">Execution Volume</h3>
                     <div className="h-[300px] w-full">
                         <ResponsiveContainer width="100%" height="100%">
                             <LineChart data={performanceData}>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
-                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748B' }} />
-                                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748B' }} />
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.1)" />
+                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#94A3B8' }} />
+                                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94A3B8' }} />
                                 <Tooltip
-                                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                    contentStyle={{ borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', backgroundColor: '#1A1F2E', color: '#fff' }}
                                 />
                                 <Line
                                     type="monotone"
                                     dataKey="executions"
-                                    stroke="#0A7D7D"
+                                    stroke="#00D4FF"
                                     strokeWidth={3}
-                                    dot={{ fill: '#0A7D7D', strokeWidth: 2, r: 4, stroke: '#fff' }}
+                                    dot={{ fill: '#00D4FF', strokeWidth: 2, r: 4, stroke: '#fff' }}
                                     activeDot={{ r: 6 }}
                                 />
                             </LineChart>
@@ -119,8 +119,8 @@ const DashboardPage = () => {
 
                 {/* Success Rate & System Health */}
                 <div className="space-y-6">
-                    <div className="bg-white p-6 rounded-xl border border-oasis-slate/10 shadow-sm">
-                        <h3 className="text-lg font-bold text-oasis-midnight mb-4">Success Rate</h3>
+                    <div className="bg-bg-secondary p-6 rounded-xl border border-white/10 shadow-sm">
+                        <h3 className="text-lg font-bold text-white mb-4">Success Rate</h3>
                         <div className="h-[200px] w-full flex items-center justify-center">
                             <ResponsiveContainer width="100%" height="100%">
                                 <PieChart>
@@ -143,12 +143,12 @@ const DashboardPage = () => {
                         </div>
                         <div className="flex justify-center gap-6 mt-2">
                             <div className="flex items-center gap-2">
-                                <div className="h-3 w-3 rounded-full bg-oasis-mint"></div>
-                                <span className="text-sm text-oasis-slate">Success (92%)</span>
+                                <div className="h-3 w-3 rounded-full bg-oasis-cyan"></div>
+                                <span className="text-sm text-text-secondary">Success (92%)</span>
                             </div>
                             <div className="flex items-center gap-2">
-                                <div className="h-3 w-3 rounded-full bg-oasis-rose"></div>
-                                <span className="text-sm text-oasis-slate">Error (8%)</span>
+                                <div className="h-3 w-3 rounded-full bg-error"></div>
+                                <span className="text-sm text-text-secondary">Error (8%)</span>
                             </div>
                         </div>
                     </div>
@@ -156,27 +156,27 @@ const DashboardPage = () => {
             </div>
 
             {/* Recent Activity */}
-            <div className="bg-white rounded-xl border border-oasis-slate/10 shadow-sm overflow-hidden">
-                <div className="p-6 border-b border-oasis-slate/10 flex items-center justify-between">
-                    <h3 className="text-lg font-bold text-oasis-midnight">Recent Activity</h3>
-                    <Link to="/portal/automations" className="text-sm text-oasis-teal hover:underline">View All</Link>
+            <div className="bg-bg-secondary rounded-xl border border-white/10 shadow-sm overflow-hidden">
+                <div className="p-6 border-b border-white/10 flex items-center justify-between">
+                    <h3 className="text-lg font-bold text-white">Recent Activity</h3>
+                    <Link to="/portal/automations" className="text-sm text-oasis-cyan hover:underline">View All</Link>
                 </div>
-                <div className="divide-y divide-oasis-slate/10">
+                <div className="divide-y divide-white/10">
                     {recentActivity.map((item) => (
-                        <div key={item.id} className="p-4 flex items-center justify-between hover:bg-oasis-pearl/50 transition-colors">
+                        <div key={item.id} className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors">
                             <div className="flex items-center gap-4">
-                                <div className={`h-2 w-2 rounded-full ${item.status === 'success' ? 'bg-oasis-mint' : 'bg-oasis-rose'}`}></div>
+                                <div className={`h-2 w-2 rounded-full ${item.status === 'success' ? 'bg-success' : 'bg-error'}`}></div>
                                 <div>
-                                    <div className="font-medium text-oasis-midnight">{item.name}</div>
-                                    <div className="text-xs text-oasis-slate">{item.time}</div>
+                                    <div className="font-medium text-white">{item.name}</div>
+                                    <div className="text-xs text-text-secondary">{item.time}</div>
                                 </div>
                             </div>
                             <div className="flex items-center gap-4">
-                                <span className="text-xs font-mono text-oasis-slate">{item.duration}</span>
+                                <span className="text-xs font-mono text-text-tertiary">{item.duration}</span>
                                 {item.status === 'success' ? (
-                                    <div className="px-2 py-1 rounded-full bg-oasis-mint/10 text-oasis-mint text-xs font-medium">Success</div>
+                                    <div className="px-2 py-1 rounded-full bg-success/10 text-success text-xs font-medium">Success</div>
                                 ) : (
-                                    <div className="px-2 py-1 rounded-full bg-oasis-rose/10 text-oasis-rose text-xs font-medium">Error</div>
+                                    <div className="px-2 py-1 rounded-full bg-error/10 text-error text-xs font-medium">Error</div>
                                 )}
                             </div>
                         </div>

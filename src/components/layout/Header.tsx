@@ -5,6 +5,8 @@ import { Menu, X } from 'lucide-react';
 export const Header = () => {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+    const navItems = ['Services', 'Pricing', 'Case Studies', 'Blog', 'About', 'Contact'];
+
     return (
         <nav className="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
             style={{
@@ -23,41 +25,34 @@ export const Header = () => {
                             className="h-10 w-auto rounded-lg transition-transform duration-300 group-hover:scale-105"
                         />
                         <span className="font-display font-bold text-xl tracking-tight text-white">
-                            OASIS <span className="text-[#00D4FF]">AI</span>
+                            OASIS <span className="text-oasis-cyan">AI</span>
                         </span>
                     </Link>
 
                     {/* Desktop Navigation */}
-                    <div className="hidden md:flex items-center gap-8">
-                        {['Services', 'Pricing', 'About', 'Contact'].map((item) => (
+                    <div className="hidden lg:flex items-center gap-8">
+                        {navItems.map((item) => (
                             <Link
                                 key={item}
-                                to={`/${item.toLowerCase()}`}
-                                className="text-sm font-medium text-[#E2E8F0] hover:text-[#00D4FF] transition-colors relative group"
+                                to={`/${item.toLowerCase().replace(' ', '-')}`}
+                                className="text-sm font-medium text-text-secondary hover:text-oasis-cyan transition-colors relative group"
                             >
                                 {item}
-                                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#00D4FF] transition-all duration-300 group-hover:w-full" />
+                                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-oasis-cyan transition-all duration-300 group-hover:w-full" />
                             </Link>
                         ))}
                     </div>
 
                     {/* Desktop CTA */}
-                    <div className="hidden md:flex items-center gap-6">
+                    <div className="hidden lg:flex items-center gap-6">
                         <Link
                             to="/portal/login"
-                            className="text-sm font-medium text-[#94A3B8] hover:text-white transition-colors"
+                            className="text-sm font-medium text-text-tertiary hover:text-white transition-colors"
                         >
                             Portal Login
                         </Link>
                         <Link to="/contact">
-                            <button
-                                className="btn-primary px-6 py-2.5 text-sm"
-                                style={{
-                                    background: 'linear-gradient(135deg, #00D4FF 0%, #00A3CC 100%)',
-                                    color: '#0A0A0F',
-                                    boxShadow: '0 4px 20px rgba(0, 212, 255, 0.2)'
-                                }}
-                            >
+                            <button className="btn-primary px-6 py-2.5 text-sm shadow-oasis">
                                 Get Started
                             </button>
                         </Link>
@@ -65,7 +60,7 @@ export const Header = () => {
 
                     {/* Mobile Menu Button */}
                     <button
-                        className="md:hidden text-[#E2E8F0] hover:text-[#00D4FF] transition-colors"
+                        className="lg:hidden text-text-secondary hover:text-oasis-cyan transition-colors"
                         onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                     >
                         {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -74,13 +69,13 @@ export const Header = () => {
 
                 {/* Mobile Menu */}
                 {mobileMenuOpen && (
-                    <div className="md:hidden py-6 border-t border-white/5 animate-fade-in-up">
+                    <div className="lg:hidden py-6 border-t border-white/5 animate-fade-in-up">
                         <div className="flex flex-col gap-4">
-                            {['Services', 'Pricing', 'About', 'Contact'].map((item) => (
+                            {navItems.map((item) => (
                                 <Link
                                     key={item}
-                                    to={`/${item.toLowerCase()}`}
-                                    className="text-lg font-medium text-[#E2E8F0] hover:text-[#00D4FF] transition-colors px-2"
+                                    to={`/${item.toLowerCase().replace(' ', '-')}`}
+                                    className="text-lg font-medium text-text-secondary hover:text-oasis-cyan transition-colors px-2"
                                     onClick={() => setMobileMenuOpen(false)}
                                 >
                                     {item}
@@ -89,19 +84,13 @@ export const Header = () => {
                             <div className="h-px bg-white/5 my-2" />
                             <Link
                                 to="/portal/login"
-                                className="text-[#94A3B8] hover:text-white px-2"
+                                className="text-text-tertiary hover:text-white px-2"
                                 onClick={() => setMobileMenuOpen(false)}
                             >
                                 Portal Login
                             </Link>
                             <Link to="/contact" onClick={() => setMobileMenuOpen(false)}>
-                                <button
-                                    className="w-full mt-4 btn-primary py-3 font-semibold"
-                                    style={{
-                                        background: 'linear-gradient(135deg, #00D4FF 0%, #00A3CC 100%)',
-                                        color: '#0A0A0F'
-                                    }}
-                                >
+                                <button className="w-full mt-4 btn-primary py-3 font-semibold">
                                     Get Started
                                 </button>
                             </Link>

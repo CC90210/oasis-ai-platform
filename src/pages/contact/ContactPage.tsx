@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { Mail, Phone, MapPin, Send, Calendar, CheckCircle } from 'lucide-react';
 import { useFormSubmit } from '../../hooks/useFormSubmit';
+import { motion } from 'framer-motion';
 
 const ContactPage = () => {
     const { isSubmitting, isSuccess, isError, errorMessage, submitForm, reset } = useFormSubmit();
-    const observerRef = useRef<IntersectionObserver | null>(null);
 
     const [formData, setFormData] = useState({
         name: '',
@@ -16,22 +16,6 @@ const ContactPage = () => {
         timewaster: '',
         website: '' // Honeypot field
     });
-
-    useEffect(() => {
-        observerRef.current = new IntersectionObserver((entries) => {
-            entries.forEach((entry) => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('is-visible');
-                }
-            });
-        }, { threshold: 0.1 });
-
-        document.querySelectorAll('.animate-on-scroll').forEach((el) => {
-            observerRef.current?.observe(el);
-        });
-
-        return () => observerRef.current?.disconnect();
-    }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -60,74 +44,111 @@ const ContactPage = () => {
     };
 
     return (
-        <div className="bg-deep-black min-h-screen">
+        <div className="bg-bg-primary min-h-screen font-sans text-text-primary">
             {/* Hero */}
-            <section className="relative overflow-hidden bg-gradient-dark py-24">
+            <section className="relative overflow-hidden pt-32 pb-20">
                 <div className="absolute inset-0 pointer-events-none">
-                    <div className="absolute top-20 left-10 w-96 h-96 bg-neon/20 rounded-full blur-[120px] animate-pulse-glow" />
+                    <div className="absolute top-20 left-10 w-96 h-96 bg-oasis-cyan/10 rounded-full blur-[120px] animate-pulse-glow" />
                 </div>
 
                 <div className="section-container relative z-10">
-                    <div className="max-w-4xl mx-auto text-center animate-fade-in-up">
-                        <h1 className="text-5xl md:text-7xl font-display font-bold mb-8">
-                            Let's <span className="text-neon">Talk</span> Automation
-                        </h1>
-                        <p className="text-xl md:text-2xl text-light-gray max-w-3xl mx-auto leading-relaxed">
+                    <div className="max-w-4xl mx-auto text-center">
+                        <motion.h1
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="text-5xl md:text-7xl font-display font-bold mb-8"
+                        >
+                            Let's <span className="text-oasis-cyan">Talk</span> Automation
+                        </motion.h1>
+                        <motion.p
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.1 }}
+                            className="text-xl md:text-2xl text-text-secondary max-w-3xl mx-auto leading-relaxed"
+                        >
                             Book a free 15-30 minute strategy call, or fill out the form below and we'll be in touch within 24 hours.
-                        </p>
+                        </motion.p>
                     </div>
                 </div>
             </section>
 
             {/* Contact Methods & Form */}
-            <section className="py-20 bg-deep-black">
+            <section className="py-20 bg-bg-secondary">
                 <div className="section-container">
                     <div className="grid lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
                         {/* Contact Info */}
                         <div className="lg:col-span-1 space-y-6">
-                            <div className="animate-on-scroll glass-effect rounded-2xl p-8 hover:shadow-neon transition-all border border-white/5 group">
-                                <Mail className="w-10 h-10 text-neon mb-4 group-hover:scale-110 transition-transform" />
+                            <motion.div
+                                initial={{ opacity: 0, x: -20 }}
+                                whileInView={{ opacity: 1, x: 0 }}
+                                viewport={{ once: true }}
+                                className="glass-card p-8 hover:shadow-oasis transition-all group"
+                            >
+                                <Mail className="w-10 h-10 text-oasis-cyan mb-4 group-hover:scale-110 transition-transform" />
                                 <h3 className="font-display font-bold text-xl mb-2 text-white">Email Us</h3>
-                                <a href="mailto:oasisaisolutions@gmail.com" className="text-light-gray hover:text-neon transition-colors break-all">
+                                <a href="mailto:oasisaisolutions@gmail.com" className="text-text-secondary hover:text-oasis-cyan transition-colors break-all">
                                     oasisaisolutions@gmail.com
                                 </a>
-                            </div>
+                            </motion.div>
 
-                            <div className="animate-on-scroll glass-effect rounded-2xl p-8 hover:shadow-neon transition-all border border-white/5 group" style={{ transitionDelay: '100ms' }}>
-                                <Phone className="w-10 h-10 text-neon mb-4 group-hover:scale-110 transition-transform" />
+                            <motion.div
+                                initial={{ opacity: 0, x: -20 }}
+                                whileInView={{ opacity: 1, x: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ delay: 0.1 }}
+                                className="glass-card p-8 hover:shadow-oasis transition-all group"
+                            >
+                                <Phone className="w-10 h-10 text-oasis-cyan mb-4 group-hover:scale-110 transition-transform" />
                                 <h3 className="font-display font-bold text-xl mb-2 text-white">Call Us</h3>
-                                <a href="tel:705-440-3117" className="text-light-gray hover:text-neon transition-colors">
+                                <a href="tel:705-440-3117" className="text-text-secondary hover:text-oasis-cyan transition-colors">
                                     705-440-3117
                                 </a>
-                            </div>
+                            </motion.div>
 
-                            <div className="animate-on-scroll glass-effect rounded-2xl p-8 hover:shadow-neon transition-all border border-white/5 group" style={{ transitionDelay: '200ms' }}>
-                                <MapPin className="w-10 h-10 text-neon mb-4 group-hover:scale-110 transition-transform" />
+                            <motion.div
+                                initial={{ opacity: 0, x: -20 }}
+                                whileInView={{ opacity: 1, x: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ delay: 0.2 }}
+                                className="glass-card p-8 hover:shadow-oasis transition-all group"
+                            >
+                                <MapPin className="w-10 h-10 text-oasis-cyan mb-4 group-hover:scale-110 transition-transform" />
                                 <h3 className="font-display font-bold text-xl mb-2 text-white">Our Locations</h3>
-                                <p className="text-light-gray mb-1">Toronto, Ontario (HQ)</p>
-                                <p className="text-light-gray">Montreal, Quebec</p>
-                            </div>
+                                <p className="text-text-secondary mb-1">Toronto, Ontario (HQ)</p>
+                                <p className="text-text-secondary">Montreal, Quebec</p>
+                            </motion.div>
 
-                            <div className="animate-on-scroll glass-effect rounded-2xl p-8 bg-gradient-neon/10 border-2 border-neon group" style={{ transitionDelay: '300ms' }}>
-                                <Calendar className="w-10 h-10 text-neon mb-4 group-hover:scale-110 transition-transform" />
+                            <motion.div
+                                initial={{ opacity: 0, x: -20 }}
+                                whileInView={{ opacity: 1, x: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ delay: 0.3 }}
+                                className="glass-card p-8 bg-oasis-cyan/5 border-oasis-cyan/30 group"
+                            >
+                                <Calendar className="w-10 h-10 text-oasis-cyan mb-4 group-hover:scale-110 transition-transform" />
                                 <h3 className="font-display font-bold text-xl mb-2 text-white">Book a Call</h3>
-                                <p className="text-light-gray mb-6">
+                                <p className="text-text-secondary mb-6">
                                     Schedule a free 15-30 minute strategy session
                                 </p>
                                 <a
                                     href="https://calendly.com/oasis-ai"
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="btn-primary w-full inline-block text-center py-3 shadow-neon"
+                                    className="btn-primary w-full inline-block text-center py-3 shadow-oasis"
                                 >
                                     Book Now
                                 </a>
-                            </div>
+                            </motion.div>
                         </div>
 
                         {/* Contact Form */}
-                        <div className="lg:col-span-2">
-                            <div className="animate-on-scroll glass-effect rounded-2xl p-8 md:p-10 border border-white/5">
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            className="lg:col-span-2"
+                        >
+                            <div className="glass-card p-8 md:p-10">
                                 <h2 className="text-3xl font-display font-bold mb-8 text-white">Send Us a Message</h2>
 
                                 {/* Success State */}
@@ -137,12 +158,12 @@ const ContactPage = () => {
                                             <CheckCircle className="w-12 h-12 text-[#00FF88]" />
                                         </div>
                                         <h3 className="text-3xl font-semibold text-white mb-4">Message Sent Successfully!</h3>
-                                        <p className="text-light-gray mb-8 text-lg">
+                                        <p className="text-text-secondary mb-8 text-lg">
                                             Thanks for reaching out. We'll get back to you within 24 hours, usually much sooner!
                                         </p>
                                         <button
                                             onClick={handleReset}
-                                            className="text-[#00D4FF] hover:text-white hover:underline font-medium text-lg transition-colors"
+                                            className="text-oasis-cyan hover:text-white hover:underline font-medium text-lg transition-colors"
                                         >
                                             Send another message
                                         </button>
@@ -162,7 +183,7 @@ const ContactPage = () => {
 
                                         <div className="grid md:grid-cols-2 gap-6">
                                             <div>
-                                                <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-2">
+                                                <label htmlFor="name" className="block text-sm font-medium text-text-secondary mb-2">
                                                     Full Name *
                                                 </label>
                                                 <input
@@ -172,13 +193,13 @@ const ContactPage = () => {
                                                     required
                                                     value={formData.name}
                                                     onChange={handleChange}
-                                                    className="w-full px-4 py-3 rounded-lg bg-black/50 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-neon focus:ring-1 focus:ring-neon transition-all"
+                                                    className="w-full px-4 py-3 rounded-lg bg-bg-tertiary border border-white/10 text-white placeholder-text-tertiary focus:outline-none focus:border-oasis-cyan focus:ring-1 focus:ring-oasis-cyan transition-all"
                                                     placeholder="John Doe"
                                                 />
                                             </div>
 
                                             <div>
-                                                <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
+                                                <label htmlFor="email" className="block text-sm font-medium text-text-secondary mb-2">
                                                     Email Address *
                                                 </label>
                                                 <input
@@ -188,7 +209,7 @@ const ContactPage = () => {
                                                     required
                                                     value={formData.email}
                                                     onChange={handleChange}
-                                                    className="w-full px-4 py-3 rounded-lg bg-black/50 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-neon focus:ring-1 focus:ring-neon transition-all"
+                                                    className="w-full px-4 py-3 rounded-lg bg-bg-tertiary border border-white/10 text-white placeholder-text-tertiary focus:outline-none focus:border-oasis-cyan focus:ring-1 focus:ring-oasis-cyan transition-all"
                                                     placeholder="john@company.com"
                                                 />
                                             </div>
@@ -196,7 +217,7 @@ const ContactPage = () => {
 
                                         <div className="grid md:grid-cols-2 gap-6">
                                             <div>
-                                                <label htmlFor="phone" className="block text-sm font-medium text-gray-300 mb-2">
+                                                <label htmlFor="phone" className="block text-sm font-medium text-text-secondary mb-2">
                                                     Phone Number
                                                 </label>
                                                 <input
@@ -205,13 +226,13 @@ const ContactPage = () => {
                                                     name="phone"
                                                     value={formData.phone}
                                                     onChange={handleChange}
-                                                    className="w-full px-4 py-3 rounded-lg bg-black/50 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-neon focus:ring-1 focus:ring-neon transition-all"
+                                                    className="w-full px-4 py-3 rounded-lg bg-bg-tertiary border border-white/10 text-white placeholder-text-tertiary focus:outline-none focus:border-oasis-cyan focus:ring-1 focus:ring-oasis-cyan transition-all"
                                                     placeholder="(555) 123-4567"
                                                 />
                                             </div>
 
                                             <div>
-                                                <label htmlFor="company" className="block text-sm font-medium text-gray-300 mb-2">
+                                                <label htmlFor="company" className="block text-sm font-medium text-text-secondary mb-2">
                                                     Company Name
                                                 </label>
                                                 <input
@@ -220,14 +241,14 @@ const ContactPage = () => {
                                                     name="company"
                                                     value={formData.company}
                                                     onChange={handleChange}
-                                                    className="w-full px-4 py-3 rounded-lg bg-black/50 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-neon focus:ring-1 focus:ring-neon transition-all"
+                                                    className="w-full px-4 py-3 rounded-lg bg-bg-tertiary border border-white/10 text-white placeholder-text-tertiary focus:outline-none focus:border-oasis-cyan focus:ring-1 focus:ring-oasis-cyan transition-all"
                                                     placeholder="Your Company Inc."
                                                 />
                                             </div>
                                         </div>
 
                                         <div>
-                                            <label htmlFor="industry" className="block text-sm font-medium text-gray-300 mb-2">
+                                            <label htmlFor="industry" className="block text-sm font-medium text-text-secondary mb-2">
                                                 Industry
                                             </label>
                                             <div className="relative">
@@ -236,23 +257,23 @@ const ContactPage = () => {
                                                     name="industry"
                                                     value={formData.industry}
                                                     onChange={handleChange}
-                                                    className="w-full px-4 py-3 rounded-lg bg-black/50 border border-white/10 text-white focus:outline-none focus:border-neon focus:ring-1 focus:ring-neon transition-all appearance-none"
+                                                    className="w-full px-4 py-3 rounded-lg bg-bg-tertiary border border-white/10 text-white focus:outline-none focus:border-oasis-cyan focus:ring-1 focus:ring-oasis-cyan transition-all appearance-none"
                                                 >
-                                                    <option value="" className="bg-dark-navy">Select an industry...</option>
-                                                    <option value="hvac" className="bg-dark-navy">HVAC & Home Services</option>
-                                                    <option value="fitness" className="bg-dark-navy">Fitness & Wellness</option>
-                                                    <option value="beauty" className="bg-dark-navy">Beauty & Personal Care</option>
-                                                    <option value="ecommerce" className="bg-dark-navy">E-commerce & Retail</option>
-                                                    <option value="professional" className="bg-dark-navy">Professional Services</option>
-                                                    <option value="healthcare" className="bg-dark-navy">Healthcare</option>
-                                                    <option value="property" className="bg-dark-navy">Property Management</option>
-                                                    <option value="restaurant" className="bg-dark-navy">Restaurants & Hospitality</option>
-                                                    <option value="realestate" className="bg-dark-navy">Real Estate</option>
-                                                    <option value="legal" className="bg-dark-navy">Legal & Accounting</option>
-                                                    <option value="other" className="bg-dark-navy">Other</option>
+                                                    <option value="" className="bg-bg-primary">Select an industry...</option>
+                                                    <option value="hvac" className="bg-bg-primary">HVAC & Home Services</option>
+                                                    <option value="fitness" className="bg-bg-primary">Fitness & Wellness</option>
+                                                    <option value="beauty" className="bg-bg-primary">Beauty & Personal Care</option>
+                                                    <option value="ecommerce" className="bg-bg-primary">E-commerce & Retail</option>
+                                                    <option value="professional" className="bg-bg-primary">Professional Services</option>
+                                                    <option value="healthcare" className="bg-bg-primary">Healthcare</option>
+                                                    <option value="property" className="bg-bg-primary">Property Management</option>
+                                                    <option value="restaurant" className="bg-bg-primary">Restaurants & Hospitality</option>
+                                                    <option value="realestate" className="bg-bg-primary">Real Estate</option>
+                                                    <option value="legal" className="bg-bg-primary">Legal & Accounting</option>
+                                                    <option value="other" className="bg-bg-primary">Other</option>
                                                 </select>
                                                 <div className="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none">
-                                                    <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <svg className="w-4 h-4 text-text-tertiary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
                                                     </svg>
                                                 </div>
@@ -260,7 +281,7 @@ const ContactPage = () => {
                                         </div>
 
                                         <div>
-                                            <label htmlFor="message" className="block text-sm font-medium text-gray-300 mb-2">
+                                            <label htmlFor="message" className="block text-sm font-medium text-text-secondary mb-2">
                                                 Describe Your Automation Needs *
                                             </label>
                                             <textarea
@@ -270,13 +291,13 @@ const ContactPage = () => {
                                                 rows={5}
                                                 value={formData.message}
                                                 onChange={handleChange}
-                                                className="w-full px-4 py-3 rounded-lg bg-black/50 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-neon focus:ring-1 focus:ring-neon transition-all resize-none"
+                                                className="w-full px-4 py-3 rounded-lg bg-bg-tertiary border border-white/10 text-white placeholder-text-tertiary focus:outline-none focus:border-oasis-cyan focus:ring-1 focus:ring-oasis-cyan transition-all resize-none"
                                                 placeholder="Tell us about your biggest time-wasters and what you'd like to automate..."
                                             />
                                         </div>
 
                                         <div>
-                                            <label htmlFor="timewaster" className="block text-sm font-medium text-gray-300 mb-2">
+                                            <label htmlFor="timewaster" className="block text-sm font-medium text-text-secondary mb-2">
                                                 What's your biggest time-waster right now? (Optional)
                                             </label>
                                             <input
@@ -285,7 +306,7 @@ const ContactPage = () => {
                                                 name="timewaster"
                                                 value={formData.timewaster}
                                                 onChange={handleChange}
-                                                className="w-full px-4 py-3 rounded-lg bg-black/50 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-neon focus:ring-1 focus:ring-neon transition-all"
+                                                className="w-full px-4 py-3 rounded-lg bg-bg-tertiary border border-white/10 text-white placeholder-text-tertiary focus:outline-none focus:border-oasis-cyan focus:ring-1 focus:ring-oasis-cyan transition-all"
                                                 placeholder="e.g., Following up with leads manually"
                                             />
                                         </div>
@@ -301,7 +322,7 @@ const ContactPage = () => {
                                         <button
                                             type="submit"
                                             disabled={isSubmitting}
-                                            className="btn-primary w-full py-4 text-lg flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-neon hover:shadow-neon-strong transition-all"
+                                            className="btn-primary w-full py-4 text-lg flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-oasis hover:shadow-oasis-strong transition-all"
                                         >
                                             {isSubmitting ? (
                                                 <>
@@ -319,25 +340,25 @@ const ContactPage = () => {
                                             )}
                                         </button>
 
-                                        <p className="text-sm text-gray-400 text-center">
+                                        <p className="text-sm text-text-tertiary text-center">
                                             We typically respond within 24 hours. For urgent inquiries, call us at{' '}
-                                            <a href="tel:705-440-3117" className="text-neon hover:underline">
+                                            <a href="tel:705-440-3117" className="text-oasis-cyan hover:underline">
                                                 705-440-3117
                                             </a>
                                         </p>
                                     </form>
                                 )}
                             </div>
-                        </div>
+                        </motion.div>
                     </div>
                 </div>
             </section>
 
             {/* Why Contact Us */}
-            <section className="py-20 bg-dark-navy">
+            <section className="py-20 bg-bg-primary">
                 <div className="section-container">
-                    <h2 className="text-4xl font-display font-bold text-center mb-16 animate-on-scroll">
-                        What Happens <span className="text-neon">Next</span>?
+                    <h2 className="text-4xl font-display font-bold text-center mb-16">
+                        What Happens <span className="text-oasis-cyan">Next</span>?
                     </h2>
 
                     <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
@@ -358,17 +379,20 @@ const ContactPage = () => {
                                 description: "Once approved, we build your AI workforce in 5-14 days. You approve each milestone before we proceed."
                             }
                         ].map((item, index) => (
-                            <div
+                            <motion.div
                                 key={index}
-                                className="animate-on-scroll text-center group"
-                                style={{ transitionDelay: `${index * 100}ms` }}
+                                initial={{ opacity: 0, y: 20 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ delay: index * 0.1 }}
+                                className="text-center group"
                             >
-                                <div className="w-20 h-20 rounded-full bg-black border-2 border-neon flex items-center justify-center text-3xl font-bold text-neon mx-auto mb-6 shadow-neon group-hover:bg-neon group-hover:text-black transition-all duration-300">
+                                <div className="w-20 h-20 rounded-full bg-bg-secondary border-2 border-oasis-cyan flex items-center justify-center text-3xl font-bold text-oasis-cyan mx-auto mb-6 shadow-oasis group-hover:bg-oasis-cyan group-hover:text-bg-primary transition-all duration-300">
                                     {item.step}
                                 </div>
                                 <h3 className="text-2xl font-display font-bold mb-4 text-white">{item.title}</h3>
-                                <p className="text-light-gray leading-relaxed max-w-xs mx-auto">{item.description}</p>
-                            </div>
+                                <p className="text-text-secondary leading-relaxed max-w-xs mx-auto">{item.description}</p>
+                            </motion.div>
                         ))}
                     </div>
                 </div>

@@ -55,27 +55,27 @@ const AutomationsPage = () => {
         <div className="space-y-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-oasis-midnight">Automations</h1>
-                    <p className="text-oasis-slate">Manage and monitor your intelligent workflows.</p>
+                    <h1 className="text-2xl font-display font-bold text-white">Automations</h1>
+                    <p className="text-text-secondary">Manage and monitor your intelligent workflows.</p>
                 </div>
-                <Button className="bg-oasis-teal hover:bg-oasis-deep-ocean text-white">
+                <Button className="bg-oasis-cyan hover:bg-oasis-cyan/80 text-bg-primary font-bold">
                     <Plus className="mr-2 h-4 w-4" />
                     Create Automation
                 </Button>
             </div>
 
             {/* Filters */}
-            <div className="flex flex-col sm:flex-row gap-4 items-center bg-white p-4 rounded-xl border border-oasis-slate/10 shadow-sm">
+            <div className="flex flex-col sm:flex-row gap-4 items-center bg-bg-secondary p-4 rounded-xl border border-white/10 shadow-sm">
                 <div className="relative flex-1 w-full">
-                    <Search className="absolute left-3 top-2.5 h-4 w-4 text-oasis-slate" />
+                    <Search className="absolute left-3 top-2.5 h-4 w-4 text-text-tertiary" />
                     <input
                         type="text"
                         placeholder="Search automations..."
-                        className="w-full pl-9 pr-4 py-2 rounded-md border border-oasis-slate/20 focus:outline-none focus:ring-2 focus:ring-oasis-teal/50"
+                        className="w-full pl-9 pr-4 py-2 rounded-md border border-white/10 bg-bg-tertiary text-white focus:outline-none focus:ring-2 focus:ring-oasis-cyan/50 placeholder-text-tertiary"
                     />
                 </div>
                 <div className="flex gap-2 w-full sm:w-auto">
-                    <Button variant="outline" className="flex-1 sm:flex-none border-oasis-slate/20">
+                    <Button variant="outline" className="flex-1 sm:flex-none border-white/10 text-text-secondary hover:text-white hover:bg-white/5">
                         <Filter className="mr-2 h-4 w-4" />
                         Filter
                     </Button>
@@ -85,46 +85,46 @@ const AutomationsPage = () => {
             {/* Automations Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                 {automations.map((automation) => (
-                    <div key={automation.id} className="bg-white rounded-xl border border-oasis-slate/10 shadow-sm hover:shadow-md transition-shadow">
+                    <div key={automation.id} className="bg-bg-secondary rounded-xl border border-white/10 shadow-sm hover:shadow-md transition-shadow">
                         <div className="p-6">
                             <div className="flex justify-between items-start mb-4">
                                 <div className={`px-2 py-1 rounded-full text-xs font-medium capitalize
-                  ${automation.status === 'active' ? 'bg-oasis-mint/10 text-oasis-mint' :
-                                        automation.status === 'paused' ? 'bg-oasis-amber/10 text-oasis-amber' :
-                                            'bg-oasis-rose/10 text-oasis-rose'}`}>
+                  ${automation.status === 'active' ? 'bg-success/10 text-success' :
+                                        automation.status === 'paused' ? 'bg-warning/10 text-warning' :
+                                            'bg-error/10 text-error'}`}>
                                     {automation.status}
                                 </div>
-                                <button className="text-oasis-slate hover:text-oasis-midnight">
+                                <button className="text-text-secondary hover:text-white">
                                     <MoreHorizontal className="h-5 w-5" />
                                 </button>
                             </div>
 
-                            <h3 className="text-lg font-bold text-oasis-midnight mb-2">{automation.name}</h3>
-                            <p className="text-sm text-oasis-slate mb-6 h-10 line-clamp-2">{automation.description}</p>
+                            <h3 className="text-lg font-bold text-white mb-2">{automation.name}</h3>
+                            <p className="text-sm text-text-secondary mb-6 h-10 line-clamp-2">{automation.description}</p>
 
                             <div className="grid grid-cols-2 gap-4 mb-6">
                                 <div>
-                                    <div className="text-xs text-oasis-slate uppercase tracking-wider">Executions</div>
-                                    <div className="font-semibold text-oasis-midnight">{automation.executions}</div>
+                                    <div className="text-xs text-text-tertiary uppercase tracking-wider">Executions</div>
+                                    <div className="font-semibold text-white">{automation.executions}</div>
                                 </div>
                                 <div>
-                                    <div className="text-xs text-oasis-slate uppercase tracking-wider">Success Rate</div>
-                                    <div className="font-semibold text-oasis-midnight">{automation.successRate}</div>
+                                    <div className="text-xs text-text-tertiary uppercase tracking-wider">Success Rate</div>
+                                    <div className="font-semibold text-white">{automation.successRate}</div>
                                 </div>
                             </div>
 
-                            <div className="flex items-center gap-2 pt-4 border-t border-oasis-slate/10">
-                                <Button variant="ghost" size="sm" className="flex-1 text-oasis-slate hover:text-oasis-teal">
+                            <div className="flex items-center gap-2 pt-4 border-t border-white/10">
+                                <Button variant="ghost" size="sm" className="flex-1 text-text-secondary hover:text-oasis-cyan hover:bg-white/5">
                                     <Edit className="h-4 w-4 mr-2" />
                                     Edit
                                 </Button>
                                 {automation.status === 'active' ? (
-                                    <Button variant="ghost" size="sm" className="flex-1 text-oasis-slate hover:text-oasis-amber">
+                                    <Button variant="ghost" size="sm" className="flex-1 text-text-secondary hover:text-warning hover:bg-white/5">
                                         <Pause className="h-4 w-4 mr-2" />
                                         Pause
                                     </Button>
                                 ) : (
-                                    <Button variant="ghost" size="sm" className="flex-1 text-oasis-slate hover:text-oasis-mint">
+                                    <Button variant="ghost" size="sm" className="flex-1 text-text-secondary hover:text-success hover:bg-white/5">
                                         <Play className="h-4 w-4 mr-2" />
                                         Resume
                                     </Button>
