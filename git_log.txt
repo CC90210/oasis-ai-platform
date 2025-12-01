@@ -1,0 +1,17 @@
+commit f76d5b1e836be03673699e566ad43be1910a68db
+Author: OASIS AI <admin@oasisai.work>
+Date:   Sun Nov 30 23:15:31 2025 -0500
+
+    Add missing Tailwind directives to index.css
+
+commit 87d625ac0b9bc3e2c1922cb47edc18b2b5b46efc
+Author: OASIS AI <admin@oasisai.work>
+Date:   Sun Nov 30 23:10:04 2025 -0500
+
+    Fix CSS syntax error in index.css
+
+commit bbf53d4526e39375122a61daf1aa9c2f6d84245e
+Author: OASIS AI <admin@oasisai.work>
+Date:   Sun Nov 30 21:20:58 2025 -0500
+
+    Migrated from Vercel to Netlify - Simpler deployment setup

@@ -1,10 +1,26 @@
-import { motion } from 'framer-motion';
-import { CheckCircle, X, ArrowRight, HelpCircle } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { CheckCircle, ArrowRight, HelpCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useState } from 'react';
 
 const PricingPage = () => {
     const [openFaq, setOpenFaq] = useState<number | null>(null);
+    const observerRef = useRef<IntersectionObserver | null>(null);
+
+    useEffect(() => {
+        observerRef.current = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('is-visible');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.animate-on-scroll').forEach((el) => {
+            observerRef.current?.observe(el);
+        });
+
+        return () => observerRef.current?.disconnect();
+    }, []);
 
     const faqs = [
         {
@@ -34,26 +50,22 @@ const PricingPage = () => {
     ];
 
     return (
-        <div className="bg-deep-black min-h-screen">
+        <div className="bg-deep-black min-h-screen overflow-x-hidden">
             {/* Hero */}
-            <section className="relative overflow-hidden bg-gradient-dark py-20">
-                <div className="absolute inset-0">
+            <section className="relative overflow-hidden bg-gradient-dark py-24">
+                <div className="absolute inset-0 pointer-events-none">
                     <div className="absolute top-20 right-10 w-96 h-96 bg-neon/20 rounded-full blur-[120px] animate-pulse-glow" />
                 </div>
 
                 <div className="section-container relative z-10">
-                    <motion.div
-                        initial={{ opacity: 0, y: 30 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="max-w-4xl mx-auto text-center"
-                    >
-                        <h1 className="text-5xl md:text-6xl font-display font-bold mb-6">
+                    <div className="max-w-4xl mx-auto text-center animate-fade-in-up">
+                        <h1 className="text-5xl md:text-7xl font-display font-bold mb-8">
                             Simple, <span className="text-neon">Transparent</span> Pricing
                         </h1>
-                        <p className="text-xl text-light-gray">
+                        <p className="text-xl md:text-2xl text-light-gray max-w-3xl mx-auto leading-relaxed">
                             No hidden fees. No surprises. Just honest pricing for world-class automation.
                         </p>
-                    </motion.div>
+                    </div>
                 </div>
             </section>
 
@@ -62,29 +74,24 @@ const PricingPage = () => {
                 <div className="section-container">
                     <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto">
                         {/* Launchpad */}
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            className="p-8 rounded-2xl glass-effect hover:shadow-neon transition-all duration-300"
-                        >
-                            <h3 className="text-3xl font-display font-bold mb-2">OASIS Launchpad</h3>
-                            <p className="text-light-gray mb-6">Perfect for getting started</p>
+                        <div className="animate-on-scroll p-8 rounded-3xl glass-effect hover:shadow-neon transition-all duration-300 border border-white/5 flex flex-col">
+                            <h3 className="text-3xl font-display font-bold mb-2 text-white">OASIS Launchpad</h3>
+                            <p className="text-light-gray mb-8">Perfect for getting started</p>
 
-                            <div className="mb-6">
+                            <div className="mb-8 p-6 rounded-2xl bg-black/40 border border-white/5">
                                 <div className="text-5xl font-bold text-neon mb-2">$997</div>
-                                <div className="text-light-gray mb-1">one-time setup fee</div>
+                                <div className="text-gray-400 text-sm mb-4">one-time setup fee</div>
                                 <div className="text-2xl font-bold text-white">+ $497/month</div>
-                                <div className="text-sm text-light-gray">retainer (keeps your automation running)</div>
+                                <div className="text-sm text-gray-400">retainer (keeps your automation running)</div>
                             </div>
 
-                            <div className="mb-8 p-4 rounded-lg bg-dark-navy/50 border border-neon/20">
+                            <div className="mb-8 p-4 rounded-xl bg-white/5 border border-white/10">
                                 <p className="text-sm text-light-gray">
                                     <span className="text-neon font-semibold">What you get:</span> One custom automation workflow that permanently transforms how you work. This is not a subscription—it's infrastructure you own.
                                 </p>
                             </div>
 
-                            <ul className="space-y-4 mb-8">
+                            <ul className="space-y-4 mb-8 flex-1">
                                 {[
                                     "1 custom automation workflow (your choice)",
                                     "AI chatbot integration for website",
@@ -96,53 +103,47 @@ const PricingPage = () => {
                                 ].map((feature, index) => (
                                     <li key={index} className="flex items-start gap-3">
                                         <CheckCircle className="w-5 h-5 text-neon flex-shrink-0 mt-1" />
-                                        <span className="text-light-gray">{feature}</span>
+                                        <span className="text-gray-300">{feature}</span>
                                     </li>
                                 ))}
                             </ul>
 
-                            <Link to="/contact">
-                                <button className="btn-secondary w-full">
+                            <Link to="/contact" className="mt-auto">
+                                <button className="btn-secondary w-full py-4 text-lg">
                                     Get Started
                                     <ArrowRight className="inline-block ml-2 w-5 h-5" />
                                 </button>
                             </Link>
-                        </motion.div>
+                        </div>
 
                         {/* Integration Suite */}
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.1 }}
-                            viewport={{ once: true }}
-                            className="p-8 rounded-2xl bg-gradient-dark border-2 border-neon shadow-neon-strong relative"
-                        >
-                            <div className="absolute top-0 right-8 bg-neon text-black px-4 py-1 rounded-b-lg font-bold text-sm">
+                        <div className="animate-on-scroll p-8 rounded-3xl bg-gradient-dark border-2 border-neon shadow-neon-strong relative flex flex-col transform md:-translate-y-4">
+                            <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-neon text-black px-6 py-2 rounded-full font-bold text-sm shadow-lg tracking-wide">
                                 MOST POPULAR
                             </div>
 
-                            <h3 className="text-3xl font-display font-bold mb-2 mt-4">OASIS Integration Suite</h3>
-                            <p className="text-light-gray mb-6">Comprehensive multi-channel automation</p>
+                            <h3 className="text-3xl font-display font-bold mb-2 mt-4 text-white">OASIS Integration Suite</h3>
+                            <p className="text-light-gray mb-8">Comprehensive multi-channel automation</p>
 
-                            <div className="mb-6">
+                            <div className="mb-8 p-6 rounded-2xl bg-black/40 border border-neon/30">
                                 <div className="text-5xl font-bold text-neon mb-2">$3,500 - $6,500</div>
-                                <div className="text-light-gray mb-1">one-time implementation fee</div>
+                                <div className="text-gray-400 text-sm mb-4">one-time implementation fee</div>
                                 <div className="text-2xl font-bold text-white">+ $497/month</div>
-                                <div className="text-sm text-light-gray">retainer (keeps all automations running)</div>
+                                <div className="text-sm text-gray-400">retainer (keeps all automations running)</div>
                             </div>
 
-                            <div className="mb-8 p-4 rounded-lg bg-neon/10 border border-neon/30">
-                                <p className="text-sm text-white">
+                            <div className="mb-8 p-4 rounded-xl bg-neon/10 border border-neon/30">
+                                <p className="text-sm text-white mb-2">
                                     <span className="text-neon font-semibold">Price breakdown:</span>
                                 </p>
-                                <ul className="text-sm text-light-gray mt-2 space-y-1">
+                                <ul className="text-sm text-light-gray space-y-1">
                                     <li>• $3,500: 3 workflows + chatbot</li>
                                     <li>• $4,500-$5,500: Complex integrations, 4-5 workflows</li>
                                     <li>• $6,500: Voice AI, advanced RAG, 5+ systems</li>
                                 </ul>
                             </div>
 
-                            <ul className="space-y-4 mb-8">
+                            <ul className="space-y-4 mb-8 flex-1">
                                 {[
                                     "3-5 custom automation workflows",
                                     "AI-powered website chatbot (custom personality)",
@@ -163,30 +164,30 @@ const PricingPage = () => {
                                 ))}
                             </ul>
 
-                            <Link to="/contact">
-                                <button className="btn-primary w-full">
+                            <Link to="/contact" className="mt-auto">
+                                <button className="btn-primary w-full py-4 text-lg shadow-neon">
                                     Book Consultation
                                     <ArrowRight className="inline-block ml-2 w-5 h-5" />
                                 </button>
                             </Link>
-                        </motion.div>
+                        </div>
                     </div>
 
                     {/* Feature Comparison */}
-                    <div className="mt-16 max-w-6xl mx-auto">
-                        <h3 className="text-3xl font-display font-bold text-center mb-8">
+                    <div className="mt-24 max-w-6xl mx-auto animate-on-scroll">
+                        <h3 className="text-3xl font-display font-bold text-center mb-12">
                             Detailed <span className="text-neon">Comparison</span>
                         </h3>
-                        <div className="glass-effect rounded-2xl overflow-hidden">
+                        <div className="glass-effect rounded-2xl overflow-hidden border border-white/5">
                             <table className="w-full">
-                                <thead className="bg-dark-navy">
+                                <thead className="bg-white/5">
                                     <tr>
-                                        <th className="text-left p-4 text-white font-display">Feature</th>
-                                        <th className="text-center p-4 text-white font-display">Launchpad</th>
-                                        <th className="text-center p-4 text-white font-display">Integration Suite</th>
+                                        <th className="text-left p-6 text-white font-display text-lg">Feature</th>
+                                        <th className="text-center p-6 text-white font-display text-lg">Launchpad</th>
+                                        <th className="text-center p-6 text-white font-display text-lg">Integration Suite</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-neon/10">
+                                <tbody className="divide-y divide-white/10">
                                     {[
                                         ["Custom Workflows", "1", "3-5"],
                                         ["AI Chatbot", "✓", "✓ (Advanced)"],
@@ -197,10 +198,10 @@ const PricingPage = () => {
                                         ["Support Duration", "30 days", "90 days"],
                                         ["Delivery Time", "3-5 days", "7-14 days"]
                                     ].map(([feature, basic, pro], index) => (
-                                        <tr key={index} className="hover:bg-dark-navy/30 transition-colors">
-                                            <td className="p-4 text-light-gray">{feature}</td>
-                                            <td className="p-4 text-center text-white">{basic}</td>
-                                            <td className="p-4 text-center text-neon font-semibold">{pro}</td>
+                                        <tr key={index} className="hover:bg-white/5 transition-colors">
+                                            <td className="p-6 text-light-gray font-medium">{feature}</td>
+                                            <td className="p-6 text-center text-white">{basic}</td>
+                                            <td className="p-6 text-center text-neon font-bold">{pro}</td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -211,72 +212,66 @@ const PricingPage = () => {
             </section>
 
             {/* FAQ */}
-            <section className="py-20 bg-dark-navy">
+            <section className="py-24 bg-dark-navy">
                 <div className="section-container">
-                    <h2 className="text-4xl md:text-5xl font-display font-bold text-center mb-16">
+                    <h2 className="text-4xl md:text-5xl font-display font-bold text-center mb-16 animate-on-scroll">
                         Frequently Asked <span className="text-neon">Questions</span>
                     </h2>
 
                     <div className="max-w-3xl mx-auto space-y-4">
                         {faqs.map((faq, index) => (
-                            <motion.div
+                            <div
                                 key={index}
-                                initial={{ opacity: 0, y: 10 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                transition={{ delay: index * 0.05 }}
-                                viewport={{ once: true }}
-                                className="glass-effect rounded-xl overflow-hidden"
+                                className="animate-on-scroll glass-effect rounded-xl overflow-hidden border border-white/5"
+                                style={{ transitionDelay: `${index * 50}ms` }}
                             >
                                 <button
                                     onClick={() => setOpenFaq(openFaq === index ? null : index)}
-                                    className="w-full p-6 text-left flex items-start justify-between gap-4 hover:bg-dark-navy/30 transition-colors"
+                                    className="w-full p-6 text-left flex items-start justify-between gap-4 hover:bg-white/5 transition-colors"
                                 >
                                     <span className="font-display font-bold text-lg text-white">{faq.question}</span>
-                                    <HelpCircle className={`w-6 h-6 text-neon flex-shrink-0 transition-transform ${openFaq === index ? 'rotate-180' : ''}`} />
+                                    <HelpCircle className={`w-6 h-6 text-neon flex-shrink-0 transition-transform duration-300 ${openFaq === index ? 'rotate-180' : ''}`} />
                                 </button>
-                                {openFaq === index && (
-                                    <div className="px-6 pb-6 text-light-gray">
+                                <div
+                                    className={`transition-all duration-300 ease-in-out overflow-hidden ${openFaq === index ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}
+                                >
+                                    <div className="px-6 pb-6 text-light-gray leading-relaxed border-t border-white/5 pt-4">
                                         {faq.answer}
                                     </div>
-                                )}
-                            </motion.div>
+                                </div>
+                            </div>
                         ))}
                     </div>
                 </div>
             </section>
 
             {/* CTA */}
-            <section className="py-20 bg-gradient-dark relative overflow-hidden">
-                <div className="absolute inset-0">
+            <section className="py-24 bg-gradient-dark relative overflow-hidden">
+                <div className="absolute inset-0 pointer-events-none">
                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-neon/20 rounded-full blur-[150px] animate-pulse-glow" />
                 </div>
 
                 <div className="section-container relative z-10">
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        className="max-w-3xl mx-auto text-center"
-                    >
-                        <h2 className="text-4xl md:text-5xl font-display font-bold mb-6">
+                    <div className="max-w-3xl mx-auto text-center animate-on-scroll">
+                        <h2 className="text-4xl md:text-5xl font-display font-bold mb-8">
                             Still Have <span className="text-neon">Questions</span>?
                         </h2>
-                        <p className="text-xl text-light-gray mb-10">
+                        <p className="text-xl md:text-2xl text-light-gray mb-12 max-w-2xl mx-auto">
                             Book a free 15-minute call and we'll help you choose the right package for your needs.
                         </p>
-                        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                        <div className="flex flex-col sm:flex-row gap-6 justify-center">
                             <Link to="/contact">
-                                <button className="btn-primary text-lg">
+                                <button className="btn-primary text-lg px-10 py-5 shadow-neon-strong hover:scale-105 transition-transform duration-300">
                                     Book Free Strategy Call
                                 </button>
                             </Link>
                             <a href="tel:705-440-3117">
-                                <button className="btn-secondary text-lg">
+                                <button className="btn-secondary text-lg px-10 py-5 hover:bg-white/10">
                                     Call 705-440-3117
                                 </button>
                             </a>
                         </div>
-                    </motion.div>
+                    </div>
                 </div>
             </section>
         </div>

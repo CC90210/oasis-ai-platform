@@ -1,29 +1,43 @@
-import { motion } from 'framer-motion';
+import { useEffect, useRef } from 'react';
 import { TrendingUp, Clock, Users, DollarSign, Star, ArrowRight, CheckCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const CaseStudiesPage = () => {
+    const observerRef = useRef<IntersectionObserver | null>(null);
+
+    useEffect(() => {
+        observerRef.current = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('is-visible');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.animate-on-scroll').forEach((el) => {
+            observerRef.current?.observe(el);
+        });
+
+        return () => observerRef.current?.disconnect();
+    }, []);
+
     return (
-        <div className="bg-deep-black min-h-screen">
+        <div className="bg-deep-black min-h-screen overflow-x-hidden">
             {/* Hero */}
-            <section className="relative overflow-hidden bg-gradient-dark py-20">
-                <div className="absolute inset-0">
+            <section className="relative overflow-hidden bg-gradient-dark py-24">
+                <div className="absolute inset-0 pointer-events-none">
                     <div className="absolute top-20 right-10 w-96 h-96 bg-neon/20 rounded-full blur-[120px] animate-pulse-glow" />
                 </div>
 
                 <div className="section-container relative z-10">
-                    <motion.div
-                        initial={{ opacity: 0, y: 30 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="max-w-4xl mx-auto text-center"
-                    >
-                        <h1 className="text-5xl md:text-6xl font-display font-bold mb-6">
+                    <div className="max-w-4xl mx-auto text-center animate-fade-in-up">
+                        <h1 className="text-5xl md:text-7xl font-display font-bold mb-8">
                             Real <span className="text-neon">Results</span> for Real Businesses
                         </h1>
-                        <p className="text-xl text-light-gray">
+                        <p className="text-xl md:text-2xl text-light-gray max-w-3xl mx-auto leading-relaxed">
                             See how automation is transforming businesses across different industries.
                         </p>
-                    </motion.div>
+                    </div>
                 </div>
             </section>
 
@@ -31,28 +45,25 @@ const CaseStudiesPage = () => {
             <section className="py-20 bg-deep-black">
                 <div className="section-container">
                     <div className="max-w-5xl mx-auto">
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            className="glass-effect rounded-2xl p-8 md:p-12 border-2 border-neon shadow-neon-strong"
-                        >
-                            <div className="flex items-center gap-2 mb-4">
-                                <Star className="w-6 h-6 text-neon" />
-                                <span className="text-neon font-bold">FEATURED SUCCESS STORY</span>
+                        <div className="animate-on-scroll glass-effect rounded-3xl p-8 md:p-12 border-2 border-neon shadow-neon-strong relative overflow-hidden">
+                            <div className="absolute top-0 right-0 w-64 h-64 bg-neon/5 rounded-full blur-[80px] pointer-events-none" />
+
+                            <div className="flex items-center gap-2 mb-6">
+                                <Star className="w-6 h-6 text-neon fill-neon animate-pulse" />
+                                <span className="text-neon font-bold tracking-wider text-sm">FEATURED SUCCESS STORY</span>
                             </div>
 
-                            <h2 className="text-4xl font-display font-bold mb-4">
+                            <h2 className="text-4xl md:text-5xl font-display font-bold mb-6 text-white">
                                 E-Commerce Success Story
                             </h2>
-                            <p className="text-xl text-light-gray mb-8">
-                                Direct-to-consumer health & wellness brand transforms customer support and recovers lost revenue
+                            <p className="text-xl text-light-gray mb-10 leading-relaxed max-w-3xl">
+                                Direct-to-consumer health & wellness brand transforms customer support and recovers lost revenue.
                             </p>
 
                             {/* Challenge */}
-                            <div className="mb-8">
-                                <h3 className="text-2xl font-display font-bold mb-4 text-neon">The Challenge</h3>
-                                <p className="text-light-gray leading-relaxed">
+                            <div className="mb-10 p-6 rounded-2xl bg-white/5 border border-white/10">
+                                <h3 className="text-2xl font-display font-bold mb-4 text-white">The Challenge</h3>
+                                <p className="text-light-gray leading-relaxed text-lg">
                                     A growing e-commerce business was drowning in customer support tickets. Their small team
                                     couldn't keep up with inquiries, leading to slow response times, frustrated customers, and
                                     thousands of dollars in lost revenue from abandoned carts that were never recovered. They were
@@ -61,8 +72,8 @@ const CaseStudiesPage = () => {
                             </div>
 
                             {/* Solution */}
-                            <div className="mb-8">
-                                <h3 className="text-2xl font-display font-bold mb-4 text-neon">Our Solution</h3>
+                            <div className="mb-10">
+                                <h3 className="text-2xl font-display font-bold mb-6 text-white">Our Solution</h3>
                                 <div className="grid md:grid-cols-2 gap-4">
                                     {[
                                         "24/7 AI customer support chatbot handling 60%+ of inquiries",
@@ -71,56 +82,52 @@ const CaseStudiesPage = () => {
                                         "Post-purchase upsell sequences",
                                         "Real-time inventory and order status automation"
                                     ].map((item, index) => (
-                                        <div key={index} className="flex items-start gap-3">
+                                        <div key={index} className="flex items-start gap-3 p-4 rounded-xl bg-black/30 border border-white/5">
                                             <CheckCircle className="w-5 h-5 text-neon flex-shrink-0 mt-1" />
-                                            <span className="text-light-gray">{item}</span>
+                                            <span className="text-gray-300">{item}</span>
                                         </div>
                                     ))}
                                 </div>
                             </div>
 
                             {/* Results */}
-                            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
                                 {[
                                     { icon: TrendingUp, value: "40%", label: "Reduction in Support Tickets" },
                                     { icon: DollarSign, value: "15%", label: "Revenue Increase" },
                                     { icon: Clock, value: "1000s", label: "Hours Saved Annually" },
                                     { icon: Users, value: "Higher", label: "Customer Satisfaction" }
                                 ].map((metric, index) => (
-                                    <motion.div
+                                    <div
                                         key={index}
-                                        initial={{ opacity: 0, scale: 0.9 }}
-                                        whileInView={{ opacity: 1, scale: 1 }}
-                                        transition={{ delay: index * 0.1 }}
-                                        viewport={{ once: true }}
-                                        className="text-center p-6 rounded-xl bg-dark-navy/50 border border-neon/20"
+                                        className="text-center p-6 rounded-xl bg-dark-navy/50 border border-neon/20 hover:border-neon/50 transition-colors"
                                     >
                                         <metric.icon className="w-10 h-10 text-neon mx-auto mb-3" />
                                         <div className="text-3xl font-bold text-neon mb-1">{metric.value}</div>
                                         <div className="text-sm text-light-gray">{metric.label}</div>
-                                    </motion.div>
+                                    </div>
                                 ))}
                             </div>
 
                             {/* Quote */}
-                            <div className="bg-gradient-neon/10 border-l-4 border-neon p-6 rounded-r-lg">
-                                <p className="text-lg italic text-white mb-4">
+                            <div className="bg-gradient-neon/10 border-l-4 border-neon p-8 rounded-r-xl">
+                                <p className="text-xl italic text-white mb-4 leading-relaxed">
                                     "The customer support automation alone paid for itself in the first month. Our response times went
                                     from hours to seconds, and our customers love it. OASIS delivered exactly what they promised."
                                 </p>
-                                <p className="text-neon font-bold">
+                                <p className="text-neon font-bold text-lg">
                                     — E-commerce Founder
                                 </p>
                             </div>
-                        </motion.div>
+                        </div>
                     </div>
                 </div>
             </section>
 
             {/* Results Overview */}
-            <section className="py-20 bg-dark-navy">
+            <section className="py-24 bg-dark-navy">
                 <div className="section-container">
-                    <h2 className="text-4xl md:text-5xl font-display font-bold text-center mb-16">
+                    <h2 className="text-4xl md:text-5xl font-display font-bold text-center mb-16 animate-on-scroll">
                         Results We <span className="text-neon">Deliver</span>
                     </h2>
 
@@ -157,27 +164,26 @@ const CaseStudiesPage = () => {
                                 description: "Different workflow types built and deployed across industries"
                             }
                         ].map((item, index) => (
-                            <motion.div
+                            <div
                                 key={index}
-                                initial={{ opacity: 0, y: 20 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                transition={{ delay: index * 0.1 }}
-                                viewport={{ once: true }}
-                                className="p-6 rounded-xl glass-effect hover:shadow-neon transition-all duration-300 text-center"
+                                className="animate-on-scroll p-8 rounded-2xl glass-effect hover:shadow-neon transition-all duration-300 text-center border border-white/5 hover:-translate-y-2 group"
+                                style={{ transitionDelay: `${index * 100}ms` }}
                             >
-                                <item.icon className="w-12 h-12 text-neon mx-auto mb-4" />
-                                <div className="text-3xl font-bold text-neon mb-3">{item.metric}</div>
-                                <p className="text-light-gray">{item.description}</p>
-                            </motion.div>
+                                <div className="mb-6 inline-block p-4 rounded-full bg-neon/10 group-hover:bg-neon/20 transition-colors">
+                                    <item.icon className="w-10 h-10 text-neon" />
+                                </div>
+                                <div className="text-4xl font-bold text-neon mb-4">{item.metric}</div>
+                                <p className="text-light-gray text-lg leading-relaxed">{item.description}</p>
+                            </div>
                         ))}
                     </div>
                 </div>
             </section>
 
             {/* Testimonials */}
-            <section className="py-20 bg-deep-black">
+            <section className="py-24 bg-deep-black">
                 <div className="section-container">
-                    <h2 className="text-4xl md:text-5xl font-display font-bold text-center mb-16">
+                    <h2 className="text-4xl md:text-5xl font-display font-bold text-center mb-16 animate-on-scroll">
                         What Our <span className="text-neon">Clients</span> Say
                     </h2>
 
@@ -214,63 +220,60 @@ const CaseStudiesPage = () => {
                                 title: "Consultant, Toronto"
                             }
                         ].map((testimonial, index) => (
-                            <motion.div
+                            <div
                                 key={index}
-                                initial={{ opacity: 0, y: 20 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                transition={{ delay: index * 0.1 }}
-                                viewport={{ once: true }}
-                                className="p-6 rounded-xl glass-effect hover:shadow-neon transition-all duration-300"
+                                className="animate-on-scroll p-8 rounded-2xl glass-effect hover:shadow-neon transition-all duration-300 border border-white/5 hover:-translate-y-1"
+                                style={{ transitionDelay: `${index * 100}ms` }}
                             >
-                                <div className="flex gap-1 mb-4">
+                                <div className="flex gap-1 mb-6">
                                     {[...Array(5)].map((_, i) => (
                                         <Star key={i} className="w-5 h-5 fill-neon text-neon" />
                                     ))}
                                 </div>
-                                <p className="text-light-gray mb-6 italic">"{testimonial.quote}"</p>
-                                <div>
-                                    <div className="font-bold text-white">{testimonial.author}</div>
-                                    <div className="text-sm text-neon">{testimonial.title}</div>
+                                <p className="text-light-gray mb-8 italic text-lg leading-relaxed">"{testimonial.quote}"</p>
+                                <div className="flex items-center gap-4">
+                                    <div className="w-10 h-10 rounded-full bg-gradient-neon flex items-center justify-center font-bold text-black">
+                                        {testimonial.author.charAt(0)}
+                                    </div>
+                                    <div>
+                                        <div className="font-bold text-white">{testimonial.author}</div>
+                                        <div className="text-sm text-neon">{testimonial.title}</div>
+                                    </div>
                                 </div>
-                            </motion.div>
+                            </div>
                         ))}
                     </div>
                 </div>
             </section>
 
             {/* CTA */}
-            <section className="py-20 bg-gradient-dark relative overflow-hidden">
-                <div className="absolute inset-0">
+            <section className="py-24 bg-gradient-dark relative overflow-hidden">
+                <div className="absolute inset-0 pointer-events-none">
                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-neon/20 rounded-full blur-[150px] animate-pulse-glow" />
                 </div>
 
                 <div className="section-container relative z-10">
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        className="max-w-3xl mx-auto text-center"
-                    >
-                        <h2 className="text-4xl md:text-5xl font-display font-bold mb-6">
+                    <div className="max-w-3xl mx-auto text-center animate-on-scroll">
+                        <h2 className="text-4xl md:text-5xl font-display font-bold mb-8">
                             Ready to Write Your <span className="text-neon">Success Story</span>?
                         </h2>
-                        <p className="text-xl text-light-gray mb-10">
+                        <p className="text-xl md:text-2xl text-light-gray mb-12 max-w-2xl mx-auto">
                             Join the growing number of businesses transforming their operations with intelligent automation.
                         </p>
-                        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                        <div className="flex flex-col sm:flex-row gap-6 justify-center">
                             <Link to="/contact">
-                                <button className="btn-primary text-lg">
+                                <button className="btn-primary text-lg px-10 py-5 shadow-neon-strong hover:scale-105 transition-transform duration-300">
                                     Book Free Strategy Call
-                                    <ArrowRight className="inline-block ml-2 w-5 h-5" />
+                                    <ArrowRight className="inline-block ml-2 w-6 h-6" />
                                 </button>
                             </Link>
                             <Link to="/pricing">
-                                <button className="btn-secondary text-lg">
+                                <button className="btn-secondary text-lg px-10 py-5 hover:bg-white/10">
                                     View Pricing
                                 </button>
                             </Link>
                         </div>
-                    </motion.div>
+                    </div>
                 </div>
             </section>
         </div>
