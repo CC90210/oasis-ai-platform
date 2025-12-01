@@ -67,6 +67,95 @@
   <!-- DNS Prefetch for External Resources -->
   <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
   <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
+  <style id="oasis-text-fix">
+    * {
+      opacity: 1 !important;
+      visibility: visible !important;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+      color: #FFFFFF !important;
+    }
+
+    p,
+    span,
+    li,
+    label {
+      color: #E2E8F0 !important;
+    }
+
+    a {
+      color: #E2E8F0 !important;
+    }
+
+    .uppercase,
+    [class*="label"],
+    [class*="subtitle"] {
+      color: #00D4FF !important;
+    }
+
+    footer,
+    footer * {
+      opacity: 1 !important;
+    }
+
+    footer h1,
+    footer h2,
+    footer h3,
+    footer h4 {
+      color: #FFFFFF !important;
+    }
+
+    footer p,
+    footer span,
+    footer li,
+    footer a {
+      color: #9CA3AF !important;
+    }
+
+    [class*="pricing"] h1,
+    [class*="pricing"] h2,
+    [class*="pricing"] h3 {
+      color: #FFFFFF !important;
+    }
+
+    [class*="pricing"] p,
+    [class*="pricing"] span,
+    [class*="pricing"] li {
+      color: #E2E8F0 !important;
+    }
+
+    [class*="card"] h1,
+    [class*="card"] h2,
+    [class*="card"] h3 {
+      color: #FFFFFF !important;
+    }
+
+    [class*="card"] p,
+    [class*="card"] span,
+    [class*="card"] li {
+      color: #E2E8F0 !important;
+    }
+
+    [style*="opacity: 0"],
+    [style*="opacity:0"] {
+      opacity: 1 !important;
+    }
+  </style>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      setInterval(function () {
+        document.querySelectorAll('*').forEach(function (el) {
+          el.style.opacity = '1';
+        });
+      }, 500);
+    });
+  </script>
 </head>
 
 <body>
