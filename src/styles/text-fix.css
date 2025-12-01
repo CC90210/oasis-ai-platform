@@ -1,0 +1,175 @@
+/* ═══════════════════════════════════════════════════════════════
+   OASIS AI - NUCLEAR TEXT VISIBILITY FIX
+   This file FORCES all text to be visible.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* FORCE ALL TEXT TO BE VISIBLE - NUCLEAR OPTION */
+* {
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+/* Headings - Pure White */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+[class*="heading"],
+[class*="title"],
+[class*="headline"] {
+    color: #FFFFFF !important;
+    opacity: 1 !important;
+}
+
+/* Body text - Light Gray */
+p,
+span,
+li,
+label,
+[class*="description"],
+[class*="text"],
+[class*="body"],
+[class*="content"] {
+    color: #E2E8F0 !important;
+    opacity: 1 !important;
+}
+
+/* Section labels - Cyan */
+[class*="label"],
+[class*="subtitle"],
+[class*="overline"],
+[class*="eyebrow"],
+.text-xs.uppercase,
+.tracking-wider,
+.tracking-widest {
+    color: #00D4FF !important;
+    opacity: 1 !important;
+}
+
+/* Links */
+a {
+    color: #E2E8F0 !important;
+    opacity: 1 !important;
+}
+
+a:hover {
+    color: #00D4FF !important;
+}
+
+/* Footer specific overrides */
+footer,
+footer * {
+    opacity: 1 !important;
+}
+
+footer h1,
+footer h2,
+footer h3,
+footer h4,
+footer h5,
+footer h6 {
+    color: #FFFFFF !important;
+}
+
+footer p,
+footer span,
+footer li {
+    color: #9CA3AF !important;
+}
+
+footer a {
+    color: #9CA3AF !important;
+}
+
+footer a:hover {
+    color: #00D4FF !important;
+}
+
+/* Pricing section specific */
+[class*="pricing"] h1,
+[class*="pricing"] h2,
+[class*="pricing"] h3,
+[class*="price"] {
+    color: #FFFFFF !important;
+}
+
+[class*="pricing"] p,
+[class*="pricing"] span,
+[class*="pricing"] li {
+    color: #E2E8F0 !important;
+}
+
+/* Card content */
+[class*="card"] h1,
+[class*="card"] h2,
+[class*="card"] h3,
+[class*="card"] h4 {
+    color: #FFFFFF !important;
+}
+
+[class*="card"] p,
+[class*="card"] span {
+    color: #E2E8F0 !important;
+}
+
+/* Feature lists */
+ul li,
+ol li {
+    color: #E2E8F0 !important;
+}
+
+/* Motion elements - KILL ALL OPACITY TRANSITIONS */
+[class*="motion"],
+[style*="opacity"],
+[style*="transform"] {
+    opacity: 1 !important;
+    transition: none !important;
+}
+
+/* Framer motion overrides */
+[data-framer-appear-id],
+[data-framer-component-type] {
+    opacity: 1 !important;
+}
+
+/* Ensure visibility */
+.invisible,
+.opacity-0,
+.hidden {
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+/* Price amounts */
+[class*="price"],
+.text-4xl,
+.text-5xl,
+.text-6xl {
+    color: #00D4FF !important;
+}
+
+/* Small text / captions */
+.text-sm,
+.text-xs,
+small,
+caption {
+    color: #94A3B8 !important;
+    opacity: 1 !important;
+}
+
+/* Buttons text */
+button,
+[class*="button"],
+[class*="btn"],
+[role="button"] {
+    opacity: 1 !important;
+}
+
+button span,
+[class*="button"] span,
+[class*="btn"] span {
+    color: inherit !important;
+    opacity: 1 !important;
+}
