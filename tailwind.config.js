@@ -55,7 +55,7 @@ export default {
                 'deep-black': '#0A0A0F',
                 'dark-navy': '#0D1117',
                 charcoal: '#161B22',
-                'light-gray': '#8B949E',
+                'light-gray': '#E2E8F0',
                 'success-green': '#00FF88',
                 'warning-orange': '#FF6B35',
             },

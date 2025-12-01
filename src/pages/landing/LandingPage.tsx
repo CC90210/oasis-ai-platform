@@ -19,14 +19,14 @@ const LandingPage = () => {
 
                 <div className="section-container relative z-10 py-20 md:py-32">
                     <motion.div
-                        initial={{ opacity: 0, y: 30 }}
-                        animate={{ opacity: 1, y: 0 }}
+                        initial={{ y: 30 }}
+                        animate={{ y: 0 }}
                         transition={{ duration: 0.8 }}
                         className="max-w-4xl mx-auto text-center"
                     >
                         <motion.div
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            animate={{ opacity: 1, scale: 1 }}
+                            initial={{ scale: 0.9 }}
+                            animate={{ scale: 1 }}
                             transition={{ delay: 0.2 }}
                             className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-effect mb-8"
                         >
@@ -58,8 +58,8 @@ const LandingPage = () => {
                         </div>
 
                         <motion.div
-                            initial={{ opacity: 0, y: 50 }}
-                            animate={{ opacity: 1, y: 0 }}
+                            initial={{ y: 50 }}
+                            animate={{ y: 0 }}
                             transition={{ delay: 0.6 }}
                             className="mt-16"
                         >
@@ -100,14 +100,14 @@ const LandingPage = () => {
                         ].map((item, index) => (
                             <motion.div
                                 key={index}
-                                initial={{ opacity: 0, x: -20 }}
-                                whileInView={{ opacity: 1, x: 0 }}
+                                initial={{ x: -20 }}
+                                whileInView={{ x: 0 }}
                                 transition={{ delay: index * 0.1 }}
                                 viewport={{ once: true }}
                                 className="flex items-start gap-4 p-6 rounded-xl glass-effect hover:shadow-neon transition-all duration-300"
                             >
                                 <item.icon className="w-8 h-8 text-neon flex-shrink-0 mt-1" />
-                                <p className="text-lg text-light-gray">{item.text}</p>
+                                <p style={{ color: "#E2E8F0" }}>{item.text}</p>
                             </motion.div>
                         ))}
                     </div>
@@ -159,8 +159,8 @@ const LandingPage = () => {
                         ].map((service, index) => (
                             <motion.div
                                 key={index}
-                                initial={{ opacity: 0, y: 20 }}
-                                whileInView={{ opacity: 1, y: 0 }}
+                                initial={{ y: 20 }}
+                                whileInView={{ y: 0 }}
                                 transition={{ delay: index * 0.1 }}
                                 viewport={{ once: true }}
                                 whileHover={{ scale: 1.05, transition: { duration: 0.2 } }}
@@ -168,7 +168,7 @@ const LandingPage = () => {
                             >
                                 <service.icon className="w-12 h-12 text-neon mb-4 group-hover:scale-110 transition-transform" />
                                 <h3 className="text-2xl font-display font-bold mb-3">{service.title}</h3>
-                                <p className="text-light-gray">{service.description}</p>
+                                <p style={{ color: "#E2E8F0" }}>{service.description}</p>
                             </motion.div>
                         ))}
                     </div>
@@ -192,8 +192,8 @@ const LandingPage = () => {
                         ].map((step, index) => (
                             <motion.div
                                 key={index}
-                                initial={{ opacity: 0, x: -30 }}
-                                whileInView={{ opacity: 1, x: 0 }}
+                                initial={{ x: -30 }}
+                                whileInView={{ x: 0 }}
                                 transition={{ delay: index * 0.1 }}
                                 viewport={{ once: true }}
                                 className="relative flex gap-6 mb-8 last:mb-0"
@@ -214,7 +214,7 @@ const LandingPage = () => {
                                         <h3 className="text-2xl font-display font-bold">{step.title}</h3>
                                         <span className="text-neon text-sm font-mono">{step.time}</span>
                                     </div>
-                                    <p className="text-light-gray">{step.description}</p>
+                                    <p style={{ color: "#E2E8F0" }}>{step.description}</p>
                                 </div>
                             </motion.div>
                         ))}
@@ -235,8 +235,8 @@ const LandingPage = () => {
                     <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
                         {/* OASIS Launchpad */}
                         <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
+                            initial={{ y: 20 }}
+                            whileInView={{ y: 0 }}
                             viewport={{ once: true }}
                             className="p-8 rounded-2xl glass-effect hover:shadow-neon transition-all duration-300"
                         >
@@ -245,7 +245,7 @@ const LandingPage = () => {
 
                             <div className="mb-6">
                                 <div className="text-4xl font-bold text-neon mb-1">$997</div>
-                                <div className="text-light-gray">one-time + $497/month</div>
+                                <div style={{ color: "#E2E8F0" }}>one-time + $497/month</div>
                             </div>
 
                             <ul className="space-y-3 mb-8">
@@ -258,7 +258,7 @@ const LandingPage = () => {
                                 ].map((feature, index) => (
                                     <li key={index} className="flex items-center gap-3">
                                         <CheckCircle className="w-5 h-5 text-neon flex-shrink-0" />
-                                        <span className="text-light-gray">{feature}</span>
+                                        <span style={{ color: "#E2E8F0" }}>{feature}</span>
                                     </li>
                                 ))}
                             </ul>
@@ -272,8 +272,8 @@ const LandingPage = () => {
 
                         {/* OASIS Integration Suite */}
                         <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
+                            initial={{ y: 20 }}
+                            whileInView={{ y: 0 }}
                             transition={{ delay: 0.1 }}
                             viewport={{ once: true }}
                             className="p-8 rounded-2xl bg-gradient-dark border-2 border-neon shadow-neon-strong relative"
@@ -287,7 +287,7 @@ const LandingPage = () => {
 
                             <div className="mb-6">
                                 <div className="text-4xl font-bold text-neon mb-1">$3,500 - $6,500</div>
-                                <div className="text-light-gray">one-time + $497/month</div>
+                                <div style={{ color: "#E2E8F0" }}>one-time + $497/month</div>
                             </div>
 
                             <ul className="space-y-3 mb-8">
@@ -324,8 +324,8 @@ const LandingPage = () => {
 
                 <div className="section-container relative z-10">
                     <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
+                        initial={{ y: 20 }}
+                        whileInView={{ y: 0 }}
                         viewport={{ once: true }}
                         className="max-w-3xl mx-auto text-center"
                     >
@@ -357,3 +357,5 @@ const LandingPage = () => {
 };
 
 export default LandingPage;
+
+
