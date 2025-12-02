@@ -4,6 +4,7 @@ import path from 'path'
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  base: '/',
   plugins: [react()],
   resolve: {
     alias: {
@@ -11,14 +12,8 @@ export default defineConfig({
     },
   },
   build: {
-    // Enable minification
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: true, // Remove console.logs in production
-        drop_debugger: true,
-      },
-    },
+    // Enable minification (default is 'esbuild')
+    minify: 'esbuild',
     // Optimize chunk size
     rollupOptions: {
       output: {
@@ -38,6 +33,9 @@ export default defineConfig({
     chunkSizeWarningLimit: 1000,
     // Generate source maps for debugging (can disable for extra security)
     sourcemap: false,
+  },
+  esbuild: {
+    drop: ['console', 'debugger'],
   },
   // Production optimizations
   server: {
