@@ -1,10 +1,68 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Check, CreditCard, Lock, Shield } from 'lucide-react';
+import { Check, CreditCard, Lock, Shield, AlertCircle } from 'lucide-react';
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
+import { useSearchParams, Link } from 'react-router-dom';
+
+// Agent Data from Master Prompt
+const agents = {
+    'chat-widget': {
+        title: 'Website Chat Widget Agent',
+        price: 797,
+        tier: 1
+    },
+    'google-reviews': {
+        title: 'Google Review Response Agent',
+        price: 597,
+        tier: 1
+    },
+    'email-automation': {
+        title: 'Gmail/Email Automation Agent',
+        price: 997,
+        tier: 1
+    },
+    'appointment-booking': {
+        title: 'Appointment Booking Agent',
+        price: 897,
+        tier: 1
+    },
+    'lead-capture': {
+        title: 'Lead Capture & Qualification Agent',
+        price: 897,
+        tier: 1
+    },
+    'launchpad': {
+        title: 'OASIS Launchpad Bundle',
+        price: 997,
+        tier: 3
+    }
+};
+
+const retainers = {
+    'essentials': {
+        name: 'OASIS Essentials',
+        price: 297,
+        description: 'Basic support & monitoring'
+    },
+    'standard': {
+        name: 'OASIS Standard (Recommended)',
+        price: 497,
+        description: 'Priority support & optimization'
+    },
+    'priority': {
+        name: 'OASIS Priority',
+        price: 797,
+        description: 'Dedicated account manager & premium support'
+    }
+};
 
 const CheckoutPage = () => {
+    const [searchParams] = useSearchParams();
+    const agentSlug = searchParams.get('agent');
+    const selectedAgent = agentSlug ? agents[agentSlug as keyof typeof agents] : null;
+
     const [step, setStep] = useState(1);
+    const [selectedRetainer, setSelectedRetainer] = useState<keyof typeof retainers>('standard');
     const [formData, setFormData] = useState({
         fullName: '',
         email: '',
@@ -14,6 +72,25 @@ const CheckoutPage = () => {
         website: '',
         referral: ''
     });
+
+    // Redirect if no agent selected
+    if (!selectedAgent) {
+        return (
+            <div className="min-h-screen bg-bg-primary pt-32 px-4 text-center">
+                <h2 className="text-2xl font-bold text-white mb-4">No Agent Selected</h2>
+                <p className="text-text-secondary mb-8">Please select an agent from our services page.</p>
+                <Link to="/services" className="btn-primary">View Services</Link>
+            </div>
+        );
+    }
+
+    // Calculations
+    const agentPrice = selectedAgent.price;
+    const retainerPrice = retainers[selectedRetainer].price;
+    const subtotal = agentPrice + retainerPrice;
+    const taxRate = 0.13; // 13% HST
+    const taxAmount = subtotal * taxRate;
+    const totalAmount = subtotal + taxAmount;
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
@@ -170,27 +247,24 @@ const CheckoutPage = () => {
                                             </p>
 
                                             <div className="space-y-3">
-                                                <label className="flex items-center p-3 border border-white/10 rounded-lg cursor-pointer hover:border-oasis-cyan/50 transition-colors">
-                                                    <input type="radio" name="retainer" className="text-oasis-cyan focus:ring-oasis-cyan bg-bg-tertiary border-white/20" />
-                                                    <div className="ml-3 flex-1">
-                                                        <div className="flex justify-between">
-                                                            <span className="font-medium text-white">OASIS Essentials</span>
-                                                            <span className="text-oasis-cyan">$297/mo</span>
+                                                {Object.entries(retainers).map(([key, plan]) => (
+                                                    <label key={key} className={`flex items-center p-3 border rounded-lg cursor-pointer transition-colors ${selectedRetainer === key ? 'border-oasis-cyan bg-oasis-cyan/5' : 'border-white/10 hover:border-oasis-cyan/50'}`}>
+                                                        <input
+                                                            type="radio"
+                                                            name="retainer"
+                                                            checked={selectedRetainer === key}
+                                                            onChange={() => setSelectedRetainer(key as keyof typeof retainers)}
+                                                            className="text-oasis-cyan focus:ring-oasis-cyan bg-bg-tertiary border-white/20"
+                                                        />
+                                                        <div className="ml-3 flex-1">
+                                                            <div className="flex justify-between">
+                                                                <span className="font-medium text-white">{plan.name}</span>
+                                                                <span className="text-oasis-cyan">${plan.price}/mo</span>
+                                                            </div>
+                                                            <p className="text-xs text-text-tertiary">{plan.description}</p>
                                                         </div>
-                                                        <p className="text-xs text-text-tertiary">Basic support & monitoring</p>
-                                                    </div>
-                                                </label>
-
-                                                <label className="flex items-center p-3 border-2 border-oasis-cyan bg-oasis-cyan/5 rounded-lg cursor-pointer">
-                                                    <input type="radio" name="retainer" defaultChecked className="text-oasis-cyan focus:ring-oasis-cyan bg-bg-tertiary border-white/20" />
-                                                    <div className="ml-3 flex-1">
-                                                        <div className="flex justify-between">
-                                                            <span className="font-medium text-white">OASIS Standard (Recommended)</span>
-                                                            <span className="text-oasis-cyan">$497/mo</span>
-                                                        </div>
-                                                        <p className="text-xs text-text-tertiary">Priority support & optimization</p>
-                                                    </div>
-                                                </label>
+                                                    </label>
+                                                ))}
                                             </div>
                                         </div>
 
@@ -205,9 +279,9 @@ const CheckoutPage = () => {
                                                             {
                                                                 amount: {
                                                                     currency_code: "CAD",
-                                                                    value: "1462.22", // Total amount
+                                                                    value: totalAmount.toFixed(2),
                                                                 },
-                                                                description: "OASIS AI Agent + Retainer",
+                                                                description: `${selectedAgent.title} + ${retainers[selectedRetainer].name}`,
                                                             },
                                                         ],
                                                     });
@@ -288,37 +362,37 @@ const CheckoutPage = () => {
                                                 <span className="text-2xl">🤖</span>
                                             </div>
                                             <div>
-                                                <h4 className="font-medium text-white">Website Chat Widget</h4>
-                                                <p className="text-xs text-text-tertiary">Tier 1 Agent</p>
+                                                <h4 className="font-medium text-white">{selectedAgent.title}</h4>
+                                                <p className="text-xs text-text-tertiary">Tier {selectedAgent.tier} Agent</p>
                                             </div>
                                         </div>
-                                        <span className="font-medium text-white">$797.00</span>
+                                        <span className="font-medium text-white">${agentPrice.toLocaleString()}.00</span>
                                     </div>
                                 </div>
 
                                 <div className="space-y-2 mb-6 border-b border-white/10 pb-6">
                                     <div className="flex justify-between text-sm">
                                         <span className="text-text-secondary">Subtotal</span>
-                                        <span className="text-white">$797.00</span>
+                                        <span className="text-white">${agentPrice.toLocaleString()}.00</span>
                                     </div>
                                     <div className="flex justify-between text-sm">
                                         <span className="text-text-secondary">Monthly Retainer (1st mo)</span>
-                                        <span className="text-white">$497.00</span>
+                                        <span className="text-white">${retainerPrice.toLocaleString()}.00</span>
                                     </div>
                                     <div className="flex justify-between text-sm">
                                         <span className="text-text-secondary">Tax (13% HST)</span>
-                                        <span className="text-white">$168.22</span>
+                                        <span className="text-white">${taxAmount.toFixed(2)}</span>
                                     </div>
                                 </div>
 
                                 <div className="flex justify-between items-end mb-8">
                                     <div>
                                         <span className="text-sm text-text-tertiary">Total Today</span>
-                                        <div className="text-3xl font-bold text-oasis-cyan">$1,462.22</div>
+                                        <div className="text-3xl font-bold text-oasis-cyan">${totalAmount.toFixed(2)}</div>
                                     </div>
                                     <div className="text-right">
-                                        <span className="text-xs text-text-tertiary block">Then $497/mo</span>
-                                        <span className="text-xs text-text-tertiary">starting Jan 1st</span>
+                                        <span className="text-xs text-text-tertiary block">Then ${retainerPrice}/mo</span>
+                                        <span className="text-xs text-text-tertiary">starting next month</span>
                                     </div>
                                 </div>
 

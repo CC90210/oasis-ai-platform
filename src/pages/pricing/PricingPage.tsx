@@ -106,8 +106,8 @@ const PricingPage = () => {
                                 ))}
                             </ul>
 
-                            <Link to="/contact" className="mt-auto">
-                                <button className="btn-secondary w-full py-4 text-lg">
+                            <Link to="/checkout?agent=launchpad" className="mt-auto">
+                                <button className="btn-primary w-full py-4 text-lg shadow-oasis">
                                     Get Started
                                     <ArrowRight className="inline-block ml-2 w-5 h-5" />
                                 </button>

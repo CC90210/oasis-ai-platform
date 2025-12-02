@@ -202,7 +202,7 @@ const AgentPage = () => {
                                         Book Consultation
                                     </Link>
                                 ) : (
-                                    <Link to="/checkout" className="btn-primary text-center shadow-oasis">
+                                    <Link to={`/checkout?agent=${slug}`} className="btn-primary text-center shadow-oasis">
                                         Add to Cart
                                     </Link>
                                 )}

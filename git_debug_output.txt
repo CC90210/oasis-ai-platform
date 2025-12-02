@@ -1,0 +1,57 @@
+Checking git status... 
+On branch main
+Your branch is up to date with 'origin/main'.
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   src/App.tsx
+	modified:   src/components/chat/ChatWidget.tsx
+	modified:   src/components/layout/FloatingCTA.tsx
+	modified:   src/components/layout/Footer.tsx
+	modified:   src/components/layout/Header.tsx
+	modified:   src/components/layout/MainLayout.tsx
+	modified:   src/components/layout/PortalHeader.tsx
+	modified:   src/components/layout/Sidebar.tsx
+	modified:   src/index.css
+	modified:   src/pages/about/AboutPage.tsx
+	modified:   src/pages/case-studies/CaseStudiesPage.tsx
+	modified:   src/pages/contact/ContactPage.tsx
+	modified:   src/pages/landing/LandingPage.tsx
+	modified:   src/pages/portal/AutomationsPage.tsx
+	modified:   src/pages/portal/BillingPage.tsx
+	modified:   src/pages/portal/ChatPage.tsx
+	modified:   src/pages/portal/DashboardPage.tsx
+	modified:   src/pages/portal/KnowledgeBasePage.tsx
+	modified:   src/pages/portal/LoginPage.tsx
+	modified:   src/pages/portal/SettingsPage.tsx
+	modified:   src/pages/portal/TeamPage.tsx
+	modified:   src/pages/pricing/PricingPage.tsx
+	modified:   src/pages/services/ServicesPage.tsx
+	modified:   tailwind.config.js
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	deploy_git.bat
+	src/pages/blog/
+	src/pages/checkout/
+	src/pages/services/AgentPage.tsx
+
+no changes added to commit (use "git add" and/or "git commit -a")
+ 
+Adding files... 
+warning: in the working copy of 'src/pages/checkout/CheckoutPage.tsx', LF will be replaced by CRLF the next time Git touches it
+ 
+Committing... 
+[main 5cf8bc2] Update portal design system and fix styling
+ 29 files changed, 2136 insertions(+), 1245 deletions(-)
+ create mode 100644 deploy_git.bat
+ create mode 100644 src/pages/blog/BlogPage.tsx
+ create mode 100644 src/pages/checkout/CheckoutPage.tsx
+ create mode 100644 src/pages/checkout/OrderSuccessPage.tsx
+ create mode 100644 src/pages/services/AgentPage.tsx
+ 
+Pushing... 
+To https://github.com/CC90210/oasis-ai-platform.git
+   47a6f2b..5cf8bc2  main -> main
+Done. 
