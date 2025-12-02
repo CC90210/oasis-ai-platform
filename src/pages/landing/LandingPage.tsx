@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Bot, Zap, Clock, TrendingUp, CheckCircle, ArrowRight, Sparkles, Brain, MessageSquare, Calendar, Mail, Database, Phone, Star, ChevronDown, ChevronUp } from 'lucide-react';
+import { Bot, Zap, Clock, TrendingUp, CheckCircle, ArrowRight, Sparkles, Brain, MessageSquare, Calendar, Mail, Database, Phone, Star, ChevronDown, ChevronUp, Target } from 'lucide-react';
 import { NeuralNetworkBackground } from '../../components/animations/NeuralNetworkBackground';
 import { motion, AnimatePresence } from 'framer-motion';
 
