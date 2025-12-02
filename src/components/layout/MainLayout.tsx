@@ -1,9 +1,6 @@
-import React from 'react';
 import { Header } from './Header';
 import { Footer } from './Footer';
-import { FloatingParticles } from '../animations/FloatingParticles';
-import { ChatWidget } from '../chat/ChatWidget';
-import { FloatingCTA } from './FloatingCTA';
+import { CartDrawer } from '../cart/CartDrawer';
 
 interface MainLayoutProps {
     children: React.ReactNode;
@@ -11,15 +8,13 @@ interface MainLayoutProps {
 
 export const MainLayout = ({ children }: MainLayoutProps) => {
     return (
-        <div className="min-h-screen flex flex-col bg-bg-primary font-sans text-text-primary relative overflow-x-hidden">
-            <FloatingParticles />
+        <div className="min-h-screen flex flex-col bg-bg-primary">
             <Header />
-            <main className="flex-1">
+            <CartDrawer />
+            <main className="flex-grow pt-16">
                 {children}
             </main>
             <Footer />
-            <ChatWidget />
-            <FloatingCTA />
         </div>
     );
 };

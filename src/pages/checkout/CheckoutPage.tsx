@@ -1,18 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Check, CreditCard, Lock, Shield, AlertCircle } from 'lucide-react';
+import { Check, CreditCard, Lock, Shield, AlertCircle, ShoppingCart } from 'lucide-react';
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
-import { useSearchParams, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { agents, bundles, retainers } from '@/data/products';
+import { useCart } from '@/store/cartStore';
 
 const CheckoutPage = () => {
-    const [searchParams] = useSearchParams();
-    const agentSlug = searchParams.get('agent');
+    const { items, getTotal } = useCart();
 
-    // Determine selected product (agent or bundle)
-    const selectedProduct = agentSlug
-        ? (agents[agentSlug as keyof typeof agents] || bundles[agentSlug as keyof typeof bundles])
-        : null;
+    // Calculate totals
+    const cartTotal = getTotal();
 
     const [step, setStep] = useState(1);
     const [selectedRetainer, setSelectedRetainer] = useState<keyof typeof retainers>('standard');
@@ -26,21 +24,22 @@ const CheckoutPage = () => {
         referral: ''
     });
 
-    // Redirect if no agent selected
-    if (!selectedProduct) {
+    // Redirect if cart is empty
+    if (items.length === 0) {
         return (
             <div className="min-h-screen bg-bg-primary pt-32 px-4 text-center">
-                <h2 className="text-2xl font-bold text-white mb-4">No Service Selected</h2>
+                <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <ShoppingCart className="w-10 h-10 text-text-tertiary" />
+                </div>
+                <h2 className="text-2xl font-bold text-white mb-4">Your Cart is Empty</h2>
                 <p className="text-text-secondary mb-8">Please select a service from our pricing page.</p>
                 <Link to="/pricing" className="btn-primary">View Pricing</Link>
             </div>
         );
     }
 
-    // Calculations
-    const productPrice = selectedProduct.price;
     const retainerPrice = retainers[selectedRetainer].price;
-    const subtotal = productPrice + retainerPrice;
+    const subtotal = cartTotal + retainerPrice;
     const taxRate = 0.13; // 13% HST
     const taxAmount = subtotal * taxRate;
     const totalAmount = subtotal + taxAmount;
@@ -243,7 +242,7 @@ const CheckoutPage = () => {
                                                                     currency_code: "CAD",
                                                                     value: totalAmount.toFixed(2),
                                                                 },
-                                                                description: `${selectedProduct.title} + ${retainers[selectedRetainer].name}`,
+                                                                description: `OASIS AI Order: ${items.length} items + ${retainers[selectedRetainer].name}`,
                                                             },
                                                         ],
                                                     });
@@ -318,24 +317,34 @@ const CheckoutPage = () => {
                                 <h3 className="text-xl font-display font-bold text-white mb-6">Order Summary</h3>
 
                                 <div className="space-y-4 mb-6 border-b border-white/10 pb-6">
-                                    <div className="flex items-start justify-between">
-                                        <div className="flex items-center">
-                                            <div className="w-12 h-12 bg-bg-tertiary rounded-lg mr-3 flex items-center justify-center border border-white/5">
-                                                <span className="text-2xl">🤖</span>
+                                    {items.map((item) => {
+                                        const product = item.type === 'agent'
+                                            ? agents[item.id as keyof typeof agents]
+                                            : bundles[item.id as keyof typeof bundles];
+
+                                        if (!product) return null;
+
+                                        return (
+                                            <div key={item.id} className="flex items-start justify-between">
+                                                <div className="flex items-center">
+                                                    <div className="w-10 h-10 bg-bg-tertiary rounded-lg mr-3 flex items-center justify-center border border-white/5">
+                                                        <product.icon className="w-5 h-5 text-oasis-cyan" />
+                                                    </div>
+                                                    <div>
+                                                        <h4 className="font-medium text-white text-sm">{product.title}</h4>
+                                                        <p className="text-xs text-text-tertiary">Qty: {item.quantity}</p>
+                                                    </div>
+                                                </div>
+                                                <span className="font-medium text-white">${(product.price * item.quantity).toLocaleString()}.00</span>
                                             </div>
-                                            <div>
-                                                <h4 className="font-medium text-white">{selectedProduct.title}</h4>
-                                                <p className="text-xs text-text-tertiary">One-time Setup</p>
-                                            </div>
-                                        </div>
-                                        <span className="font-medium text-white">${productPrice.toLocaleString()}.00</span>
-                                    </div>
+                                        );
+                                    })}
                                 </div>
 
                                 <div className="space-y-2 mb-6 border-b border-white/10 pb-6">
                                     <div className="flex justify-between text-sm">
                                         <span className="text-text-secondary">Subtotal</span>
-                                        <span className="text-white">${productPrice.toLocaleString()}.00</span>
+                                        <span className="text-white">${cartTotal.toLocaleString()}.00</span>
                                     </div>
                                     <div className="flex justify-between text-sm">
                                         <span className="text-text-secondary">Monthly Retainer (1st mo)</span>

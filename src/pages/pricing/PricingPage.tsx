@@ -3,9 +3,11 @@ import { CheckCircle, ArrowRight, ChevronDown, ChevronUp, Zap, Layers } from 'lu
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { agents, bundles } from '@/data/products';
+import { useCart } from '@/store/cartStore';
 
 const PricingPage = () => {
     const [openFaq, setOpenFaq] = useState<number | null>(null);
+    const { addItem } = useCart();
 
     const faqs = [
         {
@@ -92,11 +94,12 @@ const PricingPage = () => {
                                 ))}
                             </ul>
 
-                            <Link to="/checkout?agent=launchpad" className="mt-auto">
-                                <button className="btn-secondary w-full py-4 text-lg">
-                                    Get Started
-                                </button>
-                            </Link>
+                            <button
+                                onClick={() => addItem('launchpad', 'bundle')}
+                                className="mt-auto btn-secondary w-full py-4 text-lg"
+                            >
+                                Add to Cart
+                            </button>
                         </motion.div>
 
                         {/* Integration Suite */}
@@ -184,11 +187,12 @@ const PricingPage = () => {
                                         ))}
                                     </ul>
 
-                                    <Link to={`/checkout?agent=${slug}`} className="w-full">
-                                        <button className="btn-secondary w-full py-2 text-sm group-hover:bg-oasis-cyan group-hover:text-bg-primary transition-colors">
-                                            Add to Cart
-                                        </button>
-                                    </Link>
+                                    <button
+                                        onClick={() => addItem(slug as any, 'agent')}
+                                        className="w-full btn-secondary py-2 text-sm group-hover:bg-oasis-cyan group-hover:text-bg-primary transition-colors"
+                                    >
+                                        Add to Cart
+                                    </button>
                                 </motion.div>
                             );
                         })}
