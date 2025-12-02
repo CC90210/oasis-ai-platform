@@ -3,63 +3,16 @@ import { motion } from 'framer-motion';
 import { Check, CreditCard, Lock, Shield, AlertCircle } from 'lucide-react';
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import { useSearchParams, Link } from 'react-router-dom';
-
-// Agent Data from Master Prompt
-const agents = {
-    'chat-widget': {
-        title: 'Website Chat Widget Agent',
-        price: 797,
-        tier: 1
-    },
-    'google-reviews': {
-        title: 'Google Review Response Agent',
-        price: 597,
-        tier: 1
-    },
-    'email-automation': {
-        title: 'Gmail/Email Automation Agent',
-        price: 997,
-        tier: 1
-    },
-    'appointment-booking': {
-        title: 'Appointment Booking Agent',
-        price: 897,
-        tier: 1
-    },
-    'lead-capture': {
-        title: 'Lead Capture & Qualification Agent',
-        price: 897,
-        tier: 1
-    },
-    'launchpad': {
-        title: 'OASIS Launchpad Bundle',
-        price: 997,
-        tier: 3
-    }
-};
-
-const retainers = {
-    'essentials': {
-        name: 'OASIS Essentials',
-        price: 297,
-        description: 'Basic support & monitoring'
-    },
-    'standard': {
-        name: 'OASIS Standard (Recommended)',
-        price: 497,
-        description: 'Priority support & optimization'
-    },
-    'priority': {
-        name: 'OASIS Priority',
-        price: 797,
-        description: 'Dedicated account manager & premium support'
-    }
-};
+import { agents, bundles, retainers } from '@/data/products';
 
 const CheckoutPage = () => {
     const [searchParams] = useSearchParams();
     const agentSlug = searchParams.get('agent');
-    const selectedAgent = agentSlug ? agents[agentSlug as keyof typeof agents] : null;
+
+    // Determine selected product (agent or bundle)
+    const selectedProduct = agentSlug
+        ? (agents[agentSlug as keyof typeof agents] || bundles[agentSlug as keyof typeof bundles])
+        : null;
 
     const [step, setStep] = useState(1);
     const [selectedRetainer, setSelectedRetainer] = useState<keyof typeof retainers>('standard');
@@ -74,23 +27,32 @@ const CheckoutPage = () => {
     });
 
     // Redirect if no agent selected
-    if (!selectedAgent) {
+    if (!selectedProduct) {
         return (
             <div className="min-h-screen bg-bg-primary pt-32 px-4 text-center">
-                <h2 className="text-2xl font-bold text-white mb-4">No Agent Selected</h2>
-                <p className="text-text-secondary mb-8">Please select an agent from our services page.</p>
-                <Link to="/services" className="btn-primary">View Services</Link>
+                <h2 className="text-2xl font-bold text-white mb-4">No Service Selected</h2>
+                <p className="text-text-secondary mb-8">Please select a service from our pricing page.</p>
+                <Link to="/pricing" className="btn-primary">View Pricing</Link>
             </div>
         );
     }
 
     // Calculations
-    const agentPrice = selectedAgent.price;
+    const productPrice = selectedProduct.price;
     const retainerPrice = retainers[selectedRetainer].price;
-    const subtotal = agentPrice + retainerPrice;
+    const subtotal = productPrice + retainerPrice;
     const taxRate = 0.13; // 13% HST
     const taxAmount = subtotal * taxRate;
     const totalAmount = subtotal + taxAmount;
+
+    // Renewal Date Calculation (30 days from now)
+    const renewalDate = new Date();
+    renewalDate.setDate(renewalDate.getDate() + 30);
+    const formattedRenewalDate = renewalDate.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
@@ -281,7 +243,7 @@ const CheckoutPage = () => {
                                                                     currency_code: "CAD",
                                                                     value: totalAmount.toFixed(2),
                                                                 },
-                                                                description: `${selectedAgent.title} + ${retainers[selectedRetainer].name}`,
+                                                                description: `${selectedProduct.title} + ${retainers[selectedRetainer].name}`,
                                                             },
                                                         ],
                                                     });
@@ -362,18 +324,18 @@ const CheckoutPage = () => {
                                                 <span className="text-2xl">🤖</span>
                                             </div>
                                             <div>
-                                                <h4 className="font-medium text-white">{selectedAgent.title}</h4>
-                                                <p className="text-xs text-text-tertiary">Tier {selectedAgent.tier} Agent</p>
+                                                <h4 className="font-medium text-white">{selectedProduct.title}</h4>
+                                                <p className="text-xs text-text-tertiary">One-time Setup</p>
                                             </div>
                                         </div>
-                                        <span className="font-medium text-white">${agentPrice.toLocaleString()}.00</span>
+                                        <span className="font-medium text-white">${productPrice.toLocaleString()}.00</span>
                                     </div>
                                 </div>
 
                                 <div className="space-y-2 mb-6 border-b border-white/10 pb-6">
                                     <div className="flex justify-between text-sm">
                                         <span className="text-text-secondary">Subtotal</span>
-                                        <span className="text-white">${agentPrice.toLocaleString()}.00</span>
+                                        <span className="text-white">${productPrice.toLocaleString()}.00</span>
                                     </div>
                                     <div className="flex justify-between text-sm">
                                         <span className="text-text-secondary">Monthly Retainer (1st mo)</span>
@@ -385,14 +347,21 @@ const CheckoutPage = () => {
                                     </div>
                                 </div>
 
-                                <div className="flex justify-between items-end mb-8">
+                                <div className="flex justify-between items-end mb-4">
                                     <div>
                                         <span className="text-sm text-text-tertiary">Total Today</span>
                                         <div className="text-3xl font-bold text-oasis-cyan">${totalAmount.toFixed(2)}</div>
                                     </div>
-                                    <div className="text-right">
-                                        <span className="text-xs text-text-tertiary block">Then ${retainerPrice}/mo</span>
-                                        <span className="text-xs text-text-tertiary">starting next month</span>
+                                </div>
+
+                                {/* Renewal Date Info */}
+                                <div className="bg-oasis-cyan/10 p-4 rounded-lg mb-6 border border-oasis-cyan/20">
+                                    <div className="flex items-start">
+                                        <AlertCircle className="w-5 h-5 text-oasis-cyan mr-2 flex-shrink-0 mt-0.5" />
+                                        <div className="text-xs text-text-secondary">
+                                            <p className="mb-1"><strong className="text-white">Recurring Billing:</strong></p>
+                                            <p>Your retainer of <span className="text-white font-bold">${retainerPrice}/mo</span> will renew automatically on <span className="text-white font-bold">{formattedRenewalDate}</span>.</p>
+                                        </div>
                                     </div>
                                 </div>
 

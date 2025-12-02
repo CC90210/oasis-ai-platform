@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { CheckCircle, ArrowRight, HelpCircle, ChevronDown, ChevronUp } from 'lucide-react';
+import { CheckCircle, ArrowRight, ChevronDown, ChevronUp, Zap, Layers } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { agents, bundles } from '@/data/products';
 
 const PricingPage = () => {
     const [openFaq, setOpenFaq] = useState<number | null>(null);
@@ -18,18 +19,6 @@ const PricingPage = () => {
         {
             question: "How much do additional workflows cost?",
             answer: "Additional workflows beyond your package are quoted separately based on complexity. Simple workflows start around $500-$1000 one-time. Complex workflows with advanced AI features range from $1500-$3000. The monthly retainer covers maintaining all your workflows regardless of how many you have."
-        },
-        {
-            question: "Do you offer payment plans?",
-            answer: "Yes! We can split the one-time fee across 2-3 months for the Integration Suite. Contact us to discuss payment arrangements that work for your cash flow."
-        },
-        {
-            question: "What if I need changes to my automations?",
-            answer: "Minor tweaks and optimization are included in your monthly retainer. Major feature additions or new workflows are quoted separately. We'll always give you a clear price before doing any additional work."
-        },
-        {
-            question: "How quickly will I see ROI?",
-            answer: "Most clients report saving 15-25 hours per week within the first month. At an average hourly value of $50-$100, the Launchpad pays for itself in 2-3 weeks. The Integration Suite typically pays for itself within the first 30-45 days."
         }
     ];
 
@@ -48,7 +37,7 @@ const PricingPage = () => {
                             animate={{ opacity: 1, y: 0 }}
                             className="text-5xl md:text-7xl font-display font-bold mb-8"
                         >
-                            Simple, <span className="text-oasis-cyan">Transparent</span> Pricing
+                            Transparent <span className="text-oasis-cyan">Pricing</span>
                         </motion.h1>
                         <motion.p
                             initial={{ opacity: 0, y: 20 }}
@@ -56,49 +45,46 @@ const PricingPage = () => {
                             transition={{ delay: 0.1 }}
                             className="text-xl md:text-2xl text-text-secondary max-w-3xl mx-auto leading-relaxed"
                         >
-                            No hidden fees. No surprises. Just honest pricing for world-class automation.
+                            Choose a bundle for maximum value, or select individual agents to solve specific problems.
                         </motion.p>
                     </div>
                 </div>
             </section>
 
-            {/* Pricing Cards */}
-            <section className="py-20 bg-bg-secondary">
+            {/* Bundles Section */}
+            <section className="py-12 bg-bg-secondary">
                 <div className="section-container">
-                    <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto">
+                    <div className="text-center mb-12">
+                        <h2 className="text-3xl font-display font-bold text-white mb-4">Popular Bundles</h2>
+                        <p className="text-text-secondary">Complete automation solutions for your business.</p>
+                    </div>
+                    <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
                         {/* Launchpad */}
                         <motion.div
                             initial={{ opacity: 0, x: -20 }}
                             whileInView={{ opacity: 1, x: 0 }}
                             viewport={{ once: true }}
-                            className="glass-card p-8 flex flex-col"
+                            className="glass-card p-8 flex flex-col border border-white/5 hover:border-oasis-cyan/30 transition-all"
                         >
-                            <h3 className="text-3xl font-display font-bold mb-2 text-white">OASIS Launchpad</h3>
-                            <p className="text-text-secondary mb-8">Perfect for getting started</p>
-
-                            <div className="mb-8 p-6 rounded-2xl bg-bg-tertiary border border-white/5">
-                                <div className="text-5xl font-bold text-oasis-cyan mb-2">$997</div>
-                                <div className="text-text-tertiary text-sm mb-4">one-time setup fee</div>
-                                <div className="text-2xl font-bold text-white">+ $497/month</div>
-                                <div className="text-sm text-text-tertiary">retainer (keeps your automation running)</div>
+                            <div className="flex items-center gap-4 mb-6">
+                                <div className="p-3 bg-oasis-cyan/10 rounded-lg">
+                                    <Zap className="w-8 h-8 text-oasis-cyan" />
+                                </div>
+                                <div>
+                                    <h3 className="text-2xl font-display font-bold text-white">{bundles.launchpad.title}</h3>
+                                    <p className="text-text-tertiary text-sm">Best for getting started</p>
+                                </div>
                             </div>
 
-                            <div className="mb-8 p-4 rounded-xl bg-white/5 border border-white/10">
-                                <p className="text-sm text-text-secondary">
-                                    <span className="text-oasis-cyan font-semibold">What you get:</span> One custom automation workflow that permanently transforms how you work. This is not a subscription—it's infrastructure you own.
-                                </p>
+                            <div className="mb-8">
+                                <div className="text-4xl font-bold text-oasis-cyan mb-2">${bundles.launchpad.price}</div>
+                                <div className="text-text-tertiary text-sm">one-time setup fee</div>
                             </div>
+
+                            <p className="text-text-secondary mb-8">{bundles.launchpad.description}</p>
 
                             <ul className="space-y-4 mb-8 flex-1">
-                                {[
-                                    "1 custom automation workflow (your choice)",
-                                    "AI chatbot integration for website",
-                                    "Initial setup, configuration & deployment",
-                                    "Operator training session (recorded + live)",
-                                    "30 days of technical support",
-                                    "Documentation and handoff materials",
-                                    "5-day delivery timeline"
-                                ].map((feature, index) => (
+                                {bundles.launchpad.features.map((feature, index) => (
                                     <li key={index} className="flex items-start gap-3">
                                         <CheckCircle className="w-5 h-5 text-oasis-cyan flex-shrink-0 mt-1" />
                                         <span className="text-text-secondary">{feature}</span>
@@ -107,9 +93,8 @@ const PricingPage = () => {
                             </ul>
 
                             <Link to="/checkout?agent=launchpad" className="mt-auto">
-                                <button className="btn-primary w-full py-4 text-lg shadow-oasis">
+                                <button className="btn-secondary w-full py-4 text-lg">
                                     Get Started
-                                    <ArrowRight className="inline-block ml-2 w-5 h-5" />
                                 </button>
                             </Link>
                         </motion.div>
@@ -119,47 +104,30 @@ const PricingPage = () => {
                             initial={{ opacity: 0, x: 20 }}
                             whileInView={{ opacity: 1, x: 0 }}
                             viewport={{ once: true }}
-                            className="glass-card p-8 border-oasis-cyan relative flex flex-col transform md:-translate-y-4 shadow-oasis"
+                            className="glass-card p-8 flex flex-col border border-oasis-cyan/50 relative shadow-oasis"
                         >
-                            <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-oasis-cyan text-bg-primary px-6 py-2 rounded-full font-bold text-sm shadow-lg tracking-wide">
+                            <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-oasis-cyan text-bg-primary px-4 py-1 rounded-full font-bold text-sm shadow-lg">
                                 MOST POPULAR
                             </div>
-
-                            <h3 className="text-3xl font-display font-bold mb-2 mt-4 text-white">OASIS Integration Suite</h3>
-                            <p className="text-text-secondary mb-8">Comprehensive multi-channel automation</p>
-
-                            <div className="mb-8 p-6 rounded-2xl bg-bg-tertiary border border-oasis-cyan/30">
-                                <div className="text-5xl font-bold text-oasis-cyan mb-2">$3,500 - $6,500</div>
-                                <div className="text-text-tertiary text-sm mb-4">one-time implementation fee</div>
-                                <div className="text-2xl font-bold text-white">+ $497/month</div>
-                                <div className="text-sm text-text-tertiary">retainer (keeps all automations running)</div>
+                            <div className="flex items-center gap-4 mb-6">
+                                <div className="p-3 bg-oasis-cyan/20 rounded-lg">
+                                    <Layers className="w-8 h-8 text-oasis-cyan" />
+                                </div>
+                                <div>
+                                    <h3 className="text-2xl font-display font-bold text-white">{bundles['integration-suite'].title}</h3>
+                                    <p className="text-text-tertiary text-sm">For scaling businesses</p>
+                                </div>
                             </div>
 
-                            <div className="mb-8 p-4 rounded-xl bg-oasis-cyan/10 border border-oasis-cyan/30">
-                                <p className="text-sm text-white mb-2">
-                                    <span className="text-oasis-cyan font-semibold">Price breakdown:</span>
-                                </p>
-                                <ul className="text-sm text-text-secondary space-y-1">
-                                    <li>• $3,500: 3 workflows + chatbot</li>
-                                    <li>• $4,500-$5,500: Complex integrations, 4-5 workflows</li>
-                                    <li>• $6,500: Voice AI, advanced RAG, 5+ systems</li>
-                                </ul>
+                            <div className="mb-8">
+                                <div className="text-4xl font-bold text-oasis-cyan mb-2">${bundles['integration-suite'].price}</div>
+                                <div className="text-text-tertiary text-sm">one-time setup fee</div>
                             </div>
+
+                            <p className="text-text-secondary mb-8">{bundles['integration-suite'].description}</p>
 
                             <ul className="space-y-4 mb-8 flex-1">
-                                {[
-                                    "3-5 custom automation workflows",
-                                    "AI-powered website chatbot (custom personality)",
-                                    "Phone automation system (voice AI)",
-                                    "CRM integration and synchronization",
-                                    "Multi-channel automation (email, SMS, chat)",
-                                    "Calendar and scheduling automation",
-                                    "Integration with existing software stack",
-                                    "Real-time analytics dashboard",
-                                    "90 days of optimization and support",
-                                    "Comprehensive documentation and training",
-                                    "7-14 day delivery timeline"
-                                ].map((feature, index) => (
+                                {bundles['integration-suite'].features.map((feature, index) => (
                                     <li key={index} className="flex items-start gap-3">
                                         <CheckCircle className="w-5 h-5 text-oasis-cyan flex-shrink-0 mt-1" />
                                         <span className="text-white font-medium">{feature}</span>
@@ -170,52 +138,66 @@ const PricingPage = () => {
                             <Link to="/contact" className="mt-auto">
                                 <button className="btn-primary w-full py-4 text-lg shadow-oasis">
                                     Book Consultation
-                                    <ArrowRight className="inline-block ml-2 w-5 h-5" />
                                 </button>
                             </Link>
                         </motion.div>
                     </div>
+                </div>
+            </section>
 
-                    {/* Feature Comparison */}
-                    <div className="mt-24 max-w-6xl mx-auto">
-                        <h3 className="text-3xl font-display font-bold text-center mb-12">
-                            Detailed <span className="text-oasis-cyan">Comparison</span>
-                        </h3>
-                        <div className="glass-card overflow-hidden">
-                            <table className="w-full">
-                                <thead className="bg-white/5">
-                                    <tr>
-                                        <th className="text-left p-6 text-white font-display text-lg">Feature</th>
-                                        <th className="text-center p-6 text-white font-display text-lg">Launchpad</th>
-                                        <th className="text-center p-6 text-white font-display text-lg">Integration Suite</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-white/10">
-                                    {[
-                                        ["Custom Workflows", "1", "3-5"],
-                                        ["AI Chatbot", "✓", "✓ (Advanced)"],
-                                        ["Voice AI", "✗", "✓"],
-                                        ["CRM Integration", "✗", "✓"],
-                                        ["Multi-channel", "✗", "✓"],
-                                        ["Analytics Dashboard", "Basic", "Advanced"],
-                                        ["Support Duration", "30 days", "90 days"],
-                                        ["Delivery Time", "3-5 days", "7-14 days"]
-                                    ].map(([feature, basic, pro], index) => (
-                                        <tr key={index} className="hover:bg-white/5 transition-colors">
-                                            <td className="p-6 text-text-secondary font-medium">{feature}</td>
-                                            <td className="p-6 text-center text-white">{basic}</td>
-                                            <td className="p-6 text-center text-oasis-cyan font-bold">{pro}</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
+            {/* Individual Agents Section */}
+            <section className="py-20 bg-bg-primary">
+                <div className="section-container">
+                    <div className="text-center mb-16">
+                        <h2 className="text-3xl font-display font-bold text-white mb-4">A La Carte Agents</h2>
+                        <p className="text-text-secondary">Specific solutions for specific problems. Mix and match to build your workforce.</p>
+                    </div>
+
+                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
+                        {Object.entries(agents).map(([slug, agent], index) => {
+                            const Icon = agent.icon;
+                            return (
+                                <motion.div
+                                    key={slug}
+                                    initial={{ opacity: 0, y: 20 }}
+                                    whileInView={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: index * 0.1 }}
+                                    viewport={{ once: true }}
+                                    className="glass-card p-6 flex flex-col hover:border-oasis-cyan/30 transition-all group"
+                                >
+                                    <div className="flex items-center justify-between mb-4">
+                                        <div className="p-3 bg-bg-tertiary rounded-lg group-hover:bg-oasis-cyan/10 transition-colors">
+                                            <Icon className="w-6 h-6 text-oasis-cyan" />
+                                        </div>
+                                        <div className="text-xl font-bold text-white">${agent.price}</div>
+                                    </div>
+
+                                    <h3 className="text-xl font-bold text-white mb-2">{agent.title}</h3>
+                                    <p className="text-text-secondary text-sm mb-6 flex-1">{agent.description}</p>
+
+                                    <ul className="space-y-2 mb-6">
+                                        {agent.features.map((feature, i) => (
+                                            <li key={i} className="flex items-center text-xs text-text-tertiary">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-oasis-cyan mr-2" />
+                                                {feature}
+                                            </li>
+                                        ))}
+                                    </ul>
+
+                                    <Link to={`/checkout?agent=${slug}`} className="w-full">
+                                        <button className="btn-secondary w-full py-2 text-sm group-hover:bg-oasis-cyan group-hover:text-bg-primary transition-colors">
+                                            Add to Cart
+                                        </button>
+                                    </Link>
+                                </motion.div>
+                            );
+                        })}
                     </div>
                 </div>
             </section>
 
             {/* FAQ */}
-            <section className="py-24 bg-bg-primary">
+            <section className="py-24 bg-bg-secondary">
                 <div className="section-container">
                     <h2 className="text-4xl md:text-5xl font-display font-bold text-center mb-16">
                         Frequently Asked <span className="text-oasis-cyan">Questions</span>
@@ -247,36 +229,6 @@ const PricingPage = () => {
                                 </AnimatePresence>
                             </div>
                         ))}
-                    </div>
-                </div>
-            </section>
-
-            {/* CTA */}
-            <section className="py-24 bg-gradient-dark relative overflow-hidden">
-                <div className="absolute inset-0 pointer-events-none">
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-oasis-cyan/20 rounded-full blur-[150px] animate-pulse-glow" />
-                </div>
-
-                <div className="section-container relative z-10">
-                    <div className="max-w-3xl mx-auto text-center">
-                        <h2 className="text-4xl md:text-5xl font-display font-bold mb-8">
-                            Still Have <span className="text-oasis-cyan">Questions</span>?
-                        </h2>
-                        <p className="text-xl md:text-2xl text-text-secondary mb-12 max-w-2xl mx-auto">
-                            Book a free 15-minute call and we'll help you choose the right package for your needs.
-                        </p>
-                        <div className="flex flex-col sm:flex-row gap-6 justify-center">
-                            <Link to="/contact">
-                                <button className="btn-primary text-lg px-10 py-5 shadow-oasis-strong hover:scale-105 transition-transform duration-300">
-                                    Book Free Strategy Call
-                                </button>
-                            </Link>
-                            <a href="tel:705-440-3117">
-                                <button className="btn-secondary text-lg px-10 py-5 hover:bg-white/10">
-                                    Call 705-440-3117
-                                </button>
-                            </a>
-                        </div>
                     </div>
                 </div>
             </section>
