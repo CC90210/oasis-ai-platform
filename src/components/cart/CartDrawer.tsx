@@ -1,11 +1,11 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShoppingCart, X, Trash2, ArrowRight } from 'lucide-react';
+import { ShoppingCart, X, Trash2, ArrowRight, Plus, Minus } from 'lucide-react';
 import { useCart } from '@/store/cartStore';
 import { agents, bundles } from '@/data/products';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 export const CartDrawer = () => {
-    const { items, isOpen, toggleCart, removeItem, getTotal } = useCart();
+    const { items, isOpen, toggleCart, removeItem, updateQuantity, getTotal } = useCart();
     const navigate = useNavigate();
 
     const handleCheckout = () => {
@@ -76,16 +76,36 @@ export const CartDrawer = () => {
                                                 <product.icon className="w-5 h-5 text-oasis-cyan" />
                                             </div>
                                             <div className="flex-1">
-                                                <h3 className="font-bold text-white text-sm mb-1">{product.title}</h3>
-                                                <p className="text-oasis-cyan font-bold text-sm mb-2">${product.price.toLocaleString()}</p>
-                                                <div className="flex items-center justify-between">
-                                                    <span className="text-xs text-text-tertiary">One-time setup</span>
+                                                <div className="flex justify-between items-start mb-2">
+                                                    <h3 className="font-bold text-white text-sm">{product.title}</h3>
                                                     <button
                                                         onClick={() => removeItem(item.id)}
-                                                        className="text-red-400 hover:text-red-300 transition-colors p-1"
+                                                        className="text-text-tertiary hover:text-red-400 transition-colors p-1"
                                                     >
-                                                        <Trash2 className="w-4 h-4" />
+                                                        <X className="w-4 h-4" />
                                                     </button>
+                                                </div>
+
+                                                <p className="text-oasis-cyan font-bold text-sm mb-3">${product.price.toLocaleString()}</p>
+
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex items-center gap-3 bg-bg-primary rounded-lg p-1 border border-white/5">
+                                                        <button
+                                                            onClick={() => updateQuantity(item.id, -1)}
+                                                            className="p-1 hover:bg-white/10 rounded transition-colors text-text-secondary"
+                                                            disabled={item.quantity <= 1}
+                                                        >
+                                                            <Minus className="w-3 h-3" />
+                                                        </button>
+                                                        <span className="text-xs font-bold text-white w-4 text-center">{item.quantity}</span>
+                                                        <button
+                                                            onClick={() => updateQuantity(item.id, 1)}
+                                                            className="p-1 hover:bg-white/10 rounded transition-colors text-text-secondary"
+                                                        >
+                                                            <Plus className="w-3 h-3" />
+                                                        </button>
+                                                    </div>
+                                                    <span className="text-xs text-text-tertiary">One-time setup</span>
                                                 </div>
                                             </div>
                                         </motion.div>

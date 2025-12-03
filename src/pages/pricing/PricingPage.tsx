@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { CheckCircle, ArrowRight, ChevronDown, ChevronUp, Zap, Layers } from 'lucide-react';
+import { CheckCircle, ArrowRight, ChevronDown, ChevronUp, Zap, Layers, TrendingUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { agents, bundles } from '@/data/products';
@@ -85,6 +85,12 @@ const PricingPage = () => {
 
                             <p className="text-text-secondary mb-8">{bundles.launchpad.description}</p>
 
+                            {/* ROI Badge */}
+                            <div className="mb-6 p-3 bg-green-500/10 border border-green-500/20 rounded-lg flex items-center gap-3">
+                                <TrendingUp className="w-5 h-5 text-green-500" />
+                                <span className="text-sm font-medium text-green-400">{bundles.launchpad.roi}</span>
+                            </div>
+
                             <ul className="space-y-4 mb-8 flex-1">
                                 {bundles.launchpad.features.map((feature, index) => (
                                     <li key={index} className="flex items-start gap-3">
@@ -128,6 +134,12 @@ const PricingPage = () => {
                             </div>
 
                             <p className="text-text-secondary mb-8">{bundles['integration-suite'].description}</p>
+
+                            {/* ROI Badge */}
+                            <div className="mb-6 p-3 bg-green-500/10 border border-green-500/20 rounded-lg flex items-center gap-3">
+                                <TrendingUp className="w-5 h-5 text-green-500" />
+                                <span className="text-sm font-medium text-green-400">{bundles['integration-suite'].roi}</span>
+                            </div>
 
                             <ul className="space-y-4 mb-8 flex-1">
                                 {bundles['integration-suite'].features.map((feature, index) => (
@@ -176,7 +188,13 @@ const PricingPage = () => {
                                     </div>
 
                                     <h3 className="text-xl font-bold text-white mb-2">{agent.title}</h3>
-                                    <p className="text-text-secondary text-sm mb-6 flex-1">{agent.description}</p>
+                                    <p className="text-text-secondary text-sm mb-4 flex-1">{agent.description}</p>
+
+                                    {/* ROI Badge */}
+                                    <div className="mb-4 p-2 bg-green-500/5 border border-green-500/10 rounded flex items-center gap-2">
+                                        <TrendingUp className="w-3 h-3 text-green-500" />
+                                        <span className="text-xs font-medium text-green-400">{agent.roi}</span>
+                                    </div>
 
                                     <ul className="space-y-2 mb-6">
                                         {agent.features.map((feature, i) => (

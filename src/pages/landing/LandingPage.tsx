@@ -28,6 +28,7 @@ const LandingPage = () => {
         { q: "How long does implementation take?", a: "For individual agents, we can have you up and running in 3-5 business days. Custom integration suites typically take 7-14 days depending on complexity." },
         { q: "What's included in the monthly retainer?", a: "The retainer covers server hosting, API credits (OpenAI, Anthropic, etc.), ongoing maintenance, bug fixes, and support. It ensures your AI employees keep working 24/7." },
         { q: "Can I start small and add more later?", a: "Absolutely. Many clients start with a single agent (like our Website Chat Widget) and expand to full automation suites as they see the ROI." },
+        { q: "Do I need to be located near your office?", a: "Not at all! We serve clients internationally. All our services are delivered remotely via video calls, secure collaboration tools, and our client portal. Your location doesn't limit what we can do for you." },
         { q: "What industries do you work with?", a: "We specialize in HVAC, fitness, wellness, beauty, e-commerce, and professional services, but our agents can be trained for any industry." },
         { q: "Do I need technical knowledge?", a: "None at all. We handle all the technical setup, integration, and maintenance. You just tell us what you need the AI to do." },
         { q: "What happens if something breaks?", a: "Our systems have 99.9% uptime monitoring. If an issue occurs, our team is alerted immediately and typically resolves it before you even notice." }
@@ -53,7 +54,7 @@ const LandingPage = () => {
                     >
                         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-card mb-8 border border-oasis-cyan/30 bg-oasis-cyan/5">
                             <Sparkles className="w-4 h-4 text-oasis-cyan" />
-                            <span className="text-sm font-medium text-oasis-cyan">🚀 Now Serving SMBs Across Canada</span>
+                            <span className="text-sm font-medium text-oasis-cyan">Serving Businesses Worldwide from Canada 🇨🇦</span>
                         </div>
 
                         <h1 className="text-5xl md:text-7xl font-display font-bold mb-8 leading-tight">
@@ -106,7 +107,7 @@ const LandingPage = () => {
                                 <div className="p-3 rounded-lg bg-oasis-cyan/10 w-fit mb-4 group-hover:bg-oasis-cyan/20 transition-colors">
                                     <item.icon className="w-8 h-8 text-oasis-cyan" />
                                 </div>
-                                <p className="text-lg font-medium leading-relaxed">{item.text}</p>
+                                <p className="text-lg font-medium leading-relaxed whitespace-normal">{item.text}</p>
                             </motion.div>
                         ))}
                     </div>
@@ -130,7 +131,7 @@ const LandingPage = () => {
                             { icon: Star, title: "Review Management", desc: "Monitor and respond to Google reviews instantly.", slug: "google-reviews" },
                             { icon: Phone, title: "Voice AI (Phone)", desc: "Handle inbound and outbound calls with natural AI voice.", slug: "voice-ai" }
                         ].map((service, index) => (
-                            <Link to={`/services/${service.slug}`} key={index}>
+                            <Link to={`/pricing`} key={index}>
                                 <motion.div
                                     initial={{ opacity: 0, y: 20 }}
                                     whileInView={{ opacity: 1, y: 0 }}
@@ -217,21 +218,21 @@ const LandingPage = () => {
                         {/* Launchpad */}
                         <div className="glass-card p-8 flex flex-col">
                             <h3 className="text-2xl font-bold text-white mb-2">OASIS Launchpad</h3>
-                            <div className="text-3xl font-bold text-oasis-cyan mb-4">$997</div>
+                            <div className="text-3xl font-bold text-oasis-cyan mb-4">$1,497</div>
                             <p className="text-text-secondary mb-6">Perfect for getting started with one powerful workflow.</p>
                             <ul className="space-y-3 mb-8 flex-1">
                                 <li className="flex items-center text-sm text-text-secondary"><CheckCircle className="w-4 h-4 text-oasis-cyan mr-2" /> 1 Custom AI Agent</li>
                                 <li className="flex items-center text-sm text-text-secondary"><CheckCircle className="w-4 h-4 text-oasis-cyan mr-2" /> Website Chat Widget</li>
                                 <li className="flex items-center text-sm text-text-secondary"><CheckCircle className="w-4 h-4 text-oasis-cyan mr-2" /> 30 Days Support</li>
                             </ul>
-                            <Link to="/checkout" className="btn-secondary w-full text-center">Get Started</Link>
+                            <Link to="/checkout?agent=launchpad" className="btn-secondary w-full text-center">Get Started</Link>
                         </div>
 
                         {/* Integration Suite */}
                         <div className="glass-card p-8 flex flex-col border-oasis-cyan relative transform md:-translate-y-4 shadow-oasis">
                             <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-oasis-cyan text-bg-primary px-4 py-1 rounded-full text-sm font-bold">MOST POPULAR</div>
                             <h3 className="text-2xl font-bold text-white mb-2">Integration Suite</h3>
-                            <div className="text-3xl font-bold text-oasis-cyan mb-4">$3.5k - $6.5k</div>
+                            <div className="text-3xl font-bold text-oasis-cyan mb-4">$5,000</div>
                             <p className="text-text-secondary mb-6">Comprehensive automation for growing businesses.</p>
                             <ul className="space-y-3 mb-8 flex-1">
                                 <li className="flex items-center text-sm text-text-secondary"><CheckCircle className="w-4 h-4 text-oasis-cyan mr-2" /> 3-5 Custom Agents</li>
@@ -245,14 +246,14 @@ const LandingPage = () => {
                         {/* Individual Agents */}
                         <div className="glass-card p-8 flex flex-col">
                             <h3 className="text-2xl font-bold text-white mb-2">Individual Agents</h3>
-                            <div className="text-3xl font-bold text-oasis-cyan mb-4">From $597</div>
+                            <div className="text-3xl font-bold text-oasis-cyan mb-4">From $797</div>
                             <p className="text-text-secondary mb-6">Know exactly what you need? Pick and choose.</p>
                             <ul className="space-y-3 mb-8 flex-1">
                                 <li className="flex items-center text-sm text-text-secondary"><CheckCircle className="w-4 h-4 text-oasis-cyan mr-2" /> Self-Checkout Available</li>
                                 <li className="flex items-center text-sm text-text-secondary"><CheckCircle className="w-4 h-4 text-oasis-cyan mr-2" /> Specific Solutions</li>
                                 <li className="flex items-center text-sm text-text-secondary"><CheckCircle className="w-4 h-4 text-oasis-cyan mr-2" /> Rapid Deployment</li>
                             </ul>
-                            <Link to="/services" className="btn-secondary w-full text-center">Browse Agents</Link>
+                            <Link to="/pricing" className="btn-secondary w-full text-center">Browse Agents</Link>
                         </div>
                     </div>
                 </div>

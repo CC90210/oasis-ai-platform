@@ -15,6 +15,7 @@ interface CartStore {
     isOpen: boolean;
     addItem: (id: ProductType, type: 'agent' | 'bundle') => void;
     removeItem: (id: ProductType) => void;
+    updateQuantity: (id: ProductType, delta: number) => void;
     clearCart: () => void;
     toggleCart: () => void;
     getTotal: () => number;
@@ -39,6 +40,15 @@ export const useCart = create<CartStore>()(
             }),
             removeItem: (id) => set((state) => ({
                 items: state.items.filter(item => item.id !== id)
+            })),
+            updateQuantity: (id, delta) => set((state) => ({
+                items: state.items.map(item => {
+                    if (item.id === id) {
+                        const newQuantity = Math.max(1, item.quantity + delta);
+                        return { ...item, quantity: newQuantity };
+                    }
+                    return item;
+                })
             })),
             clearCart: () => set({ items: [] }),
             toggleCart: () => set((state) => ({ isOpen: !state.isOpen })),

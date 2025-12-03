@@ -1,276 +1,205 @@
-import { useState, useEffect, useRef } from 'react';
-import { MessageCircle, X, Send } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { MessageSquare, X, Send, Paperclip, Minimize2, Maximize2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface Message {
-    role: 'user' | 'assistant';
-    content: string;
+    id: string;
+    text: string;
+    sender: 'user' | 'bot';
+    timestamp: Date;
 }
 
 export const ChatWidget = () => {
     const [isOpen, setIsOpen] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
-    const [messages, setMessages] = useState<Message[]>([]);
+    const [isMinimized, setIsMinimized] = useState(false);
+    const [messages, setMessages] = useState<Message[]>([
+        {
+            id: '1',
+            text: "Hi there! I'm the OASIS AI Assistant. How can I help you automate your business today?",
+            sender: 'bot',
+            timestamp: new Date()
+        }
+    ]);
     const [inputValue, setInputValue] = useState('');
-    const [sessionId, setSessionId] = useState('');
+    const [isTyping, setIsTyping] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
-    const inputRef = useRef<HTMLInputElement>(null);
 
-    const WEBHOOK_URL = 'https://oasisai.work/api/chat';
-
-    // Generate/load session ID
-    useEffect(() => {
-        const stored = sessionStorage.getItem('oasis_chat_session');
-        if (stored) {
-            setSessionId(stored);
-            // Load conversation history
-            const history = sessionStorage.getItem('oasis_chat_history');
-            if (history) {
-                setMessages(JSON.parse(history));
-            }
-        } else {
-            const newId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-            sessionStorage.setItem('oasis_chat_session', newId);
-            setSessionId(newId);
-            // Add initial greeting
-            const greeting: Message = {
-                role: 'assistant',
-                content: "Hey! 👋 I'm Archer from OASIS AI. How can I help you today?"
-            };
-            setMessages([greeting]);
-            sessionStorage.setItem('oasis_chat_history', JSON.stringify([greeting]));
-        }
-    }, []);
-
-    // Auto-scroll to bottom
-    useEffect(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, [messages]);
-
-    // Focus input when opened
-    useEffect(() => {
-        if (isOpen) {
-            inputRef.current?.focus();
-        }
-    }, [isOpen]);
-
-    const saveHistory = (newMessages: Message[]) => {
-        const recentMessages = newMessages.slice(-20);
-        sessionStorage.setItem('oasis_chat_history', JSON.stringify(recentMessages));
+    const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };
 
-    const sendMessage = async () => {
-        const message = inputValue.trim();
-        if (!message || isLoading) return;
+    useEffect(() => {
+        scrollToBottom();
+    }, [messages, isOpen, isMinimized]);
 
-        // Add user message
-        const userMessage: Message = { role: 'user', content: message };
-        const updatedMessages = [...messages, userMessage];
-        setMessages(updatedMessages);
+    const handleSendMessage = async () => {
+        if (!inputValue.trim()) return;
+
+        const userMessage: Message = {
+            id: Date.now().toString(),
+            text: inputValue,
+            sender: 'user',
+            timestamp: new Date()
+        };
+
+        setMessages(prev => [...prev, userMessage]);
         setInputValue('');
-        setIsLoading(true);
+        setIsTyping(true);
 
         try {
-            const response = await fetch(WEBHOOK_URL, {
+            const response = await fetch('/api/chat', {
                 method: 'POST',
-                mode: 'cors',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    sessionId,
-                    message,
-                    conversationHistory: updatedMessages,
-                    timestamp: new Date().toISOString(),
-                    page: window.location.pathname,
-                    referrer: document.referrer || 'direct'
-                })
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: userMessage.text })
             });
 
-            console.log('Response status:', response.status);
-            console.log('Response headers:', response.headers);
+            const data = await response.json();
 
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
+            // Handle n8n response structure
+            const botText = data.output || data.text || data.message || "I received your message, but I'm having trouble processing it right now.";
 
-            // Get response as text first to see what we're dealing with
-            const responseText = await response.text();
-            console.log('Response text:', responseText);
-
-            // Try to parse as JSON, fall back to plain text
-            let botResponse = '';
-            try {
-                const data = JSON.parse(responseText);
-                console.log('Parsed JSON:', data);
-
-                // Handle various n8n response formats
-                if (typeof data === 'string') {
-                    botResponse = data;
-                } else if (data.output) {
-                    botResponse = data.output;
-                } else if (data.response) {
-                    botResponse = data.response;
-                } else if (data.text) {
-                    botResponse = data.text;
-                } else if (data.message) {
-                    botResponse = data.message;
-                } else if (data.data && typeof data.data === 'string') {
-                    botResponse = data.data;
-                } else if (data.data && data.data.output) {
-                    botResponse = data.data.output;
-                } else {
-                    // If none of the expected fields, stringify the whole thing
-                    botResponse = JSON.stringify(data);
-                }
-            } catch (e) {
-                // Not JSON, use as plain text
-                botResponse = responseText;
-            }
-
-            console.log('Bot response:', botResponse);
-
-            const botMessage: Message = { role: 'assistant', content: botResponse };
-            const finalMessages = [...updatedMessages, botMessage];
-            setMessages(finalMessages);
-            saveHistory(finalMessages);
-
-        } catch (error) {
-            console.error('Chat error details:', error);
-
-            let errorMsg = "I'm having trouble connecting. ";
-
-            if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
-                errorMsg += "Network error - please check your internet connection or try again.";
-            } else if (error instanceof Error) {
-                errorMsg += `Error: ${error.message}. `;
-            }
-
-            errorMsg += "\n\nYou can reach us directly at:\n📧 oasisaisolutions@gmail.com\n📞 705-440-3117";
-
-            const errorMessage: Message = {
-                role: 'assistant',
-                content: errorMsg
+            const botMessage: Message = {
+                id: (Date.now() + 1).toString(),
+                text: botText,
+                sender: 'bot',
+                timestamp: new Date()
             };
-            const finalMessages = [...updatedMessages, errorMessage];
-            setMessages(finalMessages);
-            saveHistory(finalMessages);
+            setMessages(prev => [...prev, botMessage]);
+        } catch (error) {
+            console.error('Chat error:', error);
+            const errorMessage: Message = {
+                id: (Date.now() + 1).toString(),
+                text: "I'm sorry, I'm having trouble connecting to the server right now. Please try again later.",
+                sender: 'bot',
+                timestamp: new Date()
+            };
+            setMessages(prev => [...prev, errorMessage]);
         } finally {
-            setIsLoading(false);
+            setIsTyping(false);
         }
     };
 
     const handleKeyPress = (e: React.KeyboardEvent) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
-            sendMessage();
+            handleSendMessage();
         }
     };
 
     return (
-        <>
-            {/* Chat Button */}
-            <motion.button
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={() => setIsOpen(!isOpen)}
-                className="fixed bottom-6 right-6 z-[9999] w-[60px] h-[60px] rounded-full bg-oasis-cyan hover:bg-oasis-cyan/80 flex items-center justify-center transition-all duration-300 shadow-oasis"
-                aria-label={isOpen ? "Close chat" : "Open chat"}
-            >
-                {isOpen ? (
-                    <X className="w-7 h-7 text-bg-primary" />
-                ) : (
-                    <MessageCircle className="w-7 h-7 text-bg-primary" />
-                )}
-            </motion.button>
-
-            {/* Chat Window */}
+        <div className="fixed bottom-4 right-4 z-[9999] flex flex-col items-end sm:bottom-8 sm:right-8">
             <AnimatePresence>
-                {isOpen && (
+                {isOpen && !isMinimized && (
                     <motion.div
                         initial={{ opacity: 0, y: 20, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 20, scale: 0.95 }}
-                        className="fixed bottom-[100px] right-6 z-[9998] w-[380px] h-[520px] bg-bg-secondary border border-oasis-cyan/20 rounded-2xl shadow-oasis-strong flex flex-col overflow-hidden max-[480px]:w-[calc(100vw-32px)] max-[480px]:h-[calc(100vh-120px)] max-[480px]:bottom-20 max-[480px]:right-4 max-[480px]:left-4"
+                        className="mb-4 w-[90vw] sm:w-[400px] h-[60vh] sm:h-[600px] bg-bg-secondary border border-white/10 rounded-2xl shadow-2xl flex flex-col overflow-hidden"
                     >
-
                         {/* Header */}
-                        <div className="px-5 py-4 bg-bg-tertiary border-b border-white/5 flex items-center justify-between">
+                        <div className="p-4 bg-bg-tertiary border-b border-white/5 flex items-center justify-between">
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-oasis-cyan to-blue-500 flex items-center justify-center text-white font-bold text-base shadow-oasis">
-                                    A
+                                <div className="w-8 h-8 bg-oasis-cyan/20 rounded-lg flex items-center justify-center">
+                                    <MessageSquare className="w-5 h-5 text-oasis-cyan" />
                                 </div>
                                 <div>
-                                    <div className="text-white font-semibold text-[15px]">Archer - OASIS AI</div>
-                                    <div className="text-green-400 text-xs flex items-center gap-1.5">
-                                        <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
-                                        Online now
-                                    </div>
+                                    <h3 className="font-bold text-white text-sm">OASIS Assistant</h3>
+                                    <span className="flex items-center gap-1.5 text-xs text-oasis-cyan">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-oasis-cyan animate-pulse" />
+                                        Online
+                                    </span>
                                 </div>
                             </div>
-                            <button
-                                onClick={() => setIsOpen(false)}
-                                className="p-2 rounded-lg hover:bg-white/10 text-text-tertiary hover:text-white transition-colors"
-                                aria-label="Close chat"
-                            >
-                                <X className="w-5 h-5" />
-                            </button>
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={() => setIsMinimized(true)}
+                                    className="p-1.5 text-text-tertiary hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+                                >
+                                    <Minimize2 className="w-4 h-4" />
+                                </button>
+                                <button
+                                    onClick={() => setIsOpen(false)}
+                                    className="p-1.5 text-text-tertiary hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+                                >
+                                    <X className="w-4 h-4" />
+                                </button>
+                            </div>
                         </div>
 
                         {/* Messages */}
-                        <div className="flex-1 overflow-y-auto p-5 space-y-4 bg-bg-primary/50">
-                            {messages.map((msg, idx) => (
-                                <motion.div
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    key={idx}
-                                    className={`max-w-[85%] px-4 py-3 rounded-2xl text-sm leading-relaxed ${msg.role === 'user'
-                                        ? 'ml-auto bg-oasis-cyan text-bg-primary rounded-br-sm font-medium'
-                                        : 'bg-bg-tertiary border border-white/5 text-text-secondary rounded-bl-sm'
-                                        }`}
+                        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-bg-primary/50">
+                            {messages.map((msg) => (
+                                <div
+                                    key={msg.id}
+                                    className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
                                 >
-                                    {msg.content}
-                                </motion.div>
+                                    <div
+                                        className={`max-w-[85%] p-3 rounded-2xl text-sm leading-relaxed ${msg.sender === 'user'
+                                                ? 'bg-oasis-cyan text-bg-primary rounded-tr-none font-medium'
+                                                : 'bg-bg-tertiary text-text-secondary rounded-tl-none border border-white/5'
+                                            }`}
+                                    >
+                                        {msg.text}
+                                    </div>
+                                </div>
                             ))}
-
-                            {/* Typing Indicator */}
-                            {isLoading && (
-                                <div className="flex gap-1 p-3 max-w-[85%]">
-                                    <span className="w-2 h-2 bg-oasis-cyan rounded-full animate-bounce"></span>
-                                    <span className="w-2 h-2 bg-oasis-cyan rounded-full animate-bounce [animation-delay:0.2s]"></span>
-                                    <span className="w-2 h-2 bg-oasis-cyan rounded-full animate-bounce [animation-delay:0.4s]"></span>
+                            {isTyping && (
+                                <div className="flex justify-start">
+                                    <div className="bg-bg-tertiary p-3 rounded-2xl rounded-tl-none border border-white/5 flex gap-1">
+                                        <span className="w-1.5 h-1.5 bg-text-tertiary rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                                        <span className="w-1.5 h-1.5 bg-text-tertiary rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                                        <span className="w-1.5 h-1.5 bg-text-tertiary rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                                    </div>
                                 </div>
                             )}
-
                             <div ref={messagesEndRef} />
                         </div>
 
                         {/* Input */}
-                        <div className="p-4 bg-bg-tertiary border-t border-white/5 flex gap-3">
-                            <input
-                                ref={inputRef}
-                                type="text"
-                                value={inputValue}
-                                onChange={(e) => setInputValue(e.target.value)}
-                                onKeyPress={handleKeyPress}
-                                placeholder="Type your message..."
-                                className="flex-1 bg-bg-primary border border-white/10 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-oasis-cyan focus:ring-1 focus:ring-oasis-cyan transition-all placeholder-text-tertiary"
-                                disabled={isLoading}
-                            />
-                            <button
-                                onClick={sendMessage}
-                                disabled={isLoading || !inputValue.trim()}
-                                className="w-11 h-11 rounded-xl bg-oasis-cyan hover:bg-oasis-cyan/80 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-all hover:scale-105 shadow-oasis"
-                                aria-label="Send message"
-                            >
-                                <Send className="w-5 h-5 text-bg-primary" />
-                            </button>
+                        <div className="p-4 bg-bg-tertiary border-t border-white/5">
+                            <div className="flex items-center gap-2 bg-bg-primary border border-white/10 rounded-xl p-2 focus-within:border-oasis-cyan/50 transition-colors">
+                                <button className="p-2 text-text-tertiary hover:text-oasis-cyan transition-colors">
+                                    <Paperclip className="w-4 h-4" />
+                                </button>
+                                <input
+                                    type="text"
+                                    value={inputValue}
+                                    onChange={(e) => setInputValue(e.target.value)}
+                                    onKeyDown={handleKeyPress}
+                                    placeholder="Type a message..."
+                                    className="flex-1 bg-transparent text-white placeholder-text-tertiary text-sm focus:outline-none"
+                                />
+                                <button
+                                    onClick={handleSendMessage}
+                                    disabled={!inputValue.trim()}
+                                    className="p-2 bg-oasis-cyan text-bg-primary rounded-lg hover:bg-oasis-cyan/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                >
+                                    <Send className="w-4 h-4" />
+                                </button>
+                            </div>
+                            <div className="text-center mt-2">
+                                <p className="text-[10px] text-text-tertiary">
+                                    Powered by OASIS AI Engine
+                                </p>
+                            </div>
                         </div>
                     </motion.div>
                 )}
             </AnimatePresence>
-        </>
+
+            {/* Toggle Button */}
+            <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => {
+                    setIsOpen(true);
+                    setIsMinimized(false);
+                }}
+                className={`w-14 h-14 sm:w-16 sm:h-16 bg-oasis-cyan rounded-full shadow-lg shadow-oasis-cyan/20 flex items-center justify-center text-bg-primary transition-all ${isOpen && !isMinimized ? 'scale-0 opacity-0' : 'scale-100 opacity-100'
+                    }`}
+            >
+                <MessageSquare className="w-7 h-7 sm:w-8 sm:h-8" />
+            </motion.button>
+        </div>
     );
 };
