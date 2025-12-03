@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { MessageSquare, X, Send, Paperclip, Minimize2, Maximize2 } from 'lucide-react';
+import { MessageSquare, X, Send, Paperclip, Minimize2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface Message {
@@ -52,6 +52,10 @@ export const ChatWidget = () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ message: userMessage.text })
             });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
 
             const data = await response.json();
 
@@ -135,8 +139,8 @@ export const ChatWidget = () => {
                                 >
                                     <div
                                         className={`max-w-[85%] p-3 rounded-2xl text-sm leading-relaxed ${msg.sender === 'user'
-                                                ? 'bg-oasis-cyan text-bg-primary rounded-tr-none font-medium'
-                                                : 'bg-bg-tertiary text-text-secondary rounded-tl-none border border-white/5'
+                                            ? 'bg-oasis-cyan text-bg-primary rounded-tr-none font-medium'
+                                            : 'bg-bg-tertiary text-text-secondary rounded-tl-none border border-white/5'
                                             }`}
                                     >
                                         {msg.text}
@@ -192,13 +196,12 @@ export const ChatWidget = () => {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => {
-                    setIsOpen(true);
+                    setIsOpen(!isOpen);
                     setIsMinimized(false);
                 }}
-                className={`w-14 h-14 sm:w-16 sm:h-16 bg-oasis-cyan rounded-full shadow-lg shadow-oasis-cyan/20 flex items-center justify-center text-bg-primary transition-all ${isOpen && !isMinimized ? 'scale-0 opacity-0' : 'scale-100 opacity-100'
-                    }`}
+                className={`w-14 h-14 sm:w-16 sm:h-16 bg-oasis-cyan rounded-full shadow-lg shadow-oasis-cyan/20 flex items-center justify-center text-bg-primary transition-all z-[10000]`}
             >
-                <MessageSquare className="w-7 h-7 sm:w-8 sm:h-8" />
+                {isOpen && !isMinimized ? <X className="w-7 h-7 sm:w-8 sm:h-8" /> : <MessageSquare className="w-7 h-7 sm:w-8 sm:h-8" />}
             </motion.button>
         </div>
     );

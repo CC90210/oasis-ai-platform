@@ -4,7 +4,15 @@ const N8N_WEBHOOK_URL = 'https://n8n.srv993801.hstgr.cloud/webhook/fdf7476a-94e7
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Handle CORS
-    res.setHeader('Access-Control-Allow-Origin', 'https://oasisai.work');
+    const allowedOrigins = ['https://oasisai.work', 'https://www.oasisai.work'];
+    const origin = req.headers.origin;
+
+    if (origin && allowedOrigins.includes(origin)) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+    } else {
+        res.setHeader('Access-Control-Allow-Origin', 'https://oasisai.work');
+    }
+
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
