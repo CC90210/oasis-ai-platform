@@ -8,9 +8,7 @@ export const Footer = () => {
                 <div className="grid md:grid-cols-4 gap-12 mb-16">
                     <div className="col-span-2">
                         <Link to="/" className="flex items-center gap-2 mb-6 group">
-                            <div className="w-10 h-10 bg-gradient-to-br from-oasis-cyan to-blue-600 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-oasis-cyan/20 group-hover:shadow-oasis-cyan/40 transition-all">
-                                OA
-                            </div>
+                            <img src="/images/oasis-logo.jpg" alt="OASIS AI" className="w-10 h-10 rounded-xl shadow-lg shadow-oasis-cyan/20 group-hover:shadow-oasis-cyan/40 transition-all" />
                             <span className="font-display font-bold text-xl tracking-tight text-white">
                                 OASIS <span className="text-oasis-cyan">AI</span>
                             </span>

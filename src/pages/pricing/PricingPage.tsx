@@ -164,7 +164,7 @@ const PricingPage = () => {
             <section className="py-20 bg-bg-primary">
                 <div className="section-container">
                     <div className="text-center mb-16">
-                        <h2 className="text-3xl font-display font-bold text-white mb-4">A La Carte Agents</h2>
+                        <h2 className="text-3xl font-display font-bold text-white mb-4">Custom Agents</h2>
                         <p className="text-text-secondary">Specific solutions for specific problems. Mix and match to build your workforce.</p>
                     </div>
 

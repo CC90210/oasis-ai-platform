@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
-import { Mail, Phone, MapPin, Send, Calendar, CheckCircle } from 'lucide-react';
+import { useState } from 'react';
+import { Mail, Phone, MapPin, Send, CheckCircle } from 'lucide-react';
 import { useFormSubmit } from '../../hooks/useFormSubmit';
 import { motion } from 'framer-motion';
 
@@ -118,27 +118,7 @@ const ContactPage = () => {
                                 <p className="text-text-secondary">Montreal, Quebec</p>
                             </motion.div>
 
-                            <motion.div
-                                initial={{ opacity: 0, x: -20 }}
-                                whileInView={{ opacity: 1, x: 0 }}
-                                viewport={{ once: true }}
-                                transition={{ delay: 0.3 }}
-                                className="glass-card p-8 bg-oasis-cyan/5 border-oasis-cyan/30 group"
-                            >
-                                <Calendar className="w-10 h-10 text-oasis-cyan mb-4 group-hover:scale-110 transition-transform" />
-                                <h3 className="font-display font-bold text-xl mb-2 text-white">Book a Call</h3>
-                                <p className="text-text-secondary mb-6">
-                                    Schedule a free 15-30 minute strategy session
-                                </p>
-                                <a
-                                    href="https://calendly.com/oasis-ai"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="btn-primary w-full inline-block text-center py-3 shadow-oasis"
-                                >
-                                    Book Now
-                                </a>
-                            </motion.div>
+
                         </div>
 
                         {/* Contact Form */}
