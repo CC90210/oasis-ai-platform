@@ -1,6 +1,7 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowRight, TrendingUp, Users, Clock, CheckCircle } from 'lucide-react';
+import { ArrowRight, TrendingUp, Users, Clock, CheckCircle, ImageOff } from 'lucide-react';
 
 const CaseStudiesPage = () => {
     const caseStudies = [
@@ -15,7 +16,7 @@ const CaseStudiesPage = () => {
                 { label: 'CSAT Score', value: '4.9/5', icon: Users },
             ],
             summary: "LuxeAthletics was growing fast, but their customer support team was drowning. They were missing messages on Instagram, taking 24+ hours to reply to emails, and losing sales. We implemented a Multi-Channel AI Support Agent that handles 80% of inquiries automatically.",
-            image: "https://images.unsplash.com/photo-1556742049-0cfed4f7a07d?q=80&w=2070&auto=format&fit=crop"
+            image: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1200&q=80" // Friends/Shopping
         },
         {
             id: 'hvac-lead-capture',
@@ -28,7 +29,7 @@ const CaseStudiesPage = () => {
                 { label: 'Admin Hours', value: '-15/wk', icon: Clock },
             ],
             summary: "CoolBreeze was missing calls while out on jobs. We set up a Voice AI agent to answer phones 24/7, qualify leads, and book appointments directly into their calendar. They never miss a potential customer now.",
-            image: "https://images.unsplash.com/photo-1581094794329-cd11965d1162?q=80&w=2070&auto=format&fit=crop"
+            image: "https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?auto=format&fit=crop&w=1200&q=80" // Industrial/Tech
         },
         {
             id: 'real-estate-outreach',
@@ -41,9 +42,15 @@ const CaseStudiesPage = () => {
                 { label: 'Agent Morale', value: 'High', icon: CheckCircle },
             ],
             summary: "Agents were burning out making 50 cold calls a day. We built an automated outreach system that sends personalized emails and SMS to warm leads, only passing them to agents when they are ready to book a viewing.",
-            image: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?q=80&w=2073&auto=format&fit=crop"
+            image: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=1200&q=80" // Building
         }
     ];
+
+    const [imageError, setImageError] = useState<Record<string, boolean>>({});
+
+    const handleImageError = (id: string) => {
+        setImageError(prev => ({ ...prev, [id]: true }));
+    };
 
     return (
         <div className="bg-bg-primary min-h-screen pt-24 pb-20">
@@ -69,13 +76,23 @@ const CaseStudiesPage = () => {
                         >
                             {/* Image Side */}
                             <div className="w-full lg:w-1/2">
-                                <div className="relative rounded-2xl overflow-hidden border border-white/10 shadow-oasis-strong group aspect-video">
+                                <div className="relative rounded-2xl overflow-hidden border border-white/10 shadow-oasis-strong group aspect-video bg-bg-tertiary">
                                     <div className="absolute inset-0 bg-oasis-cyan/10 group-hover:bg-transparent transition-colors duration-500 z-10" />
-                                    <img
-                                        src={study.image}
-                                        alt={study.title}
-                                        className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
-                                    />
+
+                                    {!imageError[study.id] ? (
+                                        <img
+                                            src={study.image}
+                                            alt={study.title}
+                                            onError={() => handleImageError(study.id)}
+                                            className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
+                                        />
+                                    ) : (
+                                        <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-bg-tertiary to-bg-secondary">
+                                            <TrendingUp className="w-16 h-16 text-oasis-cyan opacity-20 mb-4" />
+                                            <span className="text-text-tertiary text-sm">Image unavailable</span>
+                                        </div>
+                                    )}
+
                                     <div className="absolute bottom-4 left-4 z-20">
                                         <span className="bg-bg-primary/90 backdrop-blur px-4 py-2 rounded-lg text-sm font-bold text-white border border-white/10">
                                             {study.client}
