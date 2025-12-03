@@ -69,7 +69,7 @@ const CaseStudiesPage = () => {
                         >
                             {/* Image Side */}
                             <div className="w-full lg:w-1/2">
-                                <div className="relative rounded-2xl overflow-hidden border border-white/10 shadow-oasis-strong group">
+                                <div className="relative rounded-2xl overflow-hidden border border-white/10 shadow-oasis-strong group aspect-video">
                                     <div className="absolute inset-0 bg-oasis-cyan/10 group-hover:bg-transparent transition-colors duration-500 z-10" />
                                     <img
                                         src={study.image}
