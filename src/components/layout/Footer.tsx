@@ -3,7 +3,7 @@ import { Twitter, Linkedin, Github, Mail, MapPin, Globe } from 'lucide-react';
 
 export const Footer = () => {
     return (
-        <footer className="bg-bg-secondary border-t border-white/5 pt-20 pb-10">
+        <footer className="relative z-50 bg-bg-secondary border-t border-white/5 pt-20 pb-10">
             <div className="section-container">
                 <div className="grid md:grid-cols-4 gap-12 mb-16">
                     <div className="col-span-2">

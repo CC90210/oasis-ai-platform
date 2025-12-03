@@ -350,9 +350,13 @@ const LandingPage = () => {
                                 </blockquote>
                                 <Link to="/case-studies" className="btn-secondary">Read Full Case Study</Link>
                             </div>
-                            <div className="relative h-64 md:h-full min-h-[300px] bg-gradient-to-br from-bg-tertiary to-bg-secondary rounded-xl overflow-hidden border border-white/5 flex items-center justify-center">
-                                <TrendingUp className="w-24 h-24 text-oasis-cyan opacity-20" />
-                                <div className="absolute inset-0 bg-oasis-cyan/5" />
+                            <div className="relative h-64 md:h-full min-h-[300px] rounded-xl overflow-hidden border border-white/5 group">
+                                <img
+                                    src="/images/case-study-ecommerce.png"
+                                    alt="E-Commerce Case Study Results"
+                                    className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-500"
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-bg-secondary via-transparent to-transparent" />
                             </div>
                         </div>
                     </div>
