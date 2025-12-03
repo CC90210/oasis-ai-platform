@@ -37,7 +37,7 @@ const LandingPage = () => {
     const [openFaq, setOpenFaq] = useState<number | null>(null);
 
     return (
-        <div className="bg-bg-primary min-h-screen overflow-x-hidden font-sans text-text-primary">
+        <div className="bg-bg-primary font-sans text-text-primary">
             {/* Section 1: Hero */}
             <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
                 <NeuralNetworkBackground />
@@ -395,7 +395,7 @@ const LandingPage = () => {
             </section>
 
             {/* Section 9: Final CTA */}
-            <section className="py-32 bg-gradient-dark relative overflow-hidden">
+            <section className="py-32 bg-bg-secondary relative overflow-hidden">
                 <div className="absolute inset-0">
                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-oasis-cyan/20 rounded-full blur-[150px] animate-pulse-glow" />
                 </div>

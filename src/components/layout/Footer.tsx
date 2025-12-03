@@ -13,7 +13,7 @@ export const Footer = () => {
                                 OASIS <span className="text-oasis-cyan">AI</span>
                             </span>
                         </Link>
-                        <p className="text-text-secondary mb-8 max-w-md leading-relaxed">
+                        <p className="text-gray-300 mb-8 max-w-md leading-relaxed">
                             Empowering businesses with intelligent automation solutions.
                             We build the digital workforce of tomorrow, today.
                         </p>

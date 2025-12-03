@@ -44,7 +44,7 @@ const ContactPage = () => {
     };
 
     return (
-        <div className="bg-bg-primary min-h-screen font-sans text-text-primary">
+        <div className="bg-bg-primary font-sans text-text-primary">
             {/* Hero */}
             <section className="relative overflow-hidden pt-32 pb-20">
                 <div className="absolute inset-0 pointer-events-none">
