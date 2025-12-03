@@ -8,6 +8,7 @@ import ContactPage from './pages/contact/ContactPage';
 import CheckoutPage from './pages/checkout/CheckoutPage';
 import BlogPage from './pages/blog/BlogPage';
 import BlogPost from './pages/blog/BlogPost';
+import CaseStudiesPage from './pages/casestudies/CaseStudiesPage';
 import LoginPage from './pages/portal/LoginPage';
 import SignupPage from './pages/portal/SignupPage';
 import ChatPage from './pages/portal/ChatPage';
@@ -27,6 +28,7 @@ function App() {
                     <Route path="/contact" element={<MainLayout><ContactPage /></MainLayout>} />
                     <Route path="/blog" element={<MainLayout><BlogPage /></MainLayout>} />
                     <Route path="/blog/:slug" element={<MainLayout><BlogPost /></MainLayout>} />
+                    <Route path="/case-studies" element={<MainLayout><CaseStudiesPage /></MainLayout>} />
                     <Route path="/checkout" element={<MainLayout><CheckoutPage /></MainLayout>} />
 
                     {/* Portal Routes */}
