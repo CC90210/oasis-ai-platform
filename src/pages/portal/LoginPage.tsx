@@ -1,11 +1,23 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Mail, Lock, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useAuth } from '@/store/authStore';
 
 const LoginPage = () => {
     const [showPassword, setShowPassword] = useState(false);
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const navigate = useNavigate();
+    const { login } = useAuth();
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        // In a real app, validate against backend
+        login({ name: 'User', email });
+        navigate('/portal/chat');
+    };
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-bg-primary px-4 relative overflow-hidden font-sans text-text-primary">
@@ -46,7 +58,7 @@ const LoginPage = () => {
                         <p className="mt-2 text-text-secondary">Sign in to access your dashboard</p>
                     </div>
 
-                    <form className="space-y-5">
+                    <form onSubmit={handleSubmit} className="space-y-5">
                         {/* Email Field */}
                         <div className="space-y-2">
                             <label htmlFor="email" className="text-sm font-medium text-white">
@@ -60,6 +72,8 @@ const LoginPage = () => {
                                     type="email"
                                     autoComplete="email"
                                     required
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
                                     className="w-full pl-11 pr-4 py-3 bg-bg-tertiary border border-white/10 rounded-xl text-white placeholder-text-tertiary focus:outline-none focus:border-oasis-cyan focus:ring-1 focus:ring-oasis-cyan transition-all duration-200"
                                     placeholder="name@company.com"
                                 />
@@ -87,6 +101,8 @@ const LoginPage = () => {
                                     type={showPassword ? 'text' : 'password'}
                                     autoComplete="current-password"
                                     required
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
                                     className="w-full pl-11 pr-12 py-3 bg-bg-tertiary border border-white/10 rounded-xl text-white placeholder-text-tertiary focus:outline-none focus:border-oasis-cyan focus:ring-1 focus:ring-oasis-cyan transition-all duration-200"
                                     placeholder="Enter your password"
                                 />
@@ -130,10 +146,10 @@ const LoginPage = () => {
                     <div className="text-center text-sm text-text-secondary pt-4 border-t border-white/5">
                         Don't have an account?{' '}
                         <Link
-                            to="/contact"
+                            to="/portal/signup"
                             className="text-oasis-cyan hover:text-white font-medium transition-colors"
                         >
-                            Contact Sales
+                            Create Account (Get 10% Off)
                         </Link>
                     </div>
                 </div>

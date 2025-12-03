@@ -1,103 +1,147 @@
-import { Link } from 'react-router-dom';
-import { useState } from 'react';
-import { Menu, X } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { Menu, X, ShoppingCart } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useCart } from '@/store/cartStore';
 
 export const Header = () => {
-    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [isScrolled, setIsScrolled] = useState(false);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const location = useLocation();
+    const { items, toggleCart } = useCart();
 
-    const navItems = ['Services', 'Pricing', 'Case Studies', 'Blog', 'About', 'Contact'];
+    useEffect(() => {
+        const handleScroll = () => {
+            setIsScrolled(window.scrollY > 20);
+        };
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
+    const navLinks = [
+        { name: 'Services', path: '/services' },
+        { name: 'Pricing', path: '/pricing' },
+        { name: 'Case Studies', path: '/case-studies' },
+        { name: 'Blog', path: '/blog' },
+        { name: 'Contact', path: '/contact' },
+    ];
+
+    const isActive = (path: string) => location.pathname === path;
 
     return (
-        <nav className="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
-            style={{
-                background: 'rgba(10, 10, 15, 0.8)',
-                backdropFilter: 'blur(20px)',
-                WebkitBackdropFilter: 'blur(20px)',
-                borderBottom: '1px solid rgba(255, 255, 255, 0.05)'
-            }}>
-            <div className="max-w-7xl mx-auto px-6">
-                <div className="flex h-20 items-center justify-between">
-                    {/* Logo */}
-                    <Link to="/" className="flex items-center gap-3 group">
-                        <img
-                            src="/images/oasis-logo.jpg"
-                            alt="OASIS AI"
-                            className="h-10 w-auto rounded-lg transition-transform duration-300 group-hover:scale-105"
-                        />
-                        <span className="font-display font-bold text-xl tracking-tight text-white">
-                            OASIS <span className="text-oasis-cyan">AI</span>
-                        </span>
-                    </Link>
-
-                    {/* Desktop Navigation */}
-                    <div className="hidden lg:flex items-center gap-8">
-                        {navItems.map((item) => (
-                            <Link
-                                key={item}
-                                to={`/${item.toLowerCase().replace(' ', '-')}`}
-                                className="text-sm font-medium text-text-secondary hover:text-oasis-cyan transition-colors relative group"
-                            >
-                                {item}
-                                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-oasis-cyan transition-all duration-300 group-hover:w-full" />
-                            </Link>
-                        ))}
+        <header
+            className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${isScrolled ? 'bg-bg-primary/80 backdrop-blur-md border-b border-white/5 py-4' : 'bg-transparent py-6'
+                }`}
+        >
+            <div className="section-container flex items-center justify-between">
+                <Link to="/" className="flex items-center gap-2 group">
+                    <div className="w-10 h-10 bg-gradient-to-br from-oasis-cyan to-blue-600 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-oasis-cyan/20 group-hover:shadow-oasis-cyan/40 transition-all">
+                        OA
                     </div>
+                    <span className="font-display font-bold text-xl tracking-tight text-white">
+                        OASIS <span className="text-oasis-cyan">AI</span>
+                    </span>
+                </Link>
 
-                    {/* Desktop CTA */}
-                    <div className="hidden lg:flex items-center gap-6">
+                {/* Desktop Nav */}
+                <nav className="hidden md:flex items-center gap-8">
+                    {navLinks.map((link) => (
                         <Link
-                            to="/portal/login"
-                            className="text-sm font-medium text-text-tertiary hover:text-white transition-colors"
+                            key={link.name}
+                            to={link.path}
+                            className={`text-sm font-medium transition-colors hover:text-oasis-cyan ${isActive(link.path) ? 'text-oasis-cyan' : 'text-text-secondary'
+                                }`}
                         >
-                            Portal Login
+                            {link.name}
                         </Link>
-                        <Link to="/contact">
-                            <button className="btn-primary px-6 py-2.5 text-sm shadow-oasis">
-                                Get Started
-                            </button>
-                        </Link>
-                    </div>
+                    ))}
+                </nav>
 
-                    {/* Mobile Menu Button */}
+                {/* Desktop Actions */}
+                <div className="hidden md:flex items-center gap-4">
                     <button
-                        className="lg:hidden text-text-secondary hover:text-oasis-cyan transition-colors"
-                        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                        onClick={toggleCart}
+                        className="relative p-2 text-text-secondary hover:text-white transition-colors"
                     >
-                        {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                        <ShoppingCart className="w-6 h-6" />
+                        {items.length > 0 && (
+                            <span className="absolute -top-1 -right-1 w-5 h-5 bg-oasis-cyan text-bg-primary text-xs font-bold rounded-full flex items-center justify-center">
+                                {items.length}
+                            </span>
+                        )}
                     </button>
+                    <Link to="/portal/login" className="text-sm font-medium text-white hover:text-oasis-cyan transition-colors">
+                        Client Portal
+                    </Link>
+                    <Link to="/contact">
+                        <button className="btn-primary py-2 px-4 text-sm">
+                            Get Started
+                        </button>
+                    </Link>
                 </div>
 
-                {/* Mobile Menu */}
-                {mobileMenuOpen && (
-                    <div className="lg:hidden py-6 border-t border-white/5 animate-fade-in-up">
-                        <div className="flex flex-col gap-4">
-                            {navItems.map((item) => (
+                {/* Mobile Menu Button */}
+                <div className="flex items-center gap-4 md:hidden">
+                    <button
+                        onClick={toggleCart}
+                        className="relative p-2 text-text-secondary hover:text-white transition-colors"
+                    >
+                        <ShoppingCart className="w-6 h-6" />
+                        {items.length > 0 && (
+                            <span className="absolute -top-1 -right-1 w-5 h-5 bg-oasis-cyan text-bg-primary text-xs font-bold rounded-full flex items-center justify-center">
+                                {items.length}
+                            </span>
+                        )}
+                    </button>
+                    <button
+                        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                        className="text-white p-2"
+                    >
+                        {isMobileMenuOpen ? <X /> : <Menu />}
+                    </button>
+                </div>
+            </div>
+
+            {/* Mobile Menu */}
+            <AnimatePresence>
+                {isMobileMenuOpen && (
+                    <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="md:hidden bg-bg-secondary border-b border-white/5 overflow-hidden"
+                    >
+                        <div className="section-container py-6 flex flex-col gap-4">
+                            {navLinks.map((link) => (
                                 <Link
-                                    key={item}
-                                    to={`/${item.toLowerCase().replace(' ', '-')}`}
-                                    className="text-lg font-medium text-text-secondary hover:text-oasis-cyan transition-colors px-2"
-                                    onClick={() => setMobileMenuOpen(false)}
+                                    key={link.name}
+                                    to={link.path}
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                    className={`text-lg font-medium ${isActive(link.path) ? 'text-oasis-cyan' : 'text-text-secondary'
+                                        }`}
                                 >
-                                    {item}
+                                    {link.name}
                                 </Link>
                             ))}
-                            <div className="h-px bg-white/5 my-2" />
+                            <hr className="border-white/5 my-2" />
                             <Link
                                 to="/portal/login"
-                                className="text-text-tertiary hover:text-white px-2"
-                                onClick={() => setMobileMenuOpen(false)}
+                                onClick={() => setIsMobileMenuOpen(false)}
+                                className="text-lg font-medium text-white"
                             >
-                                Portal Login
+                                Client Portal
                             </Link>
-                            <Link to="/contact" onClick={() => setMobileMenuOpen(false)}>
-                                <button className="w-full mt-4 btn-primary py-3 font-semibold">
-                                    Get Started
-                                </button>
+                            <Link
+                                to="/contact"
+                                onClick={() => setIsMobileMenuOpen(false)}
+                                className="btn-primary text-center"
+                            >
+                                Get Started
                             </Link>
                         </div>
-                    </div>
+                    </motion.div>
                 )}
-            </div>
-        </nav>
+            </AnimatePresence>
+        </header>
     );
 };

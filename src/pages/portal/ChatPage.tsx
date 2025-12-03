@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { Send, Paperclip, Bot, User, FileText } from 'lucide-react';
+import { Send, Paperclip, Bot, User, FileText, Ticket } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/store/authStore';
 
 const ChatPage = () => {
+    const { discountCode } = useAuth();
     const [messages, setMessages] = useState([
         {
             id: 1,
@@ -40,6 +42,20 @@ const ChatPage = () => {
 
     return (
         <div className="flex flex-col h-[calc(100vh-8rem)] bg-bg-secondary rounded-xl border border-white/10 shadow-sm overflow-hidden">
+
+            {/* Discount Banner */}
+            {discountCode && (
+                <div className="bg-gradient-to-r from-oasis-cyan/20 to-blue-600/20 border-b border-oasis-cyan/20 p-3 flex items-center justify-center gap-4 animate-pulse-glow">
+                    <div className="flex items-center gap-2">
+                        <Ticket className="w-5 h-5 text-oasis-cyan" />
+                        <span className="text-white font-medium text-sm">Welcome! Here is your 10% discount code:</span>
+                    </div>
+                    <div className="bg-bg-primary border border-oasis-cyan/30 px-4 py-1 rounded font-mono text-oasis-cyan font-bold tracking-wider select-all cursor-pointer hover:bg-oasis-cyan/10 transition-colors">
+                        {discountCode}
+                    </div>
+                </div>
+            )}
+
             {/* Chat Header */}
             <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between bg-bg-tertiary">
                 <div className="flex items-center gap-3">

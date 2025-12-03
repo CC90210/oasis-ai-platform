@@ -1,103 +1,75 @@
 import { Link } from 'react-router-dom';
-import { Mail, Phone, MapPin, Linkedin, Twitter, Instagram } from 'lucide-react';
+import { Twitter, Linkedin, Github, Mail, MapPin, Globe } from 'lucide-react';
 
 export const Footer = () => {
     return (
-        <footer className="bg-bg-primary border-t border-white/5">
-            <div className="max-w-7xl mx-auto px-6 py-16">
-
-                {/* Main Footer Grid */}
-                <div className="grid md:grid-cols-4 gap-12 mb-12">
-
-                    {/* Brand Column */}
-                    <div className="md:col-span-1">
+        <footer className="bg-bg-secondary border-t border-white/5 pt-20 pb-10">
+            <div className="section-container">
+                <div className="grid md:grid-cols-4 gap-12 mb-16">
+                    <div className="col-span-2">
                         <Link to="/" className="flex items-center gap-2 mb-6 group">
-                            <img
-                                src="/images/oasis-logo.jpg"
-                                alt="OASIS AI"
-                                className="h-8 w-auto rounded transition-transform duration-300 group-hover:scale-105"
-                            />
-                            <span className="font-display font-bold text-lg text-white">
+                            <div className="w-10 h-10 bg-gradient-to-br from-oasis-cyan to-blue-600 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-oasis-cyan/20 group-hover:shadow-oasis-cyan/40 transition-all">
+                                OA
+                            </div>
+                            <span className="font-display font-bold text-xl tracking-tight text-white">
                                 OASIS <span className="text-oasis-cyan">AI</span>
                             </span>
                         </Link>
-                        <p className="text-text-secondary text-sm mb-6 leading-relaxed">
-                            AI automation for small businesses. Work ON your business, not IN it.
+                        <p className="text-text-secondary mb-8 max-w-md leading-relaxed">
+                            Empowering businesses with intelligent automation solutions.
+                            We build the digital workforce of tomorrow, today.
                         </p>
-                        {/* Social Links */}
                         <div className="flex gap-4">
-                            {[Linkedin, Twitter, Instagram].map((Icon, i) => (
-                                <a key={i} href="#" className="text-text-tertiary hover:text-oasis-cyan transition-colors">
-                                    <Icon className="w-5 h-5" />
-                                </a>
-                            ))}
+                            <a href="#" className="p-2 bg-white/5 rounded-lg hover:bg-oasis-cyan/20 hover:text-oasis-cyan transition-colors">
+                                <Twitter className="w-5 h-5" />
+                            </a>
+                            <a href="#" className="p-2 bg-white/5 rounded-lg hover:bg-oasis-cyan/20 hover:text-oasis-cyan transition-colors">
+                                <Linkedin className="w-5 h-5" />
+                            </a>
+                            <a href="#" className="p-2 bg-white/5 rounded-lg hover:bg-oasis-cyan/20 hover:text-oasis-cyan transition-colors">
+                                <Github className="w-5 h-5" />
+                            </a>
                         </div>
                     </div>
 
-                    {/* Services Column */}
                     <div>
-                        <h4 className="text-white font-semibold mb-6">Services</h4>
-                        <ul className="space-y-3 text-sm">
-                            {[
-                                { name: 'Chat Agents', link: '/services/chat-widget' },
-                                { name: 'Voice AI', link: '/services/voice-ai' },
-                                { name: 'Email Automation', link: '/services/email-automation' },
-                                { name: 'Review Management', link: '/services/google-reviews' },
-                                { name: 'Lead Qualification', link: '/services/lead-capture' },
-                                { name: 'Custom Solutions', link: '/services' }
-                            ].map((item) => (
-                                <li key={item.name}>
-                                    <Link to={item.link} className="text-text-secondary hover:text-oasis-cyan transition-colors">
-                                        {item.name}
-                                    </Link>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-
-                    {/* Company Column */}
-                    <div>
-                        <h4 className="text-white font-semibold mb-6">Company</h4>
-                        <ul className="space-y-3 text-sm">
-                            <li><Link to="/about" className="text-text-secondary hover:text-oasis-cyan transition-colors">About Us</Link></li>
-                            <li><Link to="/blog" className="text-text-secondary hover:text-oasis-cyan transition-colors">Blog</Link></li>
+                        <h4 className="font-bold text-white mb-6">Company</h4>
+                        <ul className="space-y-4">
+                            <li><Link to="/services" className="text-text-secondary hover:text-oasis-cyan transition-colors">Services</Link></li>
+                            <li><Link to="/pricing" className="text-text-secondary hover:text-oasis-cyan transition-colors">Pricing</Link></li>
                             <li><Link to="/case-studies" className="text-text-secondary hover:text-oasis-cyan transition-colors">Case Studies</Link></li>
+                            <li><Link to="/blog" className="text-text-secondary hover:text-oasis-cyan transition-colors">Blog</Link></li>
+                            <li><Link to="/contact" className="text-text-secondary hover:text-oasis-cyan transition-colors">Contact</Link></li>
                             <li><Link to="/portal/login" className="text-text-secondary hover:text-oasis-cyan transition-colors">Client Portal</Link></li>
                         </ul>
                     </div>
 
-                    {/* Contact Column */}
                     <div>
-                        <h4 className="text-white font-semibold mb-6">Contact</h4>
-                        <ul className="space-y-4 text-sm">
+                        <h4 className="font-bold text-white mb-6">Contact</h4>
+                        <ul className="space-y-4">
                             <li className="flex items-start gap-3 text-text-secondary">
-                                <Mail className="w-5 h-5 text-oasis-cyan mt-0.5 shrink-0" />
-                                <a href="mailto:oasisaisolutions@gmail.com" className="hover:text-oasis-cyan transition-colors break-all">
-                                    oasisaisolutions@gmail.com
-                                </a>
+                                <Mail className="w-5 h-5 text-oasis-cyan flex-shrink-0" />
+                                <a href="mailto:hello@oasisai.work" className="hover:text-white transition-colors">hello@oasisai.work</a>
                             </li>
                             <li className="flex items-start gap-3 text-text-secondary">
-                                <Phone className="w-5 h-5 text-oasis-cyan mt-0.5 shrink-0" />
-                                <a href="tel:705-440-3117" className="hover:text-oasis-cyan transition-colors">
-                                    705-440-3117
-                                </a>
+                                <MapPin className="w-5 h-5 text-oasis-cyan flex-shrink-0" />
+                                <span>Montreal & Ontario, Canada</span>
                             </li>
                             <li className="flex items-start gap-3 text-text-secondary">
-                                <MapPin className="w-5 h-5 text-oasis-cyan mt-0.5 shrink-0" />
-                                <span>Toronto, ON | Montreal, QC</span>
+                                <Globe className="w-5 h-5 text-oasis-cyan flex-shrink-0" />
+                                <span>Serving Clients Worldwide</span>
                             </li>
                         </ul>
                     </div>
                 </div>
 
-                {/* Bottom Bar */}
-                <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4">
+                <div className="border-t border-white/5 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
                     <p className="text-text-tertiary text-sm">
                         © {new Date().getFullYear()} OASIS AI Solutions. All rights reserved.
                     </p>
-                    <div className="flex gap-6">
-                        <Link to="#" className="text-text-tertiary text-sm hover:text-white transition-colors">Privacy Policy</Link>
-                        <Link to="#" className="text-text-tertiary text-sm hover:text-white transition-colors">Terms of Service</Link>
+                    <div className="flex gap-8 text-sm text-text-tertiary">
+                        <Link to="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
+                        <Link to="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
                     </div>
                 </div>
             </div>

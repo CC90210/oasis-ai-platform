@@ -1,70 +1,45 @@
-import { BrowserRouter as Router, Routes, Route, Outlet } from 'react-router-dom';
-import { MainLayout } from '@/components/layout/MainLayout';
-import { PortalLayout } from '@/components/layout/PortalLayout';
-import LandingPage from '@/pages/landing/LandingPage';
-import AboutPage from '@/pages/about/AboutPage';
-import ServicesPage from '@/pages/services/ServicesPage';
-import AgentPage from '@/pages/services/AgentPage';
-import PricingPage from '@/pages/pricing/PricingPage';
-import CaseStudiesPage from '@/pages/case-studies/CaseStudiesPage';
-import ContactPage from '@/pages/contact/ContactPage';
-import CheckoutPage from '@/pages/checkout/CheckoutPage';
-import OrderSuccessPage from '@/pages/checkout/OrderSuccessPage';
-import BlogPage from '@/pages/blog/BlogPage';
-import LoginPage from '@/pages/portal/LoginPage';
-import DashboardPage from '@/pages/portal/DashboardPage';
-import AutomationsPage from '@/pages/portal/AutomationsPage';
-import ChatPage from '@/pages/portal/ChatPage';
-import KnowledgeBasePage from '@/pages/portal/KnowledgeBasePage';
-import BillingPage from '@/pages/portal/BillingPage';
-import TeamPage from '@/pages/portal/TeamPage';
-import SettingsPage from '@/pages/portal/SettingsPage';
-
-const MarketingLayout = () => (
-    <MainLayout>
-        <Outlet />
-    </MainLayout>
-);
-
-const PortalLayoutWrapper = () => (
-    <PortalLayout>
-        <Outlet />
-    </PortalLayout>
-);
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { MainLayout } from './components/layout/MainLayout';
+import ScrollToTop from './components/ScrollToTop';
+import LandingPage from './pages/landing/LandingPage';
+import ServicesPage from './pages/services/ServicesPage';
+import PricingPage from './pages/pricing/PricingPage';
+import ContactPage from './pages/contact/ContactPage';
+import CheckoutPage from './pages/checkout/CheckoutPage';
+import BlogPage from './pages/blog/BlogPage';
+import BlogPost from './pages/blog/BlogPost';
+import LoginPage from './pages/portal/LoginPage';
+import SignupPage from './pages/portal/SignupPage';
+import ChatPage from './pages/portal/ChatPage';
+import ProtectedRoute from './components/auth/ProtectedRoute';
+import ErrorBoundary from './components/ErrorBoundary';
 
 function App() {
     return (
-        <Router>
-            <Routes>
-                {/* Public Marketing Routes */}
-                <Route element={<MarketingLayout />}>
-                    <Route path="/" element={<LandingPage />} />
-                    <Route path="/about" element={<AboutPage />} />
-                    <Route path="/services" element={<ServicesPage />} />
-                    <Route path="/services/:slug" element={<AgentPage />} />
-                    <Route path="/pricing" element={<PricingPage />} />
-                    <Route path="/case-studies" element={<CaseStudiesPage />} />
-                    <Route path="/contact" element={<ContactPage />} />
-                    <Route path="/blog" element={<BlogPage />} />
-                    <Route path="/checkout" element={<CheckoutPage />} />
-                    <Route path="/checkout/success" element={<OrderSuccessPage />} />
-                </Route>
+        <ErrorBoundary>
+            <Router>
+                <ScrollToTop />
+                <Routes>
+                    {/* Public Routes */}
+                    <Route path="/" element={<MainLayout><LandingPage /></MainLayout>} />
+                    <Route path="/services" element={<MainLayout><ServicesPage /></MainLayout>} />
+                    <Route path="/pricing" element={<MainLayout><PricingPage /></MainLayout>} />
+                    <Route path="/contact" element={<MainLayout><ContactPage /></MainLayout>} />
+                    <Route path="/blog" element={<MainLayout><BlogPage /></MainLayout>} />
+                    <Route path="/blog/:slug" element={<MainLayout><BlogPost /></MainLayout>} />
+                    <Route path="/checkout" element={<MainLayout><CheckoutPage /></MainLayout>} />
 
-                {/* Auth Routes */}
-                <Route path="/portal/login" element={<LoginPage />} />
-
-                {/* Protected Portal Routes */}
-                <Route path="/portal" element={<PortalLayoutWrapper />}>
-                    <Route path="dashboard" element={<DashboardPage />} />
-                    <Route path="automations" element={<AutomationsPage />} />
-                    <Route path="chat" element={<ChatPage />} />
-                    <Route path="knowledge" element={<KnowledgeBasePage />} />
-                    <Route path="billing" element={<BillingPage />} />
-                    <Route path="team" element={<TeamPage />} />
-                    <Route path="settings" element={<SettingsPage />} />
-                </Route>
-            </Routes>
-        </Router>
+                    {/* Portal Routes */}
+                    <Route path="/portal/login" element={<LoginPage />} />
+                    <Route path="/portal/signup" element={<SignupPage />} />
+                    <Route path="/portal/chat" element={
+                        <ProtectedRoute>
+                            <ChatPage />
+                        </ProtectedRoute>
+                    } />
+                </Routes>
+            </Router>
+        </ErrorBoundary>
     );
 }
 
