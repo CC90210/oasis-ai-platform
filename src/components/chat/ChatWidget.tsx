@@ -57,10 +57,19 @@ export const ChatWidget = () => {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
-            const data = await response.json();
+            const textData = await response.text();
+            let botText = "I received your message, but I'm having trouble processing it right now.";
 
-            // Handle n8n response structure
-            const botText = data.output || data.text || data.message || "I received your message, but I'm having trouble processing it right now.";
+            try {
+                const data = JSON.parse(textData);
+                // Handle n8n response structure (flexible)
+                botText = data.output || data.text || data.message || (typeof data === 'string' ? data : botText);
+            } catch (e) {
+                // If not JSON, use the raw text if it exists
+                if (textData && textData.trim().length > 0) {
+                    botText = textData;
+                }
+            }
 
             const botMessage: Message = {
                 id: (Date.now() + 1).toString(),
