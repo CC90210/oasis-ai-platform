@@ -49,7 +49,9 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
                     <video
                         ref={videoRef}
                         id="splash-screen-video"
-                        className="w-full h-full md:object-cover object-contain"
+                        // object-cover ensures full screen on all devices (no black bars)
+                        // scale-110 zooms in 10% to push the watermark off-screen
+                        className="w-full h-full object-cover scale-110"
                         src="/videos/Video_Upgrade_Request_Fulfilled.mp4"
                         autoPlay
                         muted
