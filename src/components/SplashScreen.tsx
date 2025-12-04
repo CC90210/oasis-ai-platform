@@ -46,35 +46,21 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
                     transition={{ duration: 1, ease: "easeInOut" }}
                     className="fixed inset-0 z-[9999] bg-black overflow-hidden w-screen h-[100dvh] flex items-center justify-center"
                 >
-                    {/* Background Blur Layer (Fills screen) */}
-                    <div className="absolute inset-0 z-0 overflow-hidden">
-                        <video
-                            className="w-full h-full object-cover scale-110 blur-xl opacity-50"
-                            src="/videos/Video_Upgrade_Request_Fulfilled.mp4"
-                            autoPlay
-                            muted
-                            playsInline
-                            loop
-                        />
-                    </div>
-
-                    {/* Foreground Content Layer (Shows full video) */}
-                    <div className="relative z-10 w-full h-full flex items-center justify-center">
-                        <video
-                            ref={videoRef}
-                            id="splash-screen-video"
-                            // object-contain ensures the whole video is visible (zoomed out)
-                            // scale-105 slightly zooms to hide watermark if near edges
-                            className="w-full h-full object-contain scale-105 shadow-2xl"
-                            src="/videos/Video_Upgrade_Request_Fulfilled.mp4"
-                            autoPlay
-                            muted
-                            playsInline
-                            preload="auto"
-                        >
-                            Your browser does not support the video tag.
-                        </video>
-                    </div>
+                    <video
+                        ref={videoRef}
+                        id="splash-screen-video"
+                        // object-cover: Fills the screen completely (no black bars).
+                        // object-center: Centers the video content.
+                        // scale-110: Zooms in slightly to push watermark off-screen.
+                        className="w-full h-full object-cover object-center scale-110"
+                        src="/videos/Video_Upgrade_Request_Fulfilled.mp4"
+                        autoPlay
+                        muted
+                        playsInline
+                        preload="auto"
+                    >
+                        Your browser does not support the video tag.
+                    </video>
                 </motion.div>
             )}
         </AnimatePresence>
