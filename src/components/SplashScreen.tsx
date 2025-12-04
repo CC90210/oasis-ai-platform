@@ -53,7 +53,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
                         // object-center: Centers the video content.
                         // scale-110: Zooms in slightly to push watermark off-screen.
                         className="w-full h-full object-cover object-center scale-110"
-                        src="/videos/Video_Upgrade_Request_Fulfilled.mp4"
+                        src="/videos/video_2025-12-04_16-19-42.mp4"
                         autoPlay
                         muted
                         playsInline
