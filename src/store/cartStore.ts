@@ -18,6 +18,8 @@ interface CartStore {
     updateQuantity: (id: ProductType, delta: number) => void;
     clearCart: () => void;
     toggleCart: () => void;
+    openCart: () => void;
+    closeCart: () => void;
     getTotal: () => number;
 }
 
@@ -26,6 +28,7 @@ export const useCart = create<CartStore>()(
         (set, get) => ({
             items: [],
             isOpen: false,
+
             addItem: (id, type) => set((state) => {
                 const existingItem = state.items.find(item => item.id === id);
                 if (existingItem) {
@@ -38,9 +41,11 @@ export const useCart = create<CartStore>()(
                 }
                 return { items: [...state.items, { id, type, quantity: 1 }], isOpen: true };
             }),
+
             removeItem: (id) => set((state) => ({
                 items: state.items.filter(item => item.id !== id)
             })),
+
             updateQuantity: (id, delta) => set((state) => ({
                 items: state.items.map(item => {
                     if (item.id === id) {
@@ -50,8 +55,15 @@ export const useCart = create<CartStore>()(
                     return item;
                 })
             })),
-            clearCart: () => set({ items: [] }),
+
+            clearCart: () => set({ items: [], isOpen: false }),
+
             toggleCart: () => set((state) => ({ isOpen: !state.isOpen })),
+
+            // Explicit open and close functions to prevent stuck state
+            openCart: () => set({ isOpen: true }),
+            closeCart: () => set({ isOpen: false }),
+
             getTotal: () => {
                 const state = get();
                 return state.items.reduce((total, item) => {
@@ -64,6 +76,9 @@ export const useCart = create<CartStore>()(
         }),
         {
             name: 'oasis-cart-storage',
+            // Only persist items, NOT the isOpen state
+            // This prevents the cart from being stuck open after refresh
+            partialize: (state) => ({ items: state.items }),
         }
     )
 );

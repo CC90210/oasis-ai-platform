@@ -1,30 +1,68 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShoppingCart, X, Trash2, ArrowRight, Plus, Minus } from 'lucide-react';
+import { ShoppingCart, X, Trash2, ArrowRight, Plus, Minus, ArrowLeft } from 'lucide-react';
 import { useCart } from '@/store/cartStore';
 import { agents, bundles } from '@/data/products';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import { useEffect, useCallback } from 'react';
 
 export const CartDrawer = () => {
-    const { items, isOpen, toggleCart, removeItem, updateQuantity, getTotal } = useCart();
+    const { items, isOpen, closeCart, removeItem, updateQuantity, getTotal } = useCart();
     const navigate = useNavigate();
 
-    const handleCheckout = () => {
-        toggleCart();
+    // Close cart on Escape key
+    useEffect(() => {
+        const handleEscape = (e: KeyboardEvent) => {
+            if (e.key === 'Escape' && isOpen) {
+                closeCart();
+            }
+        };
+
+        if (isOpen) {
+            document.addEventListener('keydown', handleEscape);
+            // Prevent body scroll when cart is open
+            document.body.style.overflow = 'hidden';
+        }
+
+        return () => {
+            document.removeEventListener('keydown', handleEscape);
+            document.body.style.overflow = '';
+        };
+    }, [isOpen, closeCart]);
+
+    const handleCheckout = useCallback(() => {
+        closeCart();
         navigate('/checkout');
-    };
+    }, [closeCart, navigate]);
+
+    const handleBackdropClick = useCallback((e: React.MouseEvent) => {
+        // Only close if clicking the backdrop itself, not its children
+        if (e.target === e.currentTarget) {
+            closeCart();
+        }
+    }, [closeCart]);
+
+    const handleContinueShopping = useCallback(() => {
+        closeCart();
+    }, [closeCart]);
+
+    const handleGoToPricing = useCallback(() => {
+        closeCart();
+        navigate('/pricing');
+    }, [closeCart, navigate]);
 
     return (
         <AnimatePresence mode="wait">
             {isOpen && (
                 <>
-                    {/* Backdrop */}
+                    {/* Backdrop - separate click handler */}
                     <motion.div
                         key="cart-backdrop"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        onClick={toggleCart}
+                        onClick={handleBackdropClick}
                         className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60]"
+                        aria-hidden="true"
                     />
 
                     {/* Drawer */}
@@ -35,20 +73,30 @@ export const CartDrawer = () => {
                         exit={{ x: '100%' }}
                         transition={{ type: 'spring', damping: 25, stiffness: 200 }}
                         className="fixed right-0 top-0 h-full w-full max-w-md bg-bg-secondary border-l border-white/10 shadow-2xl z-[70] flex flex-col"
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby="cart-heading"
+                        onClick={(e) => e.stopPropagation()} // Prevent clicks from bubbling to backdrop
                     >
+                        {/* Header */}
                         <div className="p-6 border-b border-white/10 flex items-center justify-between">
                             <div className="flex items-center gap-3">
                                 <ShoppingCart className="w-5 h-5 text-oasis-cyan" />
-                                <h2 className="text-xl font-display font-bold text-white">Your Cart</h2>
+                                <h2 id="cart-heading" className="text-xl font-display font-bold text-white">Your Cart</h2>
                                 <span className="bg-oasis-cyan/10 text-oasis-cyan text-xs font-bold px-2 py-1 rounded-full">
                                     {items.length}
                                 </span>
                             </div>
-                            <button onClick={toggleCart} className="p-2 hover:bg-white/5 rounded-full transition-colors">
+                            <button
+                                onClick={closeCart}
+                                className="p-2 hover:bg-white/5 rounded-full transition-colors"
+                                aria-label="Close cart"
+                            >
                                 <X className="w-5 h-5 text-text-secondary" />
                             </button>
                         </div>
 
+                        {/* Cart Items */}
                         <div className="flex-1 overflow-y-auto p-6 space-y-4">
                             {items.length === 0 ? (
                                 <div className="h-full flex flex-col items-center justify-center text-center space-y-4">
@@ -56,8 +104,11 @@ export const CartDrawer = () => {
                                         <ShoppingCart className="w-8 h-8 text-text-tertiary" />
                                     </div>
                                     <p className="text-text-secondary">Your cart is empty.</p>
-                                    <button onClick={toggleCart} className="text-oasis-cyan text-sm font-medium hover:underline">
-                                        Continue Browsing
+                                    <button
+                                        onClick={handleGoToPricing}
+                                        className="text-oasis-cyan text-sm font-medium hover:underline"
+                                    >
+                                        Browse Products
                                     </button>
                                 </div>
                             ) : (
@@ -83,6 +134,7 @@ export const CartDrawer = () => {
                                                     <button
                                                         onClick={() => removeItem(item.id)}
                                                         className="text-text-tertiary hover:text-red-400 transition-colors p-1"
+                                                        aria-label={`Remove ${product.title} from cart`}
                                                     >
                                                         <X className="w-4 h-4" />
                                                     </button>
@@ -96,6 +148,7 @@ export const CartDrawer = () => {
                                                             onClick={() => updateQuantity(item.id, -1)}
                                                             className="p-1 hover:bg-white/10 rounded transition-colors text-text-secondary"
                                                             disabled={item.quantity <= 1}
+                                                            aria-label="Decrease quantity"
                                                         >
                                                             <Minus className="w-3 h-3" />
                                                         </button>
@@ -103,6 +156,7 @@ export const CartDrawer = () => {
                                                         <button
                                                             onClick={() => updateQuantity(item.id, 1)}
                                                             className="p-1 hover:bg-white/10 rounded transition-colors text-text-secondary"
+                                                            aria-label="Increase quantity"
                                                         >
                                                             <Plus className="w-3 h-3" />
                                                         </button>
@@ -116,6 +170,7 @@ export const CartDrawer = () => {
                             )}
                         </div>
 
+                        {/* Footer with Actions */}
                         {items.length > 0 && (
                             <div className="p-6 border-t border-white/10 bg-bg-tertiary/50">
                                 <div className="flex justify-between items-center mb-4">
@@ -127,12 +182,30 @@ export const CartDrawer = () => {
                                 </p>
                                 <button
                                     onClick={handleCheckout}
-                                    className="btn-primary w-full py-4 flex items-center justify-center gap-2 shadow-oasis"
+                                    className="btn-primary w-full py-4 flex items-center justify-center gap-2 shadow-oasis mb-3"
                                 >
                                     Proceed to Checkout <ArrowRight className="w-4 h-4" />
                                 </button>
+                                <button
+                                    onClick={handleContinueShopping}
+                                    className="w-full py-2 text-text-secondary hover:text-white text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                                >
+                                    <ArrowLeft className="w-4 h-4" />
+                                    Continue Shopping
+                                </button>
                             </div>
                         )}
+
+                        {/* Back to Main Site Link - always visible */}
+                        <div className="p-4 border-t border-white/10 bg-bg-secondary">
+                            <Link
+                                to="/"
+                                onClick={closeCart}
+                                className="text-text-tertiary hover:text-oasis-cyan text-xs flex items-center justify-center gap-1 transition-colors"
+                            >
+                                ← Back to main website
+                            </Link>
+                        </div>
                     </motion.div>
                 </>
             )}
