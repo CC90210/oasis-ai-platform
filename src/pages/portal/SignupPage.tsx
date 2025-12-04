@@ -24,7 +24,8 @@ const SignupPage = () => {
             email: formData.email,
             company: formData.company
         });
-        navigate('/portal/chat');
+        // New signups go to welcome page (not chat)
+        navigate('/portal/welcome');
     };
 
     return (

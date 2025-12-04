@@ -9,14 +9,20 @@ const LoginPage = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [isExistingClient, setIsExistingClient] = useState(false);
     const navigate = useNavigate();
     const { login } = useAuth();
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        // In a real app, validate against backend
-        login({ name: 'User', email });
-        navigate('/portal/chat');
+        // In a real app, validate against backend and check if user has active subscriptions
+        login({ name: 'User', email }, isExistingClient);
+        // Route based on whether they have active automations
+        if (isExistingClient) {
+            navigate('/portal/dashboard');
+        } else {
+            navigate('/portal/welcome');
+        }
     };
 
     return (
@@ -120,16 +126,18 @@ const LoginPage = () => {
                             </div>
                         </div>
 
-                        {/* Remember Me */}
+                        {/* Existing Client Checkbox */}
                         <div className="flex items-center">
                             <input
-                                id="remember-me"
-                                name="remember-me"
+                                id="existing-client"
+                                name="existing-client"
                                 type="checkbox"
+                                checked={isExistingClient}
+                                onChange={(e) => setIsExistingClient(e.target.checked)}
                                 className="h-4 w-4 rounded border-white/10 bg-bg-tertiary text-oasis-cyan focus:ring-oasis-cyan focus:ring-offset-0"
                             />
-                            <label htmlFor="remember-me" className="ml-2 block text-sm text-text-secondary">
-                                Remember me
+                            <label htmlFor="existing-client" className="ml-2 block text-sm text-text-secondary">
+                                I am an existing client with active automations
                             </label>
                         </div>
 

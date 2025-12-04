@@ -11,7 +11,8 @@ import BlogPost from './pages/blog/BlogPost';
 import CaseStudiesPage from './pages/casestudies/CaseStudiesPage';
 import LoginPage from './pages/portal/LoginPage';
 import SignupPage from './pages/portal/SignupPage';
-import ChatPage from './pages/portal/ChatPage';
+import WelcomePage from './pages/portal/WelcomePage';
+import ClientDashboard from './pages/portal/ClientDashboard';
 import PrivacyPage from './pages/legal/PrivacyPage';
 import TermsPage from './pages/legal/TermsPage';
 import ProtectedRoute from './components/auth/ProtectedRoute';
@@ -37,12 +38,22 @@ function App() {
                     <Route path="/privacy" element={<MainLayout><PrivacyPage /></MainLayout>} />
                     <Route path="/terms" element={<MainLayout><TermsPage /></MainLayout>} />
 
-                    {/* Portal Routes */}
+                    {/* Portal Routes - Public */}
                     <Route path="/portal/login" element={<LoginPage />} />
                     <Route path="/portal/signup" element={<SignupPage />} />
-                    <Route path="/portal/chat" element={
+
+                    {/* Portal Routes - Protected */}
+                    {/* New signups/prospects go to Welcome page */}
+                    <Route path="/portal/welcome" element={
                         <ProtectedRoute>
-                            <ChatPage />
+                            <WelcomePage />
+                        </ProtectedRoute>
+                    } />
+
+                    {/* Existing clients with active automations go to Dashboard */}
+                    <Route path="/portal/dashboard" element={
+                        <ProtectedRoute>
+                            <ClientDashboard />
                         </ProtectedRoute>
                     } />
                 </Routes>
@@ -52,4 +63,3 @@ function App() {
 }
 
 export default App;
-
