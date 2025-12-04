@@ -49,10 +49,10 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
                     <video
                         ref={videoRef}
                         id="splash-screen-video"
-                        // object-cover: Fills the screen completely (no black bars).
-                        // object-center: Centers the video content.
-                        // scale-110: Zooms in slightly to push watermark off-screen.
-                        className="w-full h-full object-cover object-center scale-110"
+                        // object-cover: Fills the screen completely.
+                        // scale-105 (mobile): Minimal zoom to hide watermark without losing too much content.
+                        // md:scale-110 (desktop): Larger zoom for wider screens.
+                        className="w-full h-full object-cover object-center scale-105 md:scale-110"
                         src="/videos/video_2025-12-04_16-19-42.mp4"
                         autoPlay
                         muted
