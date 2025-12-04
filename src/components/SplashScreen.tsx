@@ -44,12 +44,12 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
                     initial={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 1, ease: "easeInOut" }}
-                    className="fixed inset-0 z-[9999] bg-black overflow-hidden w-screen h-screen"
+                    className="fixed inset-0 z-[9999] bg-black overflow-hidden w-screen h-[100dvh] flex items-center justify-center"
                 >
                     <video
                         ref={videoRef}
                         id="splash-screen-video"
-                        className="w-full h-full object-cover"
+                        className="w-full h-full md:object-cover object-contain"
                         src="/videos/video_2025-12-04_13-07-15.mp4"
                         autoPlay
                         muted
