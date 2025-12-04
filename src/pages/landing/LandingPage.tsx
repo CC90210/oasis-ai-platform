@@ -179,7 +179,7 @@ const LandingPage = () => {
                                     initial={{ opacity: 0, x: index % 2 === 0 ? -50 : 50 }}
                                     whileInView={{ opacity: 1, x: 0 }}
                                     viewport={{ once: true }}
-                                    className={`relative flex items-center gap-8 mb-12 ${index % 2 === 0 ? 'md:flex-row-reverse' : ''}`}
+                                    className={`relative flex items-center gap-4 md:gap-8 mb-12 ${index % 2 === 0 ? 'md:flex-row-reverse' : ''}`}
                                 >
                                     <div className="hidden md:block flex-1" />
 

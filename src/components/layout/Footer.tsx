@@ -5,7 +5,7 @@ export const Footer = () => {
     return (
         <footer className="relative z-50 bg-bg-secondary border-t border-white/5 pt-20 pb-10">
             <div className="section-container">
-                <div className="grid md:grid-cols-4 gap-12 mb-16">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12 mb-16">
                     <div className="col-span-2">
                         <Link to="/" className="flex items-center gap-2 mb-6 group">
                             <img src="/images/oasis-logo.jpg" alt="OASIS AI" className="w-10 h-10 rounded-xl shadow-lg shadow-oasis-cyan/20 group-hover:shadow-oasis-cyan/40 transition-all" />
@@ -42,19 +42,19 @@ export const Footer = () => {
                         </ul>
                     </div>
 
-                    <div>
+                    <div className="col-span-2 md:col-span-1">
                         <h4 className="font-bold text-white mb-6">Contact</h4>
                         <ul className="space-y-4">
                             <li className="flex items-start gap-3 text-text-secondary">
-                                <Mail className="w-5 h-5 text-oasis-cyan flex-shrink-0" />
-                                <a href="mailto:oasisaisolutions@gmail.com" className="hover:text-white transition-colors">oasisaisolutions@gmail.com</a>
+                                <Mail className="w-5 h-5 text-oasis-cyan flex-shrink-0 mt-1" />
+                                <a href="mailto:oasisaisolutions@gmail.com" className="hover:text-white transition-colors break-all">oasisaisolutions@gmail.com</a>
                             </li>
                             <li className="flex items-start gap-3 text-text-secondary">
-                                <MapPin className="w-5 h-5 text-oasis-cyan flex-shrink-0" />
-                                <span>Montreal & Ontario, Canada</span>
+                                <MapPin className="w-5 h-5 text-oasis-cyan flex-shrink-0 mt-1" />
+                                <span className="break-words">Montreal & Ontario, Canada</span>
                             </li>
                             <li className="flex items-start gap-3 text-text-secondary">
-                                <Globe className="w-5 h-5 text-oasis-cyan flex-shrink-0" />
+                                <Globe className="w-5 h-5 text-oasis-cyan flex-shrink-0 mt-1" />
                                 <span>Serving Clients Worldwide</span>
                             </li>
                         </ul>
