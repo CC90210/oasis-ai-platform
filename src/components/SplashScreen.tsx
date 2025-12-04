@@ -1,4 +1,5 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface SplashScreenProps {
     onComplete: () => void;
@@ -6,13 +7,17 @@ interface SplashScreenProps {
 
 const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
     const videoRef = useRef<HTMLVideoElement>(null);
+    const [isVisible, setIsVisible] = useState(true);
 
     useEffect(() => {
         const video = videoRef.current;
         if (!video) return;
 
         const handleEnded = () => {
-            onComplete();
+            // Trigger fade out
+            setIsVisible(false);
+            // Wait for animation to finish before calling onComplete
+            setTimeout(onComplete, 1000);
         };
 
         // Handle autoplay failure
@@ -20,10 +25,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
         if (playPromise !== undefined) {
             playPromise.catch(error => {
                 console.warn('Autoplay prevented:', error);
-                // If autoplay is blocked, we should probably show the content immediately
-                // or show a "Play" button. Given the "Non-Skippable" constraint, 
-                // falling back to showing content is the safest UX to avoid a stuck screen.
-                onComplete();
+                handleEnded();
             });
         }
 
@@ -35,23 +37,30 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
     }, [onComplete]);
 
     return (
-        <div
-            id="splash-screen"
-            className="fixed inset-0 z-[9999] bg-black overflow-hidden w-screen h-screen"
-        >
-            <video
-                ref={videoRef}
-                id="splash-screen-video"
-                className="w-full h-full object-cover"
-                src="/videos/video_2025-12-04_13-07-15.mp4"
-                autoPlay
-                muted
-                playsInline
-                preload="auto"
-            >
-                Your browser does not support the video tag.
-            </video>
-        </div>
+        <AnimatePresence>
+            {isVisible && (
+                <motion.div
+                    key="splash-screen"
+                    initial={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 1, ease: "easeInOut" }}
+                    className="fixed inset-0 z-[9999] bg-black overflow-hidden w-screen h-screen"
+                >
+                    <video
+                        ref={videoRef}
+                        id="splash-screen-video"
+                        className="w-full h-full object-cover"
+                        src="/videos/video_2025-12-04_13-07-15.mp4"
+                        autoPlay
+                        muted
+                        playsInline
+                        preload="auto"
+                    >
+                        Your browser does not support the video tag.
+                    </video>
+                </motion.div>
+            )}
+        </AnimatePresence>
     );
 };
 

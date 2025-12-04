@@ -35,46 +35,44 @@ function App() {
         <ErrorBoundary>
             {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
 
-            {/* Hide main content while splash is showing */}
-            <div style={{ display: showSplash ? 'none' : 'block' }}>
-                <Router>
-                    <ScrollToTop />
-                    <Routes>
-                        {/* Public Routes */}
-                        <Route path="/" element={<MainLayout><LandingPage /></MainLayout>} />
-                        <Route path="/services" element={<MainLayout><ServicesPage /></MainLayout>} />
-                        <Route path="/pricing" element={<MainLayout><PricingPage /></MainLayout>} />
-                        <Route path="/contact" element={<MainLayout><ContactPage /></MainLayout>} />
-                        <Route path="/blog" element={<MainLayout><BlogPage /></MainLayout>} />
-                        <Route path="/blog/:slug" element={<MainLayout><BlogPost /></MainLayout>} />
-                        <Route path="/case-studies" element={<MainLayout><CaseStudiesPage /></MainLayout>} />
-                        <Route path="/checkout" element={<MainLayout><CheckoutPage /></MainLayout>} />
+            {/* Main content is always rendered behind the splash screen for seamless transition */}
+            <Router>
+                <ScrollToTop />
+                <Routes>
+                    {/* Public Routes */}
+                    <Route path="/" element={<MainLayout><LandingPage /></MainLayout>} />
+                    <Route path="/services" element={<MainLayout><ServicesPage /></MainLayout>} />
+                    <Route path="/pricing" element={<MainLayout><PricingPage /></MainLayout>} />
+                    <Route path="/contact" element={<MainLayout><ContactPage /></MainLayout>} />
+                    <Route path="/blog" element={<MainLayout><BlogPage /></MainLayout>} />
+                    <Route path="/blog/:slug" element={<MainLayout><BlogPost /></MainLayout>} />
+                    <Route path="/case-studies" element={<MainLayout><CaseStudiesPage /></MainLayout>} />
+                    <Route path="/checkout" element={<MainLayout><CheckoutPage /></MainLayout>} />
 
-                        {/* Legal Pages */}
-                        <Route path="/privacy" element={<MainLayout><PrivacyPage /></MainLayout>} />
-                        <Route path="/terms" element={<MainLayout><TermsPage /></MainLayout>} />
+                    {/* Legal Pages */}
+                    <Route path="/privacy" element={<MainLayout><PrivacyPage /></MainLayout>} />
+                    <Route path="/terms" element={<MainLayout><TermsPage /></MainLayout>} />
 
-                        {/* Portal Routes - Public */}
-                        <Route path="/portal/login" element={<LoginPage />} />
-                        <Route path="/portal/signup" element={<SignupPage />} />
+                    {/* Portal Routes - Public */}
+                    <Route path="/portal/login" element={<LoginPage />} />
+                    <Route path="/portal/signup" element={<SignupPage />} />
 
-                        {/* Portal Routes - Protected */}
-                        {/* New signups/prospects go to Welcome page */}
-                        <Route path="/portal/welcome" element={
-                            <ProtectedRoute>
-                                <WelcomePage />
-                            </ProtectedRoute>
-                        } />
+                    {/* Portal Routes - Protected */}
+                    {/* New signups/prospects go to Welcome page */}
+                    <Route path="/portal/welcome" element={
+                        <ProtectedRoute>
+                            <WelcomePage />
+                        </ProtectedRoute>
+                    } />
 
-                        {/* Existing clients with active automations go to Dashboard */}
-                        <Route path="/portal/dashboard" element={
-                            <ProtectedRoute>
-                                <ClientDashboard />
-                            </ProtectedRoute>
-                        } />
-                    </Routes>
-                </Router>
-            </div>
+                    {/* Existing clients with active automations go to Dashboard */}
+                    <Route path="/portal/dashboard" element={
+                        <ProtectedRoute>
+                            <ClientDashboard />
+                        </ProtectedRoute>
+                    } />
+                </Routes>
+            </Router>
         </ErrorBoundary>
     );
 }
