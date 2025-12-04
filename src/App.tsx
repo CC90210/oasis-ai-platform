@@ -12,6 +12,8 @@ import CaseStudiesPage from './pages/casestudies/CaseStudiesPage';
 import LoginPage from './pages/portal/LoginPage';
 import SignupPage from './pages/portal/SignupPage';
 import ChatPage from './pages/portal/ChatPage';
+import PrivacyPage from './pages/legal/PrivacyPage';
+import TermsPage from './pages/legal/TermsPage';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import ErrorBoundary from './components/ErrorBoundary';
 
@@ -31,6 +33,10 @@ function App() {
                     <Route path="/case-studies" element={<MainLayout><CaseStudiesPage /></MainLayout>} />
                     <Route path="/checkout" element={<MainLayout><CheckoutPage /></MainLayout>} />
 
+                    {/* Legal Pages */}
+                    <Route path="/privacy" element={<MainLayout><PrivacyPage /></MainLayout>} />
+                    <Route path="/terms" element={<MainLayout><TermsPage /></MainLayout>} />
+
                     {/* Portal Routes */}
                     <Route path="/portal/login" element={<LoginPage />} />
                     <Route path="/portal/signup" element={<SignupPage />} />
@@ -46,3 +52,4 @@ function App() {
 }
 
 export default App;
+
