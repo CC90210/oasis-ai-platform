@@ -50,7 +50,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
                         ref={videoRef}
                         id="splash-screen-video"
                         className="w-full h-full md:object-cover object-contain"
-                        src="/videos/video_2025-12-04_13-07-15.mp4"
+                        src="/videos/Video_Upgrade_Request_Fulfilled.mp4"
                         autoPlay
                         muted
                         playsInline
