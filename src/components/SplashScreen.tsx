@@ -55,26 +55,25 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
                     className="fixed inset-0 z-[9999] bg-black overflow-hidden w-screen h-[100dvh] flex items-center justify-center"
                     onClick={handleManualPlay} // Allow clicking anywhere to play if blocked
                 >
-                    {/* Background Blur Layer (Fills screen) */}
-                    <div className="absolute inset-0 z-0 overflow-hidden opacity-40">
+                    {/* Background Blur Layer (Mobile Only - Fills screen) */}
+                    <div className="absolute inset-0 z-0 overflow-hidden opacity-40 md:hidden">
                         <video
                             className="w-full h-full object-cover blur-2xl scale-110"
                             src="/videos/video_2025-12-04_16-19-42.mp4"
                             muted
                             playsInline
-                            loop
                             autoPlay
                         />
                     </div>
 
-                    {/* Foreground Content Layer (Shows full video) */}
-                    <div className="relative z-10 w-full h-full flex items-center justify-center p-4">
+                    {/* Foreground Content Layer */}
+                    <div className="relative z-10 w-full h-full flex items-center justify-center p-0 md:p-0">
                         <video
                             ref={videoRef}
                             id="splash-screen-video"
-                            // object-contain: Ensures FULL video is visible (logo readable)
-                            // md:object-cover: On desktop, we can still cover since aspect ratio is similar
-                            className="w-full h-auto max-h-full object-contain md:object-cover md:h-full shadow-2xl"
+                            // Mobile: object-contain (show full logo), max-h-full
+                            // Desktop: object-cover (fill screen), w-full, h-full
+                            className="w-full h-full object-contain md:object-cover shadow-2xl md:shadow-none"
                             src="/videos/video_2025-12-04_16-19-42.mp4"
                             autoPlay
                             muted
