@@ -8,33 +8,41 @@ interface SplashScreenProps {
 const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
     const videoRef = useRef<HTMLVideoElement>(null);
     const [isVisible, setIsVisible] = useState(true);
+    const [isPlaying, setIsPlaying] = useState(false);
 
     useEffect(() => {
         const video = videoRef.current;
         if (!video) return;
 
         const handleEnded = () => {
-            // Trigger fade out
             setIsVisible(false);
-            // Wait for animation to finish before calling onComplete
             setTimeout(onComplete, 1000);
         };
 
-        // Handle autoplay failure
-        const playPromise = video.play();
-        if (playPromise !== undefined) {
-            playPromise.catch(error => {
+        const attemptPlay = async () => {
+            try {
+                await video.play();
+                setIsPlaying(true);
+            } catch (error) {
                 console.warn('Autoplay prevented:', error);
-                handleEnded();
-            });
-        }
+                // We don't auto-close here anymore, we let the user click play
+            }
+        };
 
+        attemptPlay();
         video.addEventListener('ended', handleEnded);
 
         return () => {
             video.removeEventListener('ended', handleEnded);
         };
     }, [onComplete]);
+
+    const handleManualPlay = () => {
+        if (videoRef.current) {
+            videoRef.current.play();
+            setIsPlaying(true);
+        }
+    };
 
     return (
         <AnimatePresence>
@@ -45,22 +53,52 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
                     exit={{ opacity: 0 }}
                     transition={{ duration: 1, ease: "easeInOut" }}
                     className="fixed inset-0 z-[9999] bg-black overflow-hidden w-screen h-[100dvh] flex items-center justify-center"
+                    onClick={handleManualPlay} // Allow clicking anywhere to play if blocked
                 >
-                    <video
-                        ref={videoRef}
-                        id="splash-screen-video"
-                        // object-cover: Fills the screen completely.
-                        // scale-105 (mobile): Minimal zoom to hide watermark without losing too much content.
-                        // md:scale-110 (desktop): Larger zoom for wider screens.
-                        className="w-full h-full object-cover object-center scale-105 md:scale-110"
-                        src="/videos/video_2025-12-04_16-19-42.mp4"
-                        autoPlay
-                        muted
-                        playsInline
-                        preload="auto"
-                    >
-                        Your browser does not support the video tag.
-                    </video>
+                    {/* Background Blur Layer (Fills screen) */}
+                    <div className="absolute inset-0 z-0 overflow-hidden opacity-40">
+                        <video
+                            className="w-full h-full object-cover blur-2xl scale-110"
+                            src="/videos/video_2025-12-04_16-19-42.mp4"
+                            muted
+                            playsInline
+                            loop
+                            autoPlay
+                        />
+                    </div>
+
+                    {/* Foreground Content Layer (Shows full video) */}
+                    <div className="relative z-10 w-full h-full flex items-center justify-center p-4">
+                        <video
+                            ref={videoRef}
+                            id="splash-screen-video"
+                            // object-contain: Ensures FULL video is visible (logo readable)
+                            // md:object-cover: On desktop, we can still cover since aspect ratio is similar
+                            className="w-full h-auto max-h-full object-contain md:object-cover md:h-full shadow-2xl"
+                            src="/videos/video_2025-12-04_16-19-42.mp4"
+                            autoPlay
+                            muted
+                            playsInline
+                            preload="auto"
+                        >
+                            Your browser does not support the video tag.
+                        </video>
+
+                        {/* Play Button Fallback (Only shows if autoplay failed and not playing) */}
+                        {!isPlaying && (
+                            <div className="absolute inset-0 flex items-center justify-center z-20 bg-black/20">
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleManualPlay();
+                                    }}
+                                    className="bg-white/10 backdrop-blur-md border border-white/20 text-white px-6 py-3 rounded-full font-bold uppercase tracking-wider hover:bg-white/20 transition-all"
+                                >
+                                    Enter OASIS
+                                </button>
+                            </div>
+                        )}
+                    </div>
                 </motion.div>
             )}
         </AnimatePresence>
