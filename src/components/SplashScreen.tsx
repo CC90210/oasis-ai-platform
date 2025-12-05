@@ -32,8 +32,18 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
         attemptPlay();
         video.addEventListener('ended', handleEnded);
 
+        // SAFETY TIMEOUT: Force close after 8 seconds if video gets stuck or blocked
+        // This prevents the "black screen" issue on desktop
+        const safetyTimeout = setTimeout(() => {
+            if (isVisible) {
+                console.warn('Splash screen safety timeout triggered');
+                handleEnded();
+            }
+        }, 8000);
+
         return () => {
             video.removeEventListener('ended', handleEnded);
+            clearTimeout(safetyTimeout);
         };
     }, [onComplete]);
 
