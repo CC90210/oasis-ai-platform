@@ -1,4 +1,4 @@
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { ShoppingCart, X, Trash2, ArrowRight, Plus, Minus, ArrowLeft } from 'lucide-react';
 import { useCart } from '@/store/cartStore';
 import { agents, bundles } from '@/data/products';
@@ -59,15 +59,13 @@ export const CartDrawer = () => {
     }, [closeCart, navigate]);
 
     return (
-        <AnimatePresence mode="wait">
+    return (
+        <>
             {isOpen && (
                 <>
                     {/* Backdrop - separate click handler */}
-                    <motion.div
+                    <div
                         key="cart-backdrop"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
                         onClick={handleBackdropClick}
                         className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60]"
                         aria-hidden="true"
@@ -78,7 +76,6 @@ export const CartDrawer = () => {
                         key="cart-drawer"
                         initial={{ x: '100%' }}
                         animate={{ x: 0 }}
-                        exit={{ x: '100%' }}
                         transition={{ type: 'spring', damping: 25, stiffness: 200 }}
                         className="fixed right-0 top-0 h-full w-full max-w-md bg-bg-secondary border-l border-white/10 shadow-2xl z-[70] flex flex-col"
                         role="dialog"
@@ -128,8 +125,7 @@ export const CartDrawer = () => {
                                     if (!product) return null;
 
                                     return (
-                                        <motion.div
-                                            layout
+                                        <div
                                             key={item.id}
                                             className="bg-bg-tertiary p-4 rounded-xl border border-white/5 flex gap-4"
                                         >
@@ -172,7 +168,7 @@ export const CartDrawer = () => {
                                                     <span className="text-xs text-text-tertiary">One-time setup</span>
                                                 </div>
                                             </div>
-                                        </motion.div>
+                                        </div>
                                     );
                                 })
                             )}
@@ -217,6 +213,7 @@ export const CartDrawer = () => {
                     </motion.div>
                 </>
             )}
-        </AnimatePresence>
+        </>
+    );
     );
 };
