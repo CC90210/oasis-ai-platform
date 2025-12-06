@@ -59,7 +59,6 @@ export const CartDrawer = () => {
     }, [closeCart, navigate]);
 
     return (
-    return (
         <>
             {isOpen && (
                 <>
@@ -214,6 +213,5 @@ export const CartDrawer = () => {
                 </>
             )}
         </>
-    );
     );
 };
