@@ -14,7 +14,7 @@ const ContactPage = lazy(() => import('./pages/contact/ContactPage'));
 const CheckoutPage = lazy(() => import('./pages/checkout/CheckoutPage'));
 const BlogPage = lazy(() => import('./pages/blog/BlogPage'));
 const BlogPost = lazy(() => import('./pages/blog/BlogPost'));
-const CaseStudiesPage = lazy(() => import('./pages/casestudies/CaseStudiesPage'));
+const CaseStudiesPage = lazy(() => import('./pages/case-studies/CaseStudiesPage'));
 const LoginPage = lazy(() => import('./pages/portal/LoginPage'));
 const SignupPage = lazy(() => import('./pages/portal/SignupPage'));
 const WelcomePage = lazy(() => import('./pages/portal/WelcomePage'));
