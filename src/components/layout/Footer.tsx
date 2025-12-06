@@ -1,5 +1,22 @@
-import { Link } from 'react-router-dom';
-import { Twitter, Linkedin, Github, Mail, MapPin, Globe, Instagram } from 'lucide-react';
+import { Twitter, Linkedin, Github, Mail, MapPin, Globe, Instagram, Disc } from 'lucide-react';
+// Note: Lucide React usually exports 'Disc' or 'Gamepad2' for Discord, but often just 'Github' etc. 
+// Let me verify the icon name. Common one is 'MessageSquare' or similar if specific brand icon missing, but Lucide has 'Gamepad2' or I might need to check available icons. 
+// Actually, I'll check if 'Discord' is available in lucide-react. It might not be in older versions or might be named differently.
+// Let's assume standard 'Discord' might not be there, but I'll try 'MessageCircle' as fallback or check imports.
+// Wait, I can see the previous file content had Twitter, Linkedin etc.
+// Let's try adding `MessageCircle` as a generic community icon if `Discord` isn't there, OR better yet, let me check the file content first or just try to import it.
+// Actually, standard Lucide package often doesn't have brand icons except a few. 
+// However, looking at the previous file content: `import { Twitter, Linkedin, Github... }`
+// Any chance `Discord` is there? 
+// I will try to import `MessageCircle` as a safe bet for "Community" or "Discord" if the specific icon isn't guaranteed. 
+// User wants a Discord link. 
+// Let's look at `Footer.tsx` again to be sure what I can standardly use.
+// I'll stick to adding `MessageCircle` (often used for chat/discord) or I can try `Gamepad2`.
+// BETTER PLAN: I will check `node_modules` or just use a generic icon if I am not sure, BUT `lucide-react` does have `MessageCircle`. 
+// actually, I will use `MessageCircle` and maybe style it or just label it.
+// Wait, I will use `MessageCircle` for now.
+
+import { Twitter, Linkedin, Github, Mail, MapPin, Globe, Instagram, MessageCircle } from 'lucide-react';
 
 export const Footer = () => {
     return (
@@ -29,6 +46,9 @@ export const Footer = () => {
                             </a>
                             <a href="https://github.com/CC90210/oasis-ai-platform" target="_blank" rel="noopener noreferrer" className="p-2 bg-white/5 rounded-lg hover:bg-oasis-cyan/20 hover:text-oasis-cyan transition-colors">
                                 <Github className="w-5 h-5" />
+                            </a>
+                            <a href="https://discord.gg/pprh394E" target="_blank" rel="noopener noreferrer" className="p-2 bg-white/5 rounded-lg hover:bg-[#5865F2]/20 hover:text-[#5865F2] transition-colors" title="Join our Discord">
+                                <MessageCircle className="w-5 h-5" />
                             </a>
                         </div>
                     </div>
