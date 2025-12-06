@@ -19,31 +19,10 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
             setTimeout(onComplete, 1000);
         };
 
-        const attemptPlay = async () => {
-            try {
-                await video.play();
-                setIsPlaying(true);
-            } catch (error) {
-                console.warn('Autoplay prevented:', error);
-                // We don't auto-close here anymore, we let the user click play
-            }
-        };
-
-        attemptPlay();
         video.addEventListener('ended', handleEnded);
-
-        // SAFETY TIMEOUT: Force close after 8 seconds if video gets stuck or blocked
-        // This prevents the "black screen" issue on desktop
-        const safetyTimeout = setTimeout(() => {
-            if (isVisible) {
-                console.warn('Splash screen safety timeout triggered');
-                handleEnded();
-            }
-        }, 8000);
 
         return () => {
             video.removeEventListener('ended', handleEnded);
-            clearTimeout(safetyTimeout);
         };
     }, [onComplete]);
 
@@ -69,10 +48,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
                     <div className="absolute inset-0 z-0 overflow-hidden opacity-40 md:hidden">
                         <video
                             className="w-full h-full object-cover blur-2xl scale-110"
-                            src="/videos/video_2025-12-04_16-19-42.mp4"
-                            muted
                             playsInline
-                            autoPlay
                         />
                     </div>
 
@@ -85,9 +61,8 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
                             // Desktop: object-cover (fill screen), w-full, h-full
                             className="w-full h-full object-contain md:object-cover shadow-2xl md:shadow-none"
                             src="/videos/video_2025-12-04_16-19-42.mp4"
-                            autoPlay
-                            muted
                             playsInline
+                            muted
                             preload="auto"
                         >
                             Your browser does not support the video tag.

@@ -40,18 +40,18 @@ function App() {
                 <ScrollToTop />
                 <Routes>
                     {/* Public Routes */}
-                    <Route path="/" element={<MainLayout><LandingPage /></MainLayout>} />
-                    <Route path="/services" element={<MainLayout><ServicesPage /></MainLayout>} />
-                    <Route path="/pricing" element={<MainLayout><PricingPage /></MainLayout>} />
-                    <Route path="/contact" element={<MainLayout><ContactPage /></MainLayout>} />
-                    <Route path="/blog" element={<MainLayout><BlogPage /></MainLayout>} />
-                    <Route path="/blog/:slug" element={<MainLayout><BlogPost /></MainLayout>} />
-                    <Route path="/case-studies" element={<MainLayout><CaseStudiesPage /></MainLayout>} />
-                    <Route path="/checkout" element={<MainLayout><CheckoutPage /></MainLayout>} />
+                    <Route path="/" element={<MainLayout showChat={!showSplash}><LandingPage /></MainLayout>} />
+                    <Route path="/services" element={<MainLayout showChat={!showSplash}><ServicesPage /></MainLayout>} />
+                    <Route path="/pricing" element={<MainLayout showChat={!showSplash}><PricingPage /></MainLayout>} />
+                    <Route path="/contact" element={<MainLayout showChat={!showSplash}><ContactPage /></MainLayout>} />
+                    <Route path="/blog" element={<MainLayout showChat={!showSplash}><BlogPage /></MainLayout>} />
+                    <Route path="/blog/:slug" element={<MainLayout showChat={!showSplash}><BlogPost /></MainLayout>} />
+                    <Route path="/case-studies" element={<MainLayout showChat={!showSplash}><CaseStudiesPage /></MainLayout>} />
+                    <Route path="/checkout" element={<MainLayout showChat={!showSplash}><CheckoutPage /></MainLayout>} />
 
                     {/* Legal Pages */}
-                    <Route path="/privacy" element={<MainLayout><PrivacyPage /></MainLayout>} />
-                    <Route path="/terms" element={<MainLayout><TermsPage /></MainLayout>} />
+                    <Route path="/privacy" element={<MainLayout showChat={!showSplash}><PrivacyPage /></MainLayout>} />
+                    <Route path="/terms" element={<MainLayout showChat={!showSplash}><TermsPage /></MainLayout>} />
 
                     {/* Portal Routes - Public */}
                     <Route path="/portal/login" element={<LoginPage />} />

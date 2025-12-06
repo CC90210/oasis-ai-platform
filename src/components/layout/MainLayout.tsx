@@ -5,14 +5,15 @@ import { ChatWidget } from '../chat/ChatWidget';
 
 interface MainLayoutProps {
     children: React.ReactNode;
+    showChat?: boolean;
 }
 
-export const MainLayout = ({ children }: MainLayoutProps) => {
+export const MainLayout = ({ children, showChat = true }: MainLayoutProps) => {
     return (
         <div className="min-h-screen flex flex-col bg-bg-primary">
             <Header />
             <CartDrawer />
-            <ChatWidget />
+            {showChat && <ChatWidget />}
             <main className="flex-grow pt-16">
                 {children}
             </main>
