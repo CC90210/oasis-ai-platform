@@ -1,6 +1,6 @@
 import {
     MessageSquare, Star, Mail, Calendar, Target, Phone, Layers, Zap,
-    Database, Users, BarChart3, Share2, Box, FileText
+    Database, Users, BarChart3, Share2, Box, FileText, ThumbsUp
 } from 'lucide-react';
 
 export const agents = {
@@ -59,6 +59,14 @@ export const agents = {
         icon: Users,
         features: ['Ticket Routing', 'FAQ Automation', 'Knowledge Base Integration'],
         roi: 'Reduce support costs by 60%'
+    },
+    'google-review-agent': {
+        title: 'Google Review Agent',
+        price: 797,
+        description: 'Dedicated agent to skyrocket your Google business ratings and manage reputation.',
+        icon: ThumbsUp,
+        features: ['Review Generation', 'Smart Responses', 'Rating Growth'],
+        roi: 'Boost rating to 4.9 stars'
     },
     'revenue-ops': {
         title: 'Revenue Operations Automation',
