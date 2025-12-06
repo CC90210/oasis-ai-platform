@@ -2,12 +2,18 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingCart, X, Trash2, ArrowRight, Plus, Minus, ArrowLeft } from 'lucide-react';
 import { useCart } from '@/store/cartStore';
 import { agents, bundles } from '@/data/products';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useEffect, useCallback } from 'react';
 
 export const CartDrawer = () => {
     const { items, isOpen, closeCart, removeItem, updateQuantity, getTotal } = useCart();
     const navigate = useNavigate();
+    const location = useLocation();
+
+    // Safety: Ensure cart closes on ANY route change
+    useEffect(() => {
+        closeCart();
+    }, [location.pathname, closeCart]);
 
     // Close cart on Escape key
     useEffect(() => {

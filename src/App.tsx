@@ -5,6 +5,7 @@ import ScrollToTop from './components/ScrollToTop';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import ErrorBoundary from './components/ErrorBoundary';
 import SplashScreen from './components/SplashScreen';
+import { CartDrawer } from './components/cart/CartDrawer';
 
 // Lazy load pages for performance
 const LandingPage = lazy(() => import('./pages/landing/LandingPage'));
@@ -47,6 +48,8 @@ function App() {
             {/* Main content is always rendered behind the splash screen for seamless transition */}
             <Router>
                 <ScrollToTop />
+                {/* Global Cart Drawer - Persists across route transitions */}
+                <CartDrawer />
                 <Suspense fallback={<PageLoader />}>
                     <Routes>
                         {/* Public Routes */}
