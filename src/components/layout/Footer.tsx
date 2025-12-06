@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Twitter, Linkedin, Github, Mail, MapPin, Globe } from 'lucide-react';
+import { Twitter, Linkedin, Github, Mail, MapPin, Globe, Instagram } from 'lucide-react';
 
 export const Footer = () => {
     return (
@@ -18,13 +18,16 @@ export const Footer = () => {
                             We build the digital workforce of tomorrow, today.
                         </p>
                         <div className="flex gap-4">
-                            <a href="#" className="p-2 bg-white/5 rounded-lg hover:bg-oasis-cyan/20 hover:text-oasis-cyan transition-colors">
+                            <a href="https://www.instagram.com/oasisaisolutions?igsh=MWtjYWk3bHdreXYxYg%3D%3D&utm_source=qr" target="_blank" rel="noopener noreferrer" className="p-2 bg-white/5 rounded-lg hover:bg-oasis-cyan/20 hover:text-oasis-cyan transition-colors">
+                                <Instagram className="w-5 h-5" />
+                            </a>
+                            <a href="https://x.com/Conaugh90210" target="_blank" rel="noopener noreferrer" className="p-2 bg-white/5 rounded-lg hover:bg-oasis-cyan/20 hover:text-oasis-cyan transition-colors">
                                 <Twitter className="w-5 h-5" />
                             </a>
-                            <a href="#" className="p-2 bg-white/5 rounded-lg hover:bg-oasis-cyan/20 hover:text-oasis-cyan transition-colors">
+                            <a href="https://www.linkedin.com/in/conaugh-mckenna-a82471352" target="_blank" rel="noopener noreferrer" className="p-2 bg-white/5 rounded-lg hover:bg-oasis-cyan/20 hover:text-oasis-cyan transition-colors">
                                 <Linkedin className="w-5 h-5" />
                             </a>
-                            <a href="#" className="p-2 bg-white/5 rounded-lg hover:bg-oasis-cyan/20 hover:text-oasis-cyan transition-colors">
+                            <a href="https://github.com/CC90210/oasis-ai-platform" target="_blank" rel="noopener noreferrer" className="p-2 bg-white/5 rounded-lg hover:bg-oasis-cyan/20 hover:text-oasis-cyan transition-colors">
                                 <Github className="w-5 h-5" />
                             </a>
                         </div>
