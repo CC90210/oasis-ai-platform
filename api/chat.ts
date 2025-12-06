@@ -26,6 +26,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
+    // Input Validation
+    const { message } = req.body;
+    if (!message || typeof message !== 'string' || !message.trim()) {
+        return res.status(400).json({ error: 'Message is required' });
+    }
+
     try {
         // Forward request to n8n
         const response = await fetch(N8N_WEBHOOK_URL, {
