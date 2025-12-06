@@ -68,7 +68,9 @@ export const Sidebar = ({ isOpen, setIsOpen }: SidebarProps) => {
                 {/* Navigation */}
                 <div className="flex-1 overflow-y-auto py-6 px-3 space-y-1">
                     {navigation.map((item) => {
-                        const isActive = location.pathname === item.href;
+                        const isActive = item.href === '/portal/dashboard'
+                            ? location.pathname === '/portal/dashboard'
+                            : location.pathname.startsWith(item.href);
                         return (
                             <Link
                                 key={item.name}

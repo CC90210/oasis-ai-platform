@@ -18,6 +18,11 @@ export const Header = () => {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
+    // Close mobile menu whenever the route changes
+    useEffect(() => {
+        setIsMobileMenuOpen(false);
+    }, [location.pathname]);
+
     const navLinks = [
         { name: 'Services', path: '/services' },
         { name: 'Pricing', path: '/pricing' },
@@ -26,7 +31,10 @@ export const Header = () => {
         { name: 'Contact', path: '/contact' },
     ];
 
-    const isActive = (path: string) => location.pathname === path;
+    const isActive = (path: string) => {
+        if (path === '/') return location.pathname === '/';
+        return location.pathname.startsWith(path);
+    };
 
     return (
         <header
