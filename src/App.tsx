@@ -16,10 +16,10 @@ const CheckoutPage = lazy(() => import('./pages/checkout/CheckoutPage'));
 const BlogPage = lazy(() => import('./pages/blog/BlogPage'));
 const BlogPost = lazy(() => import('./pages/blog/BlogPost'));
 const CaseStudiesPage = lazy(() => import('./pages/case-studies/CaseStudiesPage'));
-const LoginPage = lazy(() => import('./pages/portal/LoginPage'));
-const SignupPage = lazy(() => import('./pages/portal/SignupPage'));
-const WelcomePage = lazy(() => import('./pages/portal/WelcomePage'));
-const ClientDashboard = lazy(() => import('./pages/portal/ClientDashboard'));
+const LoginPage = lazy(() => import('./pages/login'));
+// const SignupPage = lazy(() => import('./pages/portal/SignupPage'));
+// const WelcomePage = lazy(() => import('./pages/portal/WelcomePage'));
+const ClientDashboard = lazy(() => import('./pages/dashboard/[clientId]'));
 const PrivacyPage = lazy(() => import('./pages/legal/PrivacyPage'));
 const TermsPage = lazy(() => import('./pages/legal/TermsPage'));
 
@@ -36,8 +36,8 @@ function App() {
 
     // Loading fallback
     const PageLoader = () => (
-        <div className="min-h-screen flex items-center justify-center bg-bg-primary">
-            <div className="w-8 h-8 border-2 border-oasis-cyan border-t-transparent rounded-full animate-spin"></div>
+        <div className="min-h-screen flex items-center justify-center bg-gray-900">
+            <div className="w-8 h-8 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin"></div>
         </div>
     );
 
@@ -66,24 +66,12 @@ function App() {
                         <Route path="/privacy" element={<MainLayout showChat={!showSplash}><PrivacyPage /></MainLayout>} />
                         <Route path="/terms" element={<MainLayout showChat={!showSplash}><TermsPage /></MainLayout>} />
 
-                        {/* Portal Routes - Public */}
-                        <Route path="/portal/login" element={<LoginPage />} />
-                        <Route path="/portal/signup" element={<SignupPage />} />
+                        {/* Portal Routes */}
+                        <Route path="/login" element={<LoginPage />} />
+                        <Route path="/dashboard/:clientId" element={<ClientDashboard />} />
 
-                        {/* Portal Routes - Protected */}
-                        {/* New signups/prospects go to Welcome page */}
-                        <Route path="/portal/welcome" element={
-                            <ProtectedRoute>
-                                <WelcomePage />
-                            </ProtectedRoute>
-                        } />
-
-                        {/* Existing clients with active automations go to Dashboard */}
-                        <Route path="/portal/dashboard" element={
-                            <ProtectedRoute>
-                                <ClientDashboard />
-                            </ProtectedRoute>
-                        } />
+                        {/* Redirect old routes */}
+                        <Route path="/portal/*" element={<LoginPage />} />
                     </Routes>
                 </Suspense>
             </Router>
