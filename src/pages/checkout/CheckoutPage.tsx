@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { ShieldCheck, Loader2 } from 'lucide-react';
+import { ShieldCheck, Loader2, AlertCircle } from 'lucide-react';
 
 declare global {
     interface Window {
@@ -24,6 +24,7 @@ const CheckoutPage: React.FC = () => {
     const [cart, setCart] = useState<CartItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [sdkReady, setSdkReady] = useState(false);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const paypalButtonRef = useRef<HTMLDivElement>(null);
 
     // Form State
@@ -58,25 +59,33 @@ const CheckoutPage: React.FC = () => {
             }
 
             try {
-                const script = document.createElement('script');
-                // Use window.PAYPAL_CLIENT_ID if available, fallback to environment or placeholder if missing
+                // Client ID sourced from window (injected by Vite define) or meta env
                 const clientId = window.PAYPAL_CLIENT_ID || import.meta.env.VITE_PAYPAL_CLIENT_ID;
 
                 if (!clientId) {
-                    console.error("PayPal Client ID not found");
-                    // In a real scenario, we might want to handle this gracefully, but for now we proceed
-                    // The buttons won't render if SDK fails, but the form is still there.
+                    console.error("PayPal Client ID not found. Ensure PAYPAL_CLIENT_ID is set in .env");
+                    setErrorMessage("Payment System Configuration Error: Missing PayPal Client ID. Please contact support.");
+                    return;
                 }
 
-                // If clientId is missing, the SDK load will fail or default. 
-                // We construct the URL. If clientId is undefined, it might be 'undefined' in string.
-                // We'll proceed to try loading it.
+                if (document.getElementById('paypal-sdk')) {
+                    setSdkReady(true);
+                    return;
+                }
+
+                const script = document.createElement('script');
+                script.id = 'paypal-sdk';
                 script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=CAD&intent=capture&components=buttons`;
                 script.async = true;
                 script.onload = () => setSdkReady(true);
+                script.onerror = () => {
+                    console.error("PayPal SDK failed to load");
+                    setErrorMessage("Unable to load secure payment processor. Please check your internet connection or try again later.");
+                };
                 document.body.appendChild(script);
             } catch (err) {
                 console.error("Failed to load PayPal SDK", err);
+                setErrorMessage("An unexpected error occurred loading the payment system.");
             }
         };
 
@@ -107,61 +116,73 @@ const CheckoutPage: React.FC = () => {
             // clear container before render
             paypalButtonRef.current.innerHTML = '';
 
-            window.paypal.Buttons({
-                style: {
-                    layout: 'vertical',
-                    color: 'blue',
-                    shape: 'rect',
-                    label: 'pay',
-                    height: 50
-                },
-                createOrder: async (data: any, actions: any) => {
-                    if (!validateForm()) {
-                        return actions.reject();
+            try {
+                window.paypal.Buttons({
+                    style: {
+                        layout: 'vertical',
+                        color: 'blue',
+                        shape: 'rect',
+                        label: 'pay',
+                        height: 50
+                    },
+                    createOrder: async (data: any, actions: any) => {
+                        if (!validateForm()) {
+                            return actions.reject();
+                        }
+
+                        const totals = calculateTotals();
+
+                        try {
+                            const response = await fetch('/api/paypal/create-order', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    cart,
+                                    totals,
+                                    customer: formData
+                                })
+                            });
+
+                            if (!response.ok) throw new Error('Order creation failed');
+                            const order = await response.json();
+                            return order.id;
+                        } catch (err) {
+                            console.error("Create Order Error:", err);
+                            setErrorMessage("Failed to initialize payment. Please try again.");
+                            return actions.reject();
+                        }
+                    },
+                    onApprove: async (data: any, actions: any) => {
+                        try {
+                            const response = await fetch('/api/paypal/capture-order', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    orderID: data.orderID,
+                                    cart,
+                                    customer: formData
+                                })
+                            });
+
+                            if (!response.ok) throw new Error('Capture failed');
+                            const result = await response.json();
+
+                            sessionStorage.removeItem('oasis_cart');
+                            navigate(`/checkout/success?order=${result.orderNumber}`);
+                        } catch (err) {
+                            console.error('Payment capture failed', err);
+                            setErrorMessage("Payment processing failed. Please contact support.");
+                        }
+                    },
+                    onError: (err: any) => {
+                        console.error('PayPal Widget Error:', err);
+                        // Don't show generic error immediately if it's just validation, but here it's likely system error
                     }
-
-                    const totals = calculateTotals();
-
-                    const response = await fetch('/api/paypal/create-order', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            cart,
-                            totals,
-                            customer: formData
-                        })
-                    });
-
-                    if (!response.ok) throw new Error('Order creation failed');
-                    const order = await response.json();
-                    return order.id;
-                },
-                onApprove: async (data: any, actions: any) => {
-                    try {
-                        const response = await fetch('/api/paypal/capture-order', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                orderID: data.orderID,
-                                cart,
-                                customer: formData
-                            })
-                        });
-
-                        if (!response.ok) throw new Error('Capture failed');
-                        const result = await response.json();
-
-                        sessionStorage.removeItem('oasis_cart');
-                        navigate(`/checkout/success?order=${result.orderNumber}`);
-                    } catch (err) {
-                        console.error('Payment capture failed', err);
-                        alert('Payment processing failed. Please contact support.');
-                    }
-                },
-                onError: (err: any) => {
-                    console.error('PayPal Error:', err);
-                }
-            }).render(paypalButtonRef.current);
+                }).render(paypalButtonRef.current);
+            } catch (err) {
+                console.error("PayPal Render Error:", err);
+                setErrorMessage("Failed to render payment buttons.");
+            }
         }
     }, [sdkReady, cart, formData, formErrors, navigate]);
 
@@ -246,7 +267,13 @@ const CheckoutPage: React.FC = () => {
                         <div className="bg-[#161B22]/80 border border-cyan-500/20 rounded-xl p-8">
                             <h2 className="text-xl font-semibold mb-6 text-cyan-400">Payment Method</h2>
                             <div ref={paypalButtonRef} className="min-h-[150px]">
-                                {!sdkReady && (
+                                {errorMessage ? (
+                                    <div className="flex flex-col items-center justify-center h-40 text-red-400 bg-red-500/10 rounded-lg p-4 text-center">
+                                        <AlertCircle className="mb-2" size={24} />
+                                        <span className="font-semibold">Unable to Load Payment</span>
+                                        <span className="text-sm mt-1">{errorMessage}</span>
+                                    </div>
+                                ) : !sdkReady && (
                                     <div className="flex items-center justify-center h-40 text-gray-500">
                                         <Loader2 className="animate-spin mr-2" /> Loading Secure Payment...
                                     </div>
