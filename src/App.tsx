@@ -6,6 +6,7 @@ import ProtectedRoute from './components/auth/ProtectedRoute';
 import ErrorBoundary from './components/ErrorBoundary';
 import SplashScreen from './components/SplashScreen';
 import { CartDrawer } from './components/cart/CartDrawer';
+import { Analytics } from '@vercel/analytics/react';
 
 // Lazy load pages for performance
 const LandingPage = lazy(() => import('./pages/landing/LandingPage'));
@@ -74,6 +75,7 @@ function App() {
                         <Route path="/portal/*" element={<LoginPage />} />
                     </Routes>
                 </Suspense>
+                <Analytics />
             </Router>
         </ErrorBoundary>
     );

@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './CheckoutPage.css';
+import { track } from '@vercel/analytics';
 
 declare global {
     interface Window {
@@ -43,6 +44,15 @@ const CheckoutPage: React.FC = () => {
             }]);
         } else {
             setCart(JSON.parse(storedCart));
+            // Track checkout started
+            try {
+                const cartData = JSON.parse(storedCart);
+                const total = cartData.reduce((acc: number, item: any) => acc + (item.setupFee || 0) + (item.monthlyPrice || 0), 0);
+                track('checkout_started', {
+                    total: total,
+                    items: cartData.map((i: any) => i.automationName + '-' + i.tierName)
+                });
+            } catch (e) { console.error(e); }
         }
     }, []);
 
@@ -187,6 +197,12 @@ const CheckoutPage: React.FC = () => {
                     setLoading(true);
                     return actions.order.capture().then((orderData: any) => {
                         console.log('Payment captured:', orderData);
+                        track('payment_completed', {
+                            orderID: data.orderID,
+                            total: orderData.purchase_units[0].amount.value,
+                            currency: orderData.purchase_units[0].amount.currency_code
+                        });
+
                         const orderInfo = {
                             orderID: data.orderID,
                             payerEmail: orderData.payer.email_address,

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Check, X, ArrowRight, Star, ShieldCheck, HelpCircle } from 'lucide-react';
 import { BUNDLES, AUTOMATIONS, COMMON_INCLUSIONS, Automation } from '../../data/pricingData';
 import PricingCard from '../../components/pricing/PricingCard';
+import { track } from '@vercel/analytics';
 import TierComparison from '../../components/pricing/TierComparison';
 
 const PricingPage: React.FC = () => {
@@ -45,6 +46,13 @@ const PricingPage: React.FC = () => {
 
         // Close modal
         setSelectedAutomation(null);
+
+        // Track tier selection
+        track('tier_selected', {
+            automation: selectedAutomation.name,
+            tier: tier.name,
+            price: tier.price
+        });
 
         // Redirect to checkout
         navigate(`/checkout?automation=${selectedAutomation.id}&tier=${tierKey}`);
