@@ -1,259 +1,207 @@
-import { useState } from 'react';
-import { CheckCircle, ArrowRight, ChevronDown, ChevronUp, Zap, Layers, TrendingUp } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { agents, bundles } from '@/data/products';
-import { useCart } from '@/store/cartStore';
+import React, { useState } from 'react';
+import { Check, X, ArrowRight, Star, ShieldCheck, HelpCircle } from 'lucide-react';
+import { BUNDLES, AUTOMATIONS, COMMON_INCLUSIONS, Automation } from '../../data/pricingData';
+import PricingCard from '../../components/pricing/PricingCard';
+import TierComparison from '../../components/pricing/TierComparison';
 
-const PricingPage = () => {
-    const [openFaq, setOpenFaq] = useState<number | null>(null);
-    const { addItem } = useCart();
-
-    const faqs = [
-        {
-            question: "What's included in the monthly retainer?",
-            answer: "The monthly retainer covers all the software subscriptions and API credits that power your automations: OpenAI/Claude API usage, n8n hosting, voice AI costs, monitoring systems, and priority technical support. It's like paying your AI employees' salaries to keep them working 24/7."
-        },
-        {
-            question: "Can I cancel the monthly retainer?",
-            answer: "Yes, but your automations will stop functioning as we can no longer maintain the underlying infrastructure. We can provide handoff documentation if you wish to self-manage, but most clients prefer the peace of mind of ongoing support."
-        },
-        {
-            question: "How much do additional workflows cost?",
-            answer: "Additional workflows beyond your package are quoted separately based on complexity. Simple workflows start around $500-$1000 one-time. Complex workflows with advanced AI features range from $1500-$3000. The monthly retainer covers maintaining all your workflows regardless of how many you have."
-        }
-    ];
+const PricingPage: React.FC = () => {
+    const [selectedAutomation, setSelectedAutomation] = useState<Automation | null>(null);
 
     return (
-        <div className="bg-bg-primary font-sans text-text-primary">
-            {/* Hero */}
-            <section className="relative overflow-hidden pt-32 pb-20">
-                <div className="absolute inset-0 pointer-events-none">
-                    <div className="absolute top-20 right-10 w-96 h-96 bg-oasis-cyan/10 rounded-full blur-[120px] animate-pulse-glow" />
-                </div>
+        <div className="min-h-screen bg-[#0A0A0A] text-white pt-24 pb-20">
 
-                <div className="section-container relative z-10">
-                    <div className="max-w-4xl mx-auto text-center">
-                        <motion.h1
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="text-5xl md:text-7xl font-display font-bold mb-8"
-                        >
-                            Transparent <span className="text-oasis-cyan">Pricing</span>
-                        </motion.h1>
-                        <motion.p
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.1 }}
-                            className="text-xl md:text-2xl text-text-secondary max-w-3xl mx-auto leading-relaxed"
-                        >
-                            Choose a bundle for maximum value, or select individual agents to solve specific problems.
-                        </motion.p>
-                    </div>
-                </div>
-            </section>
+            {/* 1. Hero Section */}
+            <div className="container mx-auto px-4 text-center mb-16">
+                <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 tracking-tight">
+                    Automation Solutions <br className="hidden md:block" />
+                    Built for <span className="text-cyan-400">Your Business</span>
+                </h1>
+                <p className="text-xl text-gray-400 max-w-2xl mx-auto">
+                    Every automation includes monthly ROI documentation and personalized setup consultation.
+                </p>
+            </div>
 
-            {/* Bundles Section */}
-            <section className="py-12 bg-bg-secondary">
-                <div className="section-container">
-                    <div className="text-center mb-12">
-                        <h2 className="text-3xl font-display font-bold text-white mb-4">Popular Bundles</h2>
-                        <p className="text-text-secondary">Complete automation solutions for your business.</p>
-                    </div>
-                    <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-                        {/* Launchpad */}
-                        <motion.div
-                            initial={{ opacity: 0, x: -20 }}
-                            whileInView={{ opacity: 1, x: 0 }}
-                            viewport={{ once: true }}
-                            className="glass-card p-8 flex flex-col border border-white/5 hover:border-oasis-cyan/30 transition-all"
+            {/* 2. Bundle Packages */}
+            <div className="container mx-auto px-4 mb-24">
+                <div className="grid lg:grid-cols-2 gap-8 max-w-5xl mx-auto">
+                    {BUNDLES.map((bundle, idx) => (
+                        <div
+                            key={idx}
+                            className={`
+                                relative p-8 rounded-2xl border transition-all duration-300 flex flex-col
+                                ${bundle.tag === "MOST POPULAR"
+                                    ? 'bg-[#161B22] border-cyan-500/50 shadow-xl shadow-cyan-500/10'
+                                    : 'bg-[#161B22] border-gray-800'
+                                }
+                            `}
                         >
-                            <div className="flex items-center gap-4 mb-6">
-                                <div className="p-3 bg-oasis-cyan/10 rounded-lg">
-                                    <Zap className="w-8 h-8 text-oasis-cyan" />
+                            {bundle.tag && (
+                                <div className={`
+                                    absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full text-sm font-bold uppercase tracking-wider shadow-lg
+                                    ${bundle.tag === "MOST POPULAR"
+                                        ? 'bg-cyan-500 text-white'
+                                        : 'bg-gray-800 border border-gray-700 text-gray-400'
+                                    }
+                                `}>
+                                    {bundle.tag}
                                 </div>
-                                <div>
-                                    <h3 className="text-2xl font-display font-bold text-white">{bundles.launchpad.title}</h3>
-                                    <p className="text-text-tertiary text-sm">Best for getting started</p>
+                            )}
+
+                            <h3 className="text-2xl font-bold text-white mb-2">{bundle.name}</h3>
+                            <div className="flex items-baseline mb-2">
+                                <span className="text-4xl font-bold text-white">${bundle.price.toLocaleString()}</span>
+                                <span className="text-gray-400 ml-2 text-sm uppercase tracking-wider">one-time</span>
+                            </div>
+                            {bundle.roiHighlight && (
+                                <div className="mb-6 p-3 bg-cyan-900/20 border border-cyan-500/30 rounded-lg text-cyan-400 text-sm font-medium flex items-center justify-center text-center">
+                                    <Star size={16} className="mr-2 fill-cyan-400" />
+                                    {bundle.roiHighlight}
                                 </div>
-                            </div>
+                            )}
 
-                            <div className="mb-8">
-                                <div className="text-4xl font-bold text-oasis-cyan mb-2">${bundles.launchpad.price}</div>
-                                <div className="text-text-tertiary text-sm">one-time setup fee</div>
-                            </div>
-
-                            <p className="text-text-secondary mb-8">{bundles.launchpad.description}</p>
-
-                            {/* ROI Badge */}
-                            <div className="mb-6 p-3 bg-green-500/10 border border-green-500/20 rounded-lg flex items-center gap-3">
-                                <TrendingUp className="w-5 h-5 text-green-500" />
-                                <span className="text-sm font-medium text-green-400">{bundles.launchpad.roi}</span>
-                            </div>
-
-                            <ul className="space-y-4 mb-8 flex-1">
-                                {bundles.launchpad.features.map((feature, index) => (
-                                    <li key={index} className="flex items-start gap-3">
-                                        <CheckCircle className="w-5 h-5 text-oasis-cyan flex-shrink-0 mt-1" />
-                                        <span className="text-text-secondary">{feature}</span>
-                                    </li>
+                            <div className="space-y-4 mb-8 flex-grow">
+                                {bundle.features.map((feature, fIdx) => (
+                                    <div key={fIdx} className="flex items-start">
+                                        <Check size={20} className="text-cyan-500 mr-3 flex-shrink-0 mt-0.5" />
+                                        <span className="text-gray-300">{feature}</span>
+                                    </div>
                                 ))}
-                            </ul>
+                            </div>
 
-                            <button
-                                onClick={() => addItem('launchpad', 'bundle')}
-                                className="mt-auto btn-secondary w-full py-4 text-lg"
-                            >
-                                Add to Cart
+                            <button className={`
+                                w-full py-4 rounded-xl font-bold text-lg transition-all duration-300 flex items-center justify-center
+                                ${bundle.tag === "MOST POPULAR"
+                                    ? 'bg-cyan-500 hover:bg-cyan-600 text-white hover:shadow-lg hover:shadow-cyan-500/20'
+                                    : 'bg-white text-black hover:bg-gray-200'
+                                }
+                            `}>
+                                {bundle.ctaText}
+                                <ArrowRight size={20} className="ml-2" />
                             </button>
-                        </motion.div>
 
-                        {/* Integration Suite */}
-                        <motion.div
-                            initial={{ opacity: 0, x: 20 }}
-                            whileInView={{ opacity: 1, x: 0 }}
-                            viewport={{ once: true }}
-                            className="glass-card p-8 flex flex-col border border-oasis-cyan/50 relative shadow-oasis"
-                        >
-                            <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-oasis-cyan text-bg-primary px-4 py-1 rounded-full font-bold text-sm shadow-lg">
-                                MOST POPULAR
-                            </div>
-                            <div className="flex items-center gap-4 mb-6">
-                                <div className="p-3 bg-oasis-cyan/20 rounded-lg">
-                                    <Layers className="w-8 h-8 text-oasis-cyan" />
-                                </div>
-                                <div>
-                                    <h3 className="text-2xl font-display font-bold text-white">{bundles['integration-suite'].title}</h3>
-                                    <p className="text-text-tertiary text-sm">For scaling businesses</p>
-                                </div>
-                            </div>
+                            {bundle.idealFor && (
+                                <p className="text-center text-sm text-gray-500 mt-4">
+                                    Ideal for: {bundle.idealFor}
+                                </p>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            </div>
 
-                            <div className="mb-8">
-                                <div className="text-4xl font-bold text-oasis-cyan mb-2">${bundles['integration-suite'].price}</div>
-                                <div className="text-text-tertiary text-sm">one-time setup fee</div>
-                            </div>
+            {/* 3. Automations Grid */}
+            <div className="container mx-auto px-4 mb-24">
+                <div className="text-center mb-12">
+                    <h2 className="text-3xl font-bold text-white mb-4">Custom Automations</h2>
+                    <p className="text-gray-400">Specific solutions for specific problems. Setup fee + monthly subscription.</p>
+                </div>
 
-                            <p className="text-text-secondary mb-8">{bundles['integration-suite'].description}</p>
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
+                    {/* First 9 items */}
+                    {AUTOMATIONS.slice(0, 9).map((automation) => (
+                        <PricingCard
+                            key={automation.id}
+                            automation={automation}
+                            onViewTiers={setSelectedAutomation}
+                        />
+                    ))}
 
-                            {/* ROI Badge */}
-                            <div className="mb-6 p-3 bg-green-500/10 border border-green-500/20 rounded-lg flex items-center gap-3">
-                                <TrendingUp className="w-5 h-5 text-green-500" />
-                                <span className="text-sm font-medium text-green-400">{bundles['integration-suite'].roi}</span>
-                            </div>
-
-                            <ul className="space-y-4 mb-8 flex-1">
-                                {bundles['integration-suite'].features.map((feature, index) => (
-                                    <li key={index} className="flex items-start gap-3">
-                                        <CheckCircle className="w-5 h-5 text-oasis-cyan flex-shrink-0 mt-1" />
-                                        <span className="text-white font-medium">{feature}</span>
-                                    </li>
-                                ))}
-                            </ul>
-
-                            <Link to="/contact" className="mt-auto">
-                                <button className="btn-primary w-full py-4 text-lg shadow-oasis">
-                                    Book Consultation
-                                </button>
-                            </Link>
-                        </motion.div>
+                    {/* 10th item centered on large screens if possible, or just in grid */}
+                    <div className="md:col-span-2 lg:col-span-1 lg:col-start-2">
+                        <PricingCard
+                            automation={AUTOMATIONS[9]}
+                            onViewTiers={setSelectedAutomation}
+                        />
                     </div>
                 </div>
-            </section>
+            </div>
 
-            {/* Individual Agents Section */}
-            <section className="py-20 bg-bg-primary">
-                <div className="section-container">
-                    <div className="text-center mb-16">
-                        <h2 className="text-3xl font-display font-bold text-white mb-4">Custom Agents</h2>
-                        <p className="text-text-secondary">Specific solutions for specific problems. Mix and match to build your workforce.</p>
+            {/* 5. What's Included (Section 4 in plan, 5 in prompt) */}
+            <div className="container mx-auto px-4 mb-24">
+                <div className="bg-[#161B22] border border-gray-800 rounded-2xl p-8 md:p-12">
+                    <div className="text-center mb-10">
+                        <h3 className="text-2xl font-bold text-white mb-4">Included with Every Automation</h3>
+                        <div className="h-1 w-20 bg-cyan-500 mx-auto rounded-full" />
                     </div>
 
-                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
-                        {Object.entries(agents).map(([slug, agent], index) => {
-                            const Icon = agent.icon;
-                            return (
-                                <motion.div
-                                    key={slug}
-                                    initial={{ opacity: 0, y: 20 }}
-                                    whileInView={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: index * 0.1 }}
-                                    viewport={{ once: true }}
-                                    className="glass-card p-6 flex flex-col hover:border-oasis-cyan/30 transition-all group"
-                                >
-                                    <div className="flex items-center justify-between mb-4">
-                                        <div className="p-3 bg-bg-tertiary rounded-lg group-hover:bg-oasis-cyan/10 transition-colors">
-                                            <Icon className="w-6 h-6 text-oasis-cyan" />
-                                        </div>
-                                        <div className="text-xl font-bold text-white">${agent.price}</div>
-                                    </div>
-
-                                    <h3 className="text-xl font-bold text-white mb-2">{agent.title}</h3>
-                                    <p className="text-text-secondary text-sm mb-4 flex-1">{agent.description}</p>
-
-                                    {/* ROI Badge */}
-                                    <div className="mb-4 p-2 bg-green-500/5 border border-green-500/10 rounded flex items-center gap-2">
-                                        <TrendingUp className="w-3 h-3 text-green-500" />
-                                        <span className="text-xs font-medium text-green-400">{agent.roi}</span>
-                                    </div>
-
-                                    <ul className="space-y-2 mb-6">
-                                        {agent.features.map((feature, i) => (
-                                            <li key={i} className="flex items-center text-xs text-text-tertiary">
-                                                <div className="w-1.5 h-1.5 rounded-full bg-oasis-cyan mr-2" />
-                                                {feature}
-                                            </li>
-                                        ))}
-                                    </ul>
-
-                                    <button
-                                        onClick={() => addItem(slug as any, 'agent')}
-                                        className="w-full btn-secondary py-2 text-sm group-hover:bg-oasis-cyan group-hover:text-bg-primary transition-colors"
-                                    >
-                                        Add to Cart
-                                    </button>
-                                </motion.div>
-                            );
-                        })}
-                    </div>
-                </div>
-            </section>
-
-            {/* FAQ */}
-            <section className="py-24 bg-bg-secondary">
-                <div className="section-container">
-                    <h2 className="text-4xl md:text-5xl font-display font-bold text-center mb-16">
-                        Frequently Asked <span className="text-oasis-cyan">Questions</span>
-                    </h2>
-
-                    <div className="max-w-3xl mx-auto space-y-4">
-                        {faqs.map((faq, index) => (
-                            <div key={index} className="glass-card overflow-hidden">
-                                <button
-                                    onClick={() => setOpenFaq(openFaq === index ? null : index)}
-                                    className="w-full p-6 text-left flex items-start justify-between gap-4 hover:bg-white/5 transition-colors focus:outline-none"
-                                >
-                                    <span className="font-display font-bold text-lg text-white">{faq.question}</span>
-                                    {openFaq === index ? <ChevronUp className="w-6 h-6 text-oasis-cyan" /> : <ChevronDown className="w-6 h-6 text-text-tertiary" />}
-                                </button>
-                                <AnimatePresence>
-                                    {openFaq === index && (
-                                        <motion.div
-                                            initial={{ height: 0, opacity: 0 }}
-                                            animate={{ height: 'auto', opacity: 1 }}
-                                            exit={{ height: 0, opacity: 0 }}
-                                            className="px-6 pb-6"
-                                        >
-                                            <p className="text-text-secondary leading-relaxed border-t border-white/5 pt-4">
-                                                {faq.answer}
-                                            </p>
-                                        </motion.div>
-                                    )}
-                                </AnimatePresence>
+                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {COMMON_INCLUSIONS.map((inclusion, idx) => (
+                            <div key={idx} className="flex items-center p-4 bg-gray-900/50 rounded-lg border border-gray-800/50">
+                                <ShieldCheck size={24} className="text-cyan-500 mr-4 flex-shrink-0" />
+                                <span className="text-gray-200 font-medium">{inclusion}</span>
                             </div>
                         ))}
                     </div>
                 </div>
-            </section>
+            </div>
+
+            {/* 6. Enterprise CTA */}
+            <div className="container mx-auto px-4 mb-24">
+                <div className="max-w-4xl mx-auto bg-gradient-to-r from-gray-900 to-[#1A1A2E] border border-gray-800 rounded-2xl p-8 md:p-12 relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+
+                    <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8 text-center md:text-left">
+                        <div>
+                            <h2 className="text-3xl font-bold text-white mb-2">Need something bigger?</h2>
+                            <p className="text-xl text-cyan-400 font-semibold mb-4">Enterprise Transformation</p>
+                            <p className="text-gray-400 max-w-lg">
+                                Full-scale automation infrastructure, HIPAA/SOC 2 compliance, and dedicated success managers for large organizations.
+                            </p>
+                        </div>
+                        <button className="whitespace-nowrap px-8 py-4 bg-transparent border-2 border-white text-white font-bold rounded-lg hover:bg-white hover:text-black transition-all">
+                            Contact Sales
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            {/* 7. FAQ Section */}
+            <div className="container mx-auto px-4 mb-12">
+                <div className="max-w-3xl mx-auto text-center mb-12">
+                    <h2 className="text-3xl font-bold text-white mb-4">Frequently Asked Questions</h2>
+                </div>
+                <div className="max-w-3xl mx-auto space-y-4">
+                    {[
+                        { q: "What happens after I purchase?", a: "A member of our team will contact you within 1 hour to schedule your setup consultation. We'll discuss your specific needs, collect any necessary credentials, and create a custom implementation plan for your business." },
+                        { q: "How long does setup take?", a: "Most automations are live within 3-7 business days. Complex enterprise solutions may take 2-4 weeks depending on integration requirements." },
+                        { q: "What's included in monthly ROI documentation?", a: "You get a detailed report showing exactly what your automation achieved: hours saved, leads captured, revenue generated, and interactions handled." },
+                        { q: "Can I upgrade my plan later?", a: "Yes! You can upgrade or downgrade your subscription tier at any time. Changes take effect on your next billing cycle." }
+                    ].map((faq, idx) => (
+                        <div key={idx} className="bg-[#161B22] border border-gray-800 rounded-lg p-6 text-left">
+                            <h4 className="flex items-center text-lg font-semibold text-white mb-3">
+                                <HelpCircle size={18} className="text-cyan-500 mr-3 flex-shrink-0" />
+                                {faq.q}
+                            </h4>
+                            <p className="text-gray-400 pl-8">{faq.a}</p>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            {/* Modal for Tier Details */}
+            {selectedAutomation && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-[#161B22] w-full max-w-6xl max-h-[90vh] overflow-y-auto rounded-2xl border border-gray-700 shadow-2xl relative animate-in zoom-in-95 duration-200">
+                        <button
+                            onClick={() => setSelectedAutomation(null)}
+                            className="absolute top-4 right-4 p-2 bg-gray-800 rounded-full hover:bg-gray-700 text-gray-400 hover:text-white transition-colors z-10"
+                        >
+                            <X size={24} />
+                        </button>
+
+                        <div className="p-8">
+                            <div className="text-center mb-10">
+                                <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">
+                                    {selectedAutomation.name} <span className="text-cyan-400">Tiers</span>
+                                </h2>
+                                <p className="text-gray-400">Select the plan that fits your volume.</p>
+                            </div>
+
+                            <TierComparison automation={selectedAutomation} />
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

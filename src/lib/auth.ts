@@ -7,9 +7,12 @@ export interface ClientCredential {
 
 // This should exist but be empty:
 export const CLIENT_CREDENTIALS: Record<string, ClientCredential> = {
-    // Add your clients here
-    // Format:
-    // 'unique-client-id': { ... }
+    'test-client': {
+        email: 'test@company.com',
+        password: 'password123',
+        clientId: 'test-client',
+        companyName: 'Test Company Inc.'
+    }
 };
 
 export const authenticateClient = (email: string, password: string): ClientCredential | null => {

@@ -1,0 +1,41 @@
+{
+    "clientId": "test-client",
+    "companyName": "Test Company Inc.",
+    "email": "test@company.com",
+    "lastUpdated": "Dec 15, 2025",
+    "stats": {
+        "activeAutomations": 3,
+        "monthlyExecutions": 1250,
+        "timeSavedHours": 45,
+        "estimatedROI": 12500
+    },
+    "automations": [
+        {
+            "name": "Customer Support Bot",
+            "type": "chatbot",
+            "status": "active",
+            "monthlyExecutions": 850,
+            "lastRun": "2025-12-15T08:30:00"
+        },
+        {
+            "name": "Invoice Processing",
+            "type": "email_automation",
+            "status": "active",
+            "monthlyExecutions": 320,
+            "lastRun": "2025-12-14T16:45:00"
+        },
+        {
+            "name": "Lead Qualification",
+            "type": "voice",
+            "status": "paused",
+            "monthlyExecutions": 80,
+            "lastRun": "2025-12-10T11:20:00"
+        }
+    ],
+    "monthlyPerformance": [
+        { "week": "Week 1", "executions": 250, "leads": 15 },
+        { "week": "Week 2", "executions": 300, "leads": 22 },
+        { "week": "Week 3", "executions": 350, "leads": 28 },
+        { "week": "Week 4", "executions": 350, "leads": 30 }
+    ]
+}
