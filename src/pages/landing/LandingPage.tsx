@@ -4,6 +4,190 @@ import { Bot, Zap, Clock, TrendingUp, CheckCircle, ArrowRight, Sparkles, Brain, 
 import { NeuralNetworkBackground } from '../../components/animations/NeuralNetworkBackground';
 import { motion, AnimatePresence } from 'framer-motion';
 
+class DNAHelix {
+    canvas: HTMLCanvasElement;
+    ctx: CanvasRenderingContext2D;
+    particles: Array<any> = [];
+    time: number = 0;
+    strandPoints: number = 40;
+    amplitude: number = 150;
+    frequency: number = 0.1;
+    verticalSpacing: number = 25;
+    centerX: number = 0;
+    centerY: number = 0;
+    animationId: number | null = null;
+
+    constructor(canvasId: string) {
+        const canvas = document.getElementById(canvasId) as HTMLCanvasElement;
+        if (!canvas) throw new Error('Canvas not found');
+
+        this.canvas = canvas;
+        this.ctx = this.canvas.getContext('2d')!;
+        this.resize();
+
+        // Bind resize properly
+        window.addEventListener('resize', this.boundResize);
+
+        this.init();
+        this.animate();
+    }
+
+    boundResize = () => this.resize();
+
+    resize() {
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight;
+        this.centerX = this.canvas.width / 2;
+        this.centerY = this.canvas.height / 2;
+    }
+
+    init() {
+        // Create floating particles
+        this.particles = [];
+        for (let i = 0; i < 50; i++) {
+            this.particles.push({
+                x: Math.random() * this.canvas.width,
+                y: Math.random() * this.canvas.height,
+                size: Math.random() * 3 + 1,
+                speedX: (Math.random() - 0.5) * 0.5,
+                speedY: (Math.random() - 0.5) * 0.5,
+                opacity: Math.random() * 0.5 + 0.2
+            });
+        }
+    }
+
+    drawDNA() {
+        const ctx = this.ctx;
+        const startY = this.centerY - (this.strandPoints * this.verticalSpacing) / 2;
+
+        // Draw connecting lines first (behind strands)
+        ctx.strokeStyle = 'rgba(0, 212, 255, 0.15)';
+        ctx.lineWidth = 1;
+
+        for (let i = 0; i < this.strandPoints; i++) {
+            const y = startY + i * this.verticalSpacing;
+            const phase = this.time + i * this.frequency;
+
+            const x1 = this.centerX + Math.sin(phase) * this.amplitude;
+            const x2 = this.centerX + Math.sin(phase + Math.PI) * this.amplitude;
+
+            // Draw connection line
+            ctx.beginPath();
+            ctx.moveTo(x1, y);
+            ctx.lineTo(x2, y);
+            ctx.stroke();
+        }
+
+        // Draw strand 1 (left helix)
+        ctx.beginPath();
+        for (let i = 0; i < this.strandPoints; i++) {
+            const y = startY + i * this.verticalSpacing;
+            const phase = this.time + i * this.frequency;
+            const x = this.centerX + Math.sin(phase) * this.amplitude;
+
+            if (i === 0) {
+                ctx.moveTo(x, y);
+            } else {
+                ctx.lineTo(x, y);
+            }
+        }
+        ctx.strokeStyle = 'rgba(0, 212, 255, 0.6)';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Draw strand 2 (right helix)
+        ctx.beginPath();
+        for (let i = 0; i < this.strandPoints; i++) {
+            const y = startY + i * this.verticalSpacing;
+            const phase = this.time + i * this.frequency + Math.PI;
+            const x = this.centerX + Math.sin(phase) * this.amplitude;
+
+            if (i === 0) {
+                ctx.moveTo(x, y);
+            } else {
+                ctx.lineTo(x, y);
+            }
+        }
+        ctx.strokeStyle = 'rgba(0, 212, 255, 0.6)';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Draw glowing dots at intersection points
+        for (let i = 0; i < this.strandPoints; i++) {
+            const y = startY + i * this.verticalSpacing;
+            const phase = this.time + i * this.frequency;
+
+            // Strand 1 dot
+            const x1 = this.centerX + Math.sin(phase) * this.amplitude;
+            this.drawGlowDot(x1, y, Math.sin(phase) > 0 ? 0.9 : 0.4);
+
+            // Strand 2 dot
+            const x2 = this.centerX + Math.sin(phase + Math.PI) * this.amplitude;
+            this.drawGlowDot(x2, y, Math.sin(phase + Math.PI) > 0 ? 0.9 : 0.4);
+        }
+    }
+
+    drawGlowDot(x: number, y: number, opacity: number) {
+        const ctx = this.ctx;
+
+        // Outer glow
+        const gradient = ctx.createRadialGradient(x, y, 0, x, y, 15);
+        gradient.addColorStop(0, `rgba(0, 212, 255, ${opacity})`);
+        gradient.addColorStop(0.5, `rgba(0, 212, 255, ${opacity * 0.3})`);
+        gradient.addColorStop(1, 'rgba(0, 212, 255, 0)');
+
+        ctx.beginPath();
+        ctx.arc(x, y, 15, 0, Math.PI * 2);
+        ctx.fillStyle = gradient;
+        ctx.fill();
+
+        // Inner dot
+        ctx.beginPath();
+        ctx.arc(x, y, 4, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(0, 212, 255, ${opacity})`;
+        ctx.fill();
+    }
+
+    drawParticles() {
+        const ctx = this.ctx;
+
+        this.particles.forEach(particle => {
+            // Update position
+            particle.x += particle.speedX;
+            particle.y += particle.speedY;
+
+            // Wrap around edges
+            if (particle.x < 0) particle.x = this.canvas.width;
+            if (particle.x > this.canvas.width) particle.x = 0;
+            if (particle.y < 0) particle.y = this.canvas.height;
+            if (particle.y > this.canvas.height) particle.y = 0;
+
+            // Draw particle
+            ctx.beginPath();
+            ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(0, 212, 255, ${particle.opacity})`;
+            ctx.fill();
+        });
+    }
+
+    animate() {
+        if (!this.ctx) return;
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+        this.drawParticles();
+        this.drawDNA();
+
+        this.time += 0.02; // Animation speed
+
+        this.animationId = requestAnimationFrame(() => this.animate());
+    }
+
+    destroy() {
+        if (this.animationId) cancelAnimationFrame(this.animationId);
+        window.removeEventListener('resize', this.boundResize);
+    }
+}
+
 const LandingPage = () => {
     const [roiInputs, setRoiInputs] = useState({
         hoursPerWeek: 10,
@@ -37,138 +221,73 @@ const LandingPage = () => {
     const [openFaq, setOpenFaq] = useState<number | null>(null);
 
     const navigate = useNavigate();
+    const heroRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        // Dynamic Particle Generation
-        const container = document.getElementById('particles-container');
-        if (container) {
-            container.innerHTML = ''; // Clear existing
-            for (let i = 0; i < 30; i++) {
-                const particle = document.createElement('div');
-                particle.className = 'absolute bg-cyan-500 rounded-full shadow-[0_0_20px_rgba(0,212,255,0.8)] animate-particle-float';
-                particle.style.width = '6px';
-                particle.style.height = '6px';
-                particle.style.left = `${Math.random() * 100}%`;
-                particle.style.top = `${Math.random() * 100}%`;
-                particle.style.opacity = '0';
-                // Inline floating animation logic would be complex with just style, relying on tailwind classes or global css below
-                // Since we don't have global CSS access easily here, we'll try to use a style block inject
-
-                // Randomize animation
-                const duration = 3 + Math.random() * 3;
-                const delay = Math.random() * 4;
-
-                particle.style.animation = `float ${duration}s ease-in-out infinite ${delay}s`;
-
-                container.appendChild(particle);
-            }
-        }
+        const helix = new DNAHelix('dna-canvas');
+        return () => helix.destroy();
     }, []);
 
     return (
-        <div className="min-h-screen bg-[#0A0A0A] overflow-x-hidden">
-            {/* DNA Helix Styles Injection */}
+        <div className="min-h-screen bg-[#0A0A0A] overflow-x-hidden text-white font-sans">
+            {/* Global Styles for Hero */}
             <style>{`
-                @keyframes float {
-                    0%, 100% { transform: translate(0, 0); opacity: 0.3; }
-                    25% { transform: translate(15px, -30px); opacity: 1; }
-                    50% { transform: translate(-10px, -10px); opacity: 0.7; }
-                    75% { transform: translate(5px, -40px); opacity: 0.9; }
+                .gradient-text {
+                    background: linear-gradient(135deg, #00D4FF, #00A3CC);
+                    -webkit-background-clip: text;
+                    -webkit-text-fill-color: transparent;
+                    background-clip: text;
                 }
-                @keyframes dnaFlow {
-                    0%, 100% { transform: translateY(-20px) scaleY(0.9); opacity: 0.4; }
-                    50% { transform: translateY(20px) scaleY(1.1); opacity: 1; }
-                }
-                @keyframes connectionPulse {
-                    0%, 100% { opacity: 0.2; transform: scaleX(0.8); }
-                    50% { opacity: 0.8; transform: scaleX(1); }
-                }
-                @keyframes orbPulse {
-                    0%, 100% { transform: scale(1); opacity: 0.5; }
-                    50% { transform: scale(1.2); opacity: 0.8; }
-                }
-                 @keyframes gridShift {
-                    0% { transform: perspective(500px) rotateX(60deg) translateY(0); }
-                    100% { transform: perspective(500px) rotateX(60deg) translateY(50px); }
+                @keyframes glowPulse {
+                    0%, 100% { opacity: 0.5; transform: translate(-50%, -50%) scale(1); }
+                    50% { opacity: 0.8; transform: translate(-50%, -50%) scale(1.1); }
                 }
             `}</style>
 
             {/* Hero Section */}
-            <div className="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden">
-                {/* Hero Background */}
+            <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-[#0A0A0F]">
                 <div className="absolute inset-0 z-0">
-                    {/* Grid Background */}
-                    <div className="absolute inset-0 z-0 opacity-30" style={{
-                        backgroundImage: 'linear-gradient(rgba(0, 212, 255, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 212, 255, 0.1) 1px, transparent 1px)',
-                        backgroundSize: '50px 50px',
-                        animation: 'gridShift 20s linear infinite'
-                    }} />
+                    {/* Ambient Glow */}
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full z-0"
+                        style={{
+                            background: 'radial-gradient(circle, rgba(0, 212, 255, 0.15) 0%, rgba(0, 212, 255, 0.05) 30%, transparent 60%)',
+                            animation: 'glowPulse 4s ease-in-out infinite'
+                        }}
+                    />
 
-                    {/* Glow Orbs */}
-                    <div className="absolute top-[-100px] right-[-100px] w-[400px] h-[400px] rounded-full bg-[radial-gradient(circle,rgba(0,212,255,0.4)_0%,transparent_70%)] animate-[orbPulse_5s_ease-in-out_infinite]" />
-                    <div className="absolute bottom-[10%] left-[-50px] w-[250px] h-[250px] rounded-full bg-[radial-gradient(circle,rgba(0,212,255,0.4)_0%,transparent_70%)] animate-[orbPulse_5s_ease-in-out_infinite_1.5s]" />
-
-                    {/* DNA Helix */}
-                    <div className="absolute inset-0 w-full h-full">
-                        {[20, 35, 50, 65, 80].map((left, idx) => (
-                            <div
-                                key={idx}
-                                className="absolute w-1 h-full bg-gradient-to-b from-transparent via-[#00D4FF] to-transparent rounded-full"
-                                style={{
-                                    left: `${left}%`,
-                                    animation: `dnaFlow 3s ease-in-out infinite ${idx * 0.5}s`
-                                }}
-                            />
-                        ))}
-
-                        {/* Static Connections for visual effect */}
-                        {Array.from({ length: 15 }).map((_, i) => (
-                            <div
-                                key={i}
-                                className="absolute h-[2px] bg-gradient-to-r from-transparent via-[#00D4FF]/80 to-transparent left-[20%] w-[60%]"
-                                style={{
-                                    top: `${(i / 15) * 100}%`,
-                                    animation: `connectionPulse 2s ease-in-out infinite ${i * 0.2}s`
-                                }}
-                            />
-                        ))}
-                    </div>
-
-                    {/* Particles Container */}
-                    <div id="particles-container" className="absolute inset-0" />
+                    {/* DNA Canvas */}
+                    <canvas id="dna-canvas" className="absolute top-0 left-0 w-full h-full z-10" />
                 </div>
 
                 {/* Hero Content */}
-                <div className="container mx-auto px-4 relative z-10 text-center">
-                    <div className="inline-flex items-center px-4 py-2 bg-cyan-500/10 border border-cyan-500/20 rounded-full text-cyan-400 text-sm font-medium mb-8 backdrop-blur-sm animate-fade-in-up">
-                        <Zap size={16} className="mr-2 fill-cyan-400" />
-                        <span>The Future of Automation is Here</span>
+                <div className="container mx-auto px-4 relative z-20 text-center max-w-4xl">
+                    <div className="inline-block px-5 py-2 bg-cyan-500/10 border border-cyan-500/30 rounded-full text-cyan-400 text-sm font-medium mb-8 backdrop-blur-sm">
+                        ⚡ The Future of Automation is Here
                     </div>
 
-                    <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight tracking-tight animate-fade-in-up delay-100">
+                    <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-[1.1]">
                         Scale Your Business <br />
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-600">
+                        <span className="gradient-text">
                             Without Limits
                         </span>
                     </h1>
 
-                    <p className="text-xl text-gray-400 max-w-2xl mx-auto mb-10 animate-fade-in-up delay-200">
+                    <p className="text-xl text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed">
                         Deploy intelligent automations that work 24/7. Capture leads, book appointments, and streamline operations with OASIS AI.
                     </p>
 
-                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in-up delay-300">
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                         <button
                             onClick={() => navigate('/pricing')}
-                            className="w-full sm:w-auto px-8 py-4 bg-cyan-500 hover:bg-cyan-600 text-white font-bold rounded-lg transition-all duration-300 shadow-[0_0_20px_rgba(0,212,255,0.3)] hover:shadow-[0_0_30px_rgba(0,212,255,0.5)] flex items-center justify-center"
+                            className="px-8 py-4 bg-[#00D4FF] hover:bg-[#00A3CC] text-[#0A0A0F] font-bold rounded-lg transition-all duration-200 shadow-[0_4px_20px_rgba(0,212,255,0.4)] transform hover:-translate-y-1"
                         >
-                            View Automations
-                            <ArrowRight className="ml-2" size={20} />
+                            View Automations <ArrowRight className="inline-block ml-2 w-5 h-5" />
                         </button>
                         <button
                             onClick={() => navigate('/contact')}
-                            className="w-full sm:w-auto px-8 py-4 bg-transparent border border-gray-700 hover:border-cyan-500 text-white font-medium rounded-lg transition-all duration-300 flex items-center justify-center hover:bg-cyan-500/5"
+                            className="px-8 py-4 bg-transparent border border-white/30 hover:border-[#00D4FF] text-white hover:text-[#00D4FF] font-medium rounded-lg transition-all duration-200 flex items-center"
                         >
-                            <PlayCircle className="mr-2" size={20} />
+                            <PlayCircle className="mr-2 w-5 h-5" />
                             Book Demo
                         </button>
                     </div>

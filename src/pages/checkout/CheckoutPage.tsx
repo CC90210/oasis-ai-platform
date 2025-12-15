@@ -1,6 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { ShieldCheck, ArrowRight, Loader2 } from 'lucide-react';
+import { ShieldCheck, Loader2 } from 'lucide-react';
+
+declare global {
+    interface Window {
+        paypal: any;
+        PAYPAL_CLIENT_ID: string;
+    }
+}
 
 interface CartItem {
     automationType: string;
@@ -13,19 +20,27 @@ interface CartItem {
 }
 
 const CheckoutPage: React.FC = () => {
-    const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     const [cart, setCart] = useState<CartItem[]>([]);
     const [loading, setLoading] = useState(true);
-    const [processing, setProcessing] = useState(false);
+    const [sdkReady, setSdkReady] = useState(false);
+    const paypalButtonRef = useRef<HTMLDivElement>(null);
+
+    // Form State
+    const [formData, setFormData] = useState({
+        firstName: '',
+        lastName: '',
+        email: '',
+        phone: '',
+        company: ''
+    });
+
+    const [formErrors, setFormErrors] = useState<Record<string, boolean>>({});
 
     useEffect(() => {
-        // Load cart from session storage
+        // Load cart
         const storedCart = sessionStorage.getItem('oasis_cart');
         const cartData: CartItem[] = storedCart ? JSON.parse(storedCart) : [];
-
-        // In a real app we might validate URL params against the cart or add them if missing
-        // For now, we trust sessionStorage as the source of truth if populated
 
         if (cartData.length === 0) {
             navigate('/pricing');
@@ -34,137 +49,258 @@ const CheckoutPage: React.FC = () => {
 
         setCart(cartData);
         setLoading(false);
+
+        // Load PayPal SDK
+        const loadPayPal = async () => {
+            if (window.paypal) {
+                setSdkReady(true);
+                return;
+            }
+
+            try {
+                const script = document.createElement('script');
+                // Use window.PAYPAL_CLIENT_ID if available, fallback to environment or placeholder if missing
+                const clientId = window.PAYPAL_CLIENT_ID || import.meta.env.VITE_PAYPAL_CLIENT_ID;
+
+                if (!clientId) {
+                    console.error("PayPal Client ID not found");
+                    // In a real scenario, we might want to handle this gracefully, but for now we proceed
+                    // The buttons won't render if SDK fails, but the form is still there.
+                }
+
+                // If clientId is missing, the SDK load will fail or default. 
+                // We construct the URL. If clientId is undefined, it might be 'undefined' in string.
+                // We'll proceed to try loading it.
+                script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=CAD&intent=capture&components=buttons`;
+                script.async = true;
+                script.onload = () => setSdkReady(true);
+                document.body.appendChild(script);
+            } catch (err) {
+                console.error("Failed to load PayPal SDK", err);
+            }
+        };
+
+        loadPayPal();
     }, [navigate]);
 
-    const handleMockPayment = async () => {
-        setProcessing(true);
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 2000));
-
-        // Clear cart
-        sessionStorage.removeItem('oasis_cart');
-
-        // Use a random order ID
-        const orderId = 'ORD-' + Math.random().toString(36).substr(2, 9).toUpperCase();
-
-        // Navigate to success (or dashboard if logged in, but for flow likely a success page)
-        // Since we don't have an OrderSuccessPage in the file list yet (or I missed it), 
-        // I'll assume we might need to create one or just alert for now. 
-        // EDIT: I saw OrderSuccessPage.tsx in the file list earlier!
-        navigate(`/checkout/success?order=${orderId}`);
+    const calculateTotals = () => {
+        const setupTotal = cart.reduce((acc, item) => acc + item.setupFee, 0);
+        const monthlyTotal = cart.reduce((acc, item) => acc + item.monthlyPrice, 0);
+        const tax = (setupTotal + monthlyTotal) * 0.13; // 13% HST
+        const grandTotal = setupTotal + monthlyTotal + tax;
+        return { setupTotal, monthlyTotal, tax, grandTotal };
     };
+
+    const validateForm = () => {
+        const errors: Record<string, boolean> = {};
+        if (!formData.firstName) errors.firstName = true;
+        if (!formData.lastName) errors.lastName = true;
+        if (!formData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) errors.email = true;
+        if (!formData.company) errors.company = true;
+
+        setFormErrors(errors);
+        return Object.keys(errors).length === 0;
+    };
+
+    useEffect(() => {
+        if (sdkReady && paypalButtonRef.current && window.paypal) {
+            // clear container before render
+            paypalButtonRef.current.innerHTML = '';
+
+            window.paypal.Buttons({
+                style: {
+                    layout: 'vertical',
+                    color: 'blue',
+                    shape: 'rect',
+                    label: 'pay',
+                    height: 50
+                },
+                createOrder: async (data: any, actions: any) => {
+                    if (!validateForm()) {
+                        return actions.reject();
+                    }
+
+                    const totals = calculateTotals();
+
+                    const response = await fetch('/api/paypal/create-order', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            cart,
+                            totals,
+                            customer: formData
+                        })
+                    });
+
+                    if (!response.ok) throw new Error('Order creation failed');
+                    const order = await response.json();
+                    return order.id;
+                },
+                onApprove: async (data: any, actions: any) => {
+                    try {
+                        const response = await fetch('/api/paypal/capture-order', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                orderID: data.orderID,
+                                cart,
+                                customer: formData
+                            })
+                        });
+
+                        if (!response.ok) throw new Error('Capture failed');
+                        const result = await response.json();
+
+                        sessionStorage.removeItem('oasis_cart');
+                        navigate(`/checkout/success?order=${result.orderNumber}`);
+                    } catch (err) {
+                        console.error('Payment capture failed', err);
+                        alert('Payment processing failed. Please contact support.');
+                    }
+                },
+                onError: (err: any) => {
+                    console.error('PayPal Error:', err);
+                }
+            }).render(paypalButtonRef.current);
+        }
+    }, [sdkReady, cart, formData, formErrors, navigate]);
+
+    const totals = calculateTotals();
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center">
+            <div className="min-h-screen bg-[#0A0A0F] flex items-center justify-center">
                 <Loader2 className="animate-spin text-cyan-500" size={32} />
             </div>
         );
     }
 
-    // Totals logic
-    const setupTotal = cart.reduce((acc, item) => acc + item.setupFee, 0);
-    const monthlyTotal = cart.reduce((acc, item) => acc + item.monthlyPrice, 0);
-    const tax = (setupTotal + monthlyTotal) * 0.13; // 13% HST mock
-    const totalToday = setupTotal + monthlyTotal + tax;
-
     return (
-        <div className="min-h-screen bg-[#0A0A0A] text-white pt-24 pb-20 px-4">
+        <div className="min-h-screen bg-[#0A0A0F] text-white pt-24 pb-20 px-4">
             <div className="container mx-auto max-w-6xl">
-                <h1 className="text-3xl font-bold mb-8">Secure Checkout</h1>
+                <h1 className="text-3xl font-bold mb-8 text-white">Secure Checkout</h1>
 
-                <div className="grid lg:grid-cols-2 gap-12">
-
-                    {/* Left Column: Mock Payment Form */}
-                    <div className="space-y-8">
-                        <div className="bg-[#161B22] p-8 rounded-2xl border border-gray-800">
-                            <h2 className="text-xl font-semibold mb-6">Contact Information</h2>
+                <div className="grid lg:grid-cols-3 gap-12">
+                    {/* Left Column: Form & Payment */}
+                    <div className="lg:col-span-2 space-y-8">
+                        {/* Step 1: Contact Info */}
+                        <div className="bg-[#161B22]/80 border border-cyan-500/20 rounded-xl p-8">
+                            <h2 className="text-xl font-semibold mb-6 text-cyan-400">Contact Information</h2>
+                            <div className="grid md:grid-cols-2 gap-4 mb-4">
+                                <div>
+                                    <label className="block text-sm text-gray-400 mb-2">First Name</label>
+                                    <input
+                                        type="text"
+                                        value={formData.firstName}
+                                        onChange={e => setFormData({ ...formData, firstName: e.target.value })}
+                                        className={`w-full bg-[#0D1117] border ${formErrors.firstName ? 'border-red-500' : 'border-gray-700'} rounded-lg px-4 py-3 text-white focus:outline-none focus:border-cyan-500 transition-colors`}
+                                        placeholder="John"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm text-gray-400 mb-2">Last Name</label>
+                                    <input
+                                        type="text"
+                                        value={formData.lastName}
+                                        onChange={e => setFormData({ ...formData, lastName: e.target.value })}
+                                        className={`w-full bg-[#0D1117] border ${formErrors.lastName ? 'border-red-500' : 'border-gray-700'} rounded-lg px-4 py-3 text-white focus:outline-none focus:border-cyan-500 transition-colors`}
+                                        placeholder="Doe"
+                                    />
+                                </div>
+                            </div>
+                            <div className="mb-4">
+                                <label className="block text-sm text-gray-400 mb-2">Email Address</label>
+                                <input
+                                    type="email"
+                                    value={formData.email}
+                                    onChange={e => setFormData({ ...formData, email: e.target.value })}
+                                    className={`w-full bg-[#0D1117] border ${formErrors.email ? 'border-red-500' : 'border-gray-700'} rounded-lg px-4 py-3 text-white focus:outline-none focus:border-cyan-500 transition-colors`}
+                                    placeholder="john@company.com"
+                                />
+                            </div>
                             <div className="grid md:grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <label className="text-sm text-gray-400">First Name</label>
-                                    <input type="text" className="w-full bg-[#0A0A0A] border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:border-cyan-500 transition-colors" placeholder="John" />
+                                <div>
+                                    <label className="block text-sm text-gray-400 mb-2">Phone Number</label>
+                                    <input
+                                        type="tel"
+                                        value={formData.phone}
+                                        onChange={e => setFormData({ ...formData, phone: e.target.value })}
+                                        className="w-full bg-[#0D1117] border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-cyan-500 transition-colors"
+                                        placeholder="(555) 123-4567"
+                                    />
                                 </div>
-                                <div className="space-y-2">
-                                    <label className="text-sm text-gray-400">Last Name</label>
-                                    <input type="text" className="w-full bg-[#0A0A0A] border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:border-cyan-500 transition-colors" placeholder="Doe" />
-                                </div>
-                                <div className="space-y-2 md:col-span-2">
-                                    <label className="text-sm text-gray-400">Email Address</label>
-                                    <input type="email" className="w-full bg-[#0A0A0A] border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:border-cyan-500 transition-colors" placeholder="john@example.com" />
+                                <div>
+                                    <label className="block text-sm text-gray-400 mb-2">Company Name</label>
+                                    <input
+                                        type="text"
+                                        value={formData.company}
+                                        onChange={e => setFormData({ ...formData, company: e.target.value })}
+                                        className={`w-full bg-[#0D1117] border ${formErrors.company ? 'border-red-500' : 'border-gray-700'} rounded-lg px-4 py-3 text-white focus:outline-none focus:border-cyan-500 transition-colors`}
+                                        placeholder="Acme Inc."
+                                    />
                                 </div>
                             </div>
                         </div>
 
-                        <div className="bg-[#161B22] p-8 rounded-2xl border border-gray-800">
-                            <h2 className="text-xl font-semibold mb-6">Payment Method (Simulated)</h2>
-
-                            {/* Mock PayPal Button */}
-                            <div className="space-y-4">
-                                <button
-                                    onClick={handleMockPayment}
-                                    disabled={processing}
-                                    className="w-full bg-[#0070BA] hover:bg-[#003087] text-white font-bold py-4 rounded-lg flex items-center justify-center transition-colors relative overflow-hidden"
-                                >
-                                    {processing ? (
-                                        <Loader2 className="animate-spin" />
-                                    ) : (
-                                        <>
-                                            <span className="italic font-bold text-xl mr-1">Pay</span>
-                                            <span className="italic font-bold text-xl">Pal</span>
-                                        </>
-                                    )}
-                                </button>
-                                <p className="text-xs text-gray-500 text-center">
-                                    This is a mock checkout. No real money will be charged.
-                                </p>
+                        {/* Step 2: Payment */}
+                        <div className="bg-[#161B22]/80 border border-cyan-500/20 rounded-xl p-8">
+                            <h2 className="text-xl font-semibold mb-6 text-cyan-400">Payment Method</h2>
+                            <div ref={paypalButtonRef} className="min-h-[150px]">
+                                {!sdkReady && (
+                                    <div className="flex items-center justify-center h-40 text-gray-500">
+                                        <Loader2 className="animate-spin mr-2" /> Loading Secure Payment...
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
 
                     {/* Right Column: Order Summary */}
-                    <div className="bg-[#161B22] p-8 rounded-2xl border border-gray-800 h-fit">
-                        <h2 className="text-xl font-semibold mb-6">Order Summary</h2>
+                    <div className="lg:col-span-1">
+                        <div className="bg-[#161B22]/80 border border-cyan-500/20 rounded-xl p-8 sticky top-24">
+                            <h2 className="text-xl font-semibold mb-6 text-cyan-400">Order Summary</h2>
 
-                        <div className="space-y-6 mb-8">
-                            {cart.map((item, idx) => (
-                                <div key={idx} className="flex justify-between items-start pb-6 border-b border-gray-800 last:border-0 last:pb-0">
-                                    <div>
-                                        <h3 className="font-semibold text-white">{item.automationName}</h3>
-                                        <p className="text-cyan-400 text-sm font-medium mt-1">{item.tierName} Plan</p>
+                            <div className="space-y-4 mb-8">
+                                {cart.map((item, idx) => (
+                                    <div key={idx} className="flex justify-between items-start pb-4 border-b border-gray-800 last:border-0">
+                                        <div>
+                                            <div className="font-bold text-white">{item.automationName}</div>
+                                            <div className="text-cyan-400 text-xs uppercase tracking-wider mt-1">{item.tierName} Plan</div>
+                                        </div>
+                                        <div className="text-right">
+                                            <div className="text-gray-300">${item.setupFee.toLocaleString()} <span className="text-[10px] text-gray-500">setup</span></div>
+                                            <div className="text-gray-300">${item.monthlyPrice} <span className="text-[10px] text-gray-500">/mo</span></div>
+                                        </div>
                                     </div>
-                                    <div className="text-right">
-                                        <div className="text-gray-300">${item.setupFee.toLocaleString()} <span className="text-xs text-gray-500">setup</span></div>
-                                        <div className="text-gray-300">${item.monthlyPrice} <span className="text-xs text-gray-500">/mo</span></div>
-                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="space-y-3 pt-6 border-t border-gray-700">
+                                <div className="flex justify-between text-gray-400">
+                                    <span>Setup Fees</span>
+                                    <span id="setup-total">${totals.setupTotal.toLocaleString()}</span>
                                 </div>
-                            ))}
-                        </div>
+                                <div className="flex justify-between text-gray-400">
+                                    <span>First Month</span>
+                                    <span id="monthly-total">${totals.monthlyTotal.toLocaleString()}</span>
+                                </div>
+                                <div className="flex justify-between text-gray-400">
+                                    <span>Tax (13%)</span>
+                                    <span id="tax-total">${totals.tax.toFixed(2)}</span>
+                                </div>
+                                <div className="flex justify-between text-white font-bold text-xl pt-4 border-t border-gray-800 mt-4">
+                                    <span>Total Today</span>
+                                    <span id="grand-total" className="text-cyan-400">${totals.grandTotal.toLocaleString()}</span>
+                                </div>
+                                <p id="recurring-note" className="text-right text-xs text-gray-500 mt-2">
+                                    Then ${totals.monthlyTotal.toLocaleString()}/mo starting next month
+                                </p>
+                            </div>
 
-                        <div className="space-y-3 pt-6 border-t border-gray-700">
-                            <div className="flex justify-between text-gray-400">
-                                <span>Setup Fees</span>
-                                <span>${setupTotal.toLocaleString()}</span>
+                            <div className="mt-8 flex items-center justify-center text-cyan-500 text-sm font-medium bg-cyan-500/5 p-4 rounded-lg border border-cyan-500/10">
+                                <ShieldCheck size={18} className="mr-2" />
+                                Secure SSL Encrypted Checkout
                             </div>
-                            <div className="flex justify-between text-gray-400">
-                                <span>First Month Subscription</span>
-                                <span>${monthlyTotal.toLocaleString()}</span>
-                            </div>
-                            <div className="flex justify-between text-gray-400">
-                                <span>Tax (13%)</span>
-                                <span>${tax.toFixed(2)}</span>
-                            </div>
-                            <div className="flex justify-between text-white font-bold text-xl pt-4 border-t border-gray-800 mt-4">
-                                <span>Total Today</span>
-                                <span>${totalToday.toLocaleString()}</span>
-                            </div>
-                            <p className="text-right text-xs text-gray-500 mt-2">
-                                Then ${monthlyTotal.toLocaleString()}/mo starting next month
-                            </p>
-                        </div>
-
-                        <div className="mt-8 flex items-center justify-center text-cyan-500 text-sm font-medium bg-cyan-500/10 p-4 rounded-lg">
-                            <ShieldCheck size={18} className="mr-2" />
-                            Secure SSL Encrypted Checkout
                         </div>
                     </div>
                 </div>
