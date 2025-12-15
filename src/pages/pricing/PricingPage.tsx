@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Check, X, ArrowRight, Star, ShieldCheck, HelpCircle } from 'lucide-react';
 import { BUNDLES, AUTOMATIONS, COMMON_INCLUSIONS, Automation } from '../../data/pricingData';
 import PricingCard from '../../components/pricing/PricingCard';
@@ -6,6 +7,48 @@ import TierComparison from '../../components/pricing/TierComparison';
 
 const PricingPage: React.FC = () => {
     const [selectedAutomation, setSelectedAutomation] = useState<Automation | null>(null);
+    const navigate = useNavigate();
+
+    const handleTierSelection = (tierKey: string) => {
+        if (!selectedAutomation) return;
+
+        // In a real app we'd use the ID mapping from the prompt, 
+        // but since we are using the automation object directly here:
+        const tierIndex = selectedAutomation.tiers.findIndex(t => t.name.toLowerCase() === tierKey.toLowerCase());
+        const tier = selectedAutomation.tiers[tierIndex];
+
+        if (!tier) return;
+
+        // Build cart item
+        const cartItem = {
+            automationType: selectedAutomation.id,
+            automationName: selectedAutomation.name,
+            setupFee: selectedAutomation.setupFee,
+            tierKey: tierKey,
+            tierName: tier.name,
+            monthlyPrice: tier.price,
+            features: tier.features
+        };
+
+        // Save to session storage
+        let cart = JSON.parse(sessionStorage.getItem('oasis_cart') || '[]');
+
+        // Check if this automation type already exists in cart, update if so
+        const existingIndex = cart.findIndex((item: any) => item.automationType === selectedAutomation.id);
+        if (existingIndex >= 0) {
+            cart[existingIndex] = cartItem;
+        } else {
+            cart.push(cartItem);
+        }
+
+        sessionStorage.setItem('oasis_cart', JSON.stringify(cart));
+
+        // Close modal
+        setSelectedAutomation(null);
+
+        // Redirect to checkout
+        navigate(`/checkout?automation=${selectedAutomation.id}&tier=${tierKey}`);
+    };
 
     return (
         <div className="min-h-screen bg-[#0A0A0A] text-white pt-24 pb-20">
@@ -197,7 +240,7 @@ const PricingPage: React.FC = () => {
                                 <p className="text-gray-400">Select the plan that fits your volume.</p>
                             </div>
 
-                            <TierComparison automation={selectedAutomation} />
+                            <TierComparison automation={selectedAutomation} onSelect={handleTierSelection} />
                         </div>
                     </div>
                 </div>

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Bot, Zap, Clock, TrendingUp, CheckCircle, ArrowRight, Sparkles, Brain, MessageSquare, Calendar, Mail, Database, Phone, Star, ChevronDown, ChevronUp, Target } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Bot, Zap, Clock, TrendingUp, CheckCircle, ArrowRight, Sparkles, Brain, MessageSquare, Calendar, Mail, Database, Phone, Star, ChevronDown, ChevronUp, Target, PlayCircle } from 'lucide-react';
 import { NeuralNetworkBackground } from '../../components/animations/NeuralNetworkBackground';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -36,51 +36,144 @@ const LandingPage = () => {
 
     const [openFaq, setOpenFaq] = useState<number | null>(null);
 
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        // Dynamic Particle Generation
+        const container = document.getElementById('particles-container');
+        if (container) {
+            container.innerHTML = ''; // Clear existing
+            for (let i = 0; i < 30; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'absolute bg-cyan-500 rounded-full shadow-[0_0_20px_rgba(0,212,255,0.8)] animate-particle-float';
+                particle.style.width = '6px';
+                particle.style.height = '6px';
+                particle.style.left = `${Math.random() * 100}%`;
+                particle.style.top = `${Math.random() * 100}%`;
+                particle.style.opacity = '0';
+                // Inline floating animation logic would be complex with just style, relying on tailwind classes or global css below
+                // Since we don't have global CSS access easily here, we'll try to use a style block inject
+
+                // Randomize animation
+                const duration = 3 + Math.random() * 3;
+                const delay = Math.random() * 4;
+
+                particle.style.animation = `float ${duration}s ease-in-out infinite ${delay}s`;
+
+                container.appendChild(particle);
+            }
+        }
+    }, []);
+
     return (
-        <div className="bg-bg-primary font-sans text-text-primary">
-            {/* Section 1: Hero */}
-            <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
-                <NeuralNetworkBackground />
-                <div className="absolute inset-0 pointer-events-none">
-                    <div className="absolute top-20 left-10 w-72 h-72 bg-oasis-cyan/20 rounded-full blur-[100px] animate-pulse-glow" />
-                    <div className="absolute bottom-20 right-10 w-96 h-96 bg-oasis-cyan/10 rounded-full blur-[120px] animate-float" />
+        <div className="min-h-screen bg-[#0A0A0A] overflow-x-hidden">
+            {/* DNA Helix Styles Injection */}
+            <style>{`
+                @keyframes float {
+                    0%, 100% { transform: translate(0, 0); opacity: 0.3; }
+                    25% { transform: translate(15px, -30px); opacity: 1; }
+                    50% { transform: translate(-10px, -10px); opacity: 0.7; }
+                    75% { transform: translate(5px, -40px); opacity: 0.9; }
+                }
+                @keyframes dnaFlow {
+                    0%, 100% { transform: translateY(-20px) scaleY(0.9); opacity: 0.4; }
+                    50% { transform: translateY(20px) scaleY(1.1); opacity: 1; }
+                }
+                @keyframes connectionPulse {
+                    0%, 100% { opacity: 0.2; transform: scaleX(0.8); }
+                    50% { opacity: 0.8; transform: scaleX(1); }
+                }
+                @keyframes orbPulse {
+                    0%, 100% { transform: scale(1); opacity: 0.5; }
+                    50% { transform: scale(1.2); opacity: 0.8; }
+                }
+                 @keyframes gridShift {
+                    0% { transform: perspective(500px) rotateX(60deg) translateY(0); }
+                    100% { transform: perspective(500px) rotateX(60deg) translateY(50px); }
+                }
+            `}</style>
+
+            {/* Hero Section */}
+            <div className="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden">
+                {/* Hero Background */}
+                <div className="absolute inset-0 z-0">
+                    {/* Grid Background */}
+                    <div className="absolute inset-0 z-0 opacity-30" style={{
+                        backgroundImage: 'linear-gradient(rgba(0, 212, 255, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 212, 255, 0.1) 1px, transparent 1px)',
+                        backgroundSize: '50px 50px',
+                        animation: 'gridShift 20s linear infinite'
+                    }} />
+
+                    {/* Glow Orbs */}
+                    <div className="absolute top-[-100px] right-[-100px] w-[400px] h-[400px] rounded-full bg-[radial-gradient(circle,rgba(0,212,255,0.4)_0%,transparent_70%)] animate-[orbPulse_5s_ease-in-out_infinite]" />
+                    <div className="absolute bottom-[10%] left-[-50px] w-[250px] h-[250px] rounded-full bg-[radial-gradient(circle,rgba(0,212,255,0.4)_0%,transparent_70%)] animate-[orbPulse_5s_ease-in-out_infinite_1.5s]" />
+
+                    {/* DNA Helix */}
+                    <div className="absolute inset-0 w-full h-full">
+                        {[20, 35, 50, 65, 80].map((left, idx) => (
+                            <div
+                                key={idx}
+                                className="absolute w-1 h-full bg-gradient-to-b from-transparent via-[#00D4FF] to-transparent rounded-full"
+                                style={{
+                                    left: `${left}%`,
+                                    animation: `dnaFlow 3s ease-in-out infinite ${idx * 0.5}s`
+                                }}
+                            />
+                        ))}
+
+                        {/* Static Connections for visual effect */}
+                        {Array.from({ length: 15 }).map((_, i) => (
+                            <div
+                                key={i}
+                                className="absolute h-[2px] bg-gradient-to-r from-transparent via-[#00D4FF]/80 to-transparent left-[20%] w-[60%]"
+                                style={{
+                                    top: `${(i / 15) * 100}%`,
+                                    animation: `connectionPulse 2s ease-in-out infinite ${i * 0.2}s`
+                                }}
+                            />
+                        ))}
+                    </div>
+
+                    {/* Particles Container */}
+                    <div id="particles-container" className="absolute inset-0" />
                 </div>
 
-                <div className="section-container relative z-10 text-center">
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6 }}
-                    >
-                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-card mb-8 border border-oasis-cyan/30 bg-oasis-cyan/5">
-                            <Sparkles className="w-4 h-4 text-oasis-cyan" />
-                            <span className="text-sm font-medium text-oasis-cyan">Serving Businesses Worldwide from Canada 🇨🇦</span>
-                        </div>
+                {/* Hero Content */}
+                <div className="container mx-auto px-4 relative z-10 text-center">
+                    <div className="inline-flex items-center px-4 py-2 bg-cyan-500/10 border border-cyan-500/20 rounded-full text-cyan-400 text-sm font-medium mb-8 backdrop-blur-sm animate-fade-in-up">
+                        <Zap size={16} className="mr-2 fill-cyan-400" />
+                        <span>The Future of Automation is Here</span>
+                    </div>
 
-                        <h1 className="text-5xl md:text-7xl font-display font-bold mb-8 leading-tight">
-                            Build Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-oasis-cyan to-oasis-cyan-dark">AI Workforce</span>
-                        </h1>
+                    <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight tracking-tight animate-fade-in-up delay-100">
+                        Scale Your Business <br />
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-600">
+                            Without Limits
+                        </span>
+                    </h1>
 
-                        <p className="text-xl md:text-2xl text-text-secondary mb-12 max-w-3xl mx-auto leading-relaxed">
-                            We build custom AI systems that automate your customer service, lead generation, and operations—so you can focus on growing your business.
-                        </p>
+                    <p className="text-xl text-gray-400 max-w-2xl mx-auto mb-10 animate-fade-in-up delay-200">
+                        Deploy intelligent automations that work 24/7. Capture leads, book appointments, and streamline operations with OASIS AI.
+                    </p>
 
-                        <div className="flex flex-col sm:flex-row gap-6 justify-center">
-                            <Link to="/pricing" className="btn-primary text-lg px-8 py-4">
-                                Get Started
-                            </Link>
-                            <Link to="/contact" className="btn-secondary text-lg px-8 py-4">
-                                Book Free Strategy Call
-                            </Link>
-                        </div>
-
-                        <p className="mt-8 text-sm text-text-tertiary">
-                            Trusted by 10+ businesses | 15+ workflows deployed | 24/7 automation
-                        </p>
-                    </motion.div>
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in-up delay-300">
+                        <button
+                            onClick={() => navigate('/pricing')}
+                            className="w-full sm:w-auto px-8 py-4 bg-cyan-500 hover:bg-cyan-600 text-white font-bold rounded-lg transition-all duration-300 shadow-[0_0_20px_rgba(0,212,255,0.3)] hover:shadow-[0_0_30px_rgba(0,212,255,0.5)] flex items-center justify-center"
+                        >
+                            View Automations
+                            <ArrowRight className="ml-2" size={20} />
+                        </button>
+                        <button
+                            onClick={() => navigate('/contact')}
+                            className="w-full sm:w-auto px-8 py-4 bg-transparent border border-gray-700 hover:border-cyan-500 text-white font-medium rounded-lg transition-all duration-300 flex items-center justify-center hover:bg-cyan-500/5"
+                        >
+                            <PlayCircle className="mr-2" size={20} />
+                            Book Demo
+                        </button>
+                    </div>
                 </div>
-            </section>
-
+            </div>
             {/* Section 2: Pain Points */}
             <section className="py-24 bg-bg-secondary relative">
                 <div className="section-container">

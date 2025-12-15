@@ -1,61 +1,60 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Check, ArrowRight } from 'lucide-react';
+import React, { useEffect } from 'react';
+import { useSearchParams, Link } from 'react-router-dom';
+import { CheckCircle2, ArrowRight } from 'lucide-react';
 
-const OrderSuccessPage = () => {
+const OrderSuccessPage: React.FC = () => {
+    const [searchParams] = useSearchParams();
+    const orderId = searchParams.get('order');
+
+    useEffect(() => {
+        // Optional: Trigger confetti or analytics here
+    }, []);
+
     return (
-        <div className="min-h-screen bg-bg-primary pt-24 pb-12 px-4 sm:px-6 lg:px-8 flex items-center justify-center font-sans text-text-primary">
-            <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="max-w-2xl w-full glass-card p-8 sm:p-12 text-center shadow-oasis-strong border border-white/5"
-            >
-                <div className="w-24 h-24 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-8">
-                    <Check className="w-12 h-12 text-green-500" />
+        <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center p-4">
+            <div className="bg-[#161B22] max-w-lg w-full p-8 rounded-2xl border border-gray-800 text-center">
+                <div className="w-20 h-20 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <CheckCircle2 className="text-green-500 w-10 h-10" />
                 </div>
 
-                <h1 className="text-4xl font-display font-bold text-white mb-4">Order Confirmed!</h1>
-                <p className="text-text-secondary text-lg mb-8">
-                    Thank you for choosing OASIS AI. Your automation journey begins now.
+                <h1 className="text-3xl font-bold text-white mb-2">Payment Successful!</h1>
+                <p className="text-gray-400 mb-8">
+                    Your order <span className="text-white font-mono">{orderId}</span> has been processed.
                 </p>
 
-                <div className="bg-bg-tertiary/50 p-6 rounded-xl text-left mb-8 border border-white/5">
-                    <h3 className="text-lg font-semibold text-white mb-4">Next Steps</h3>
-                    <ol className="space-y-4">
+                <div className="bg-gray-800/50 rounded-lg p-6 mb-8 text-left">
+                    <h3 className="text-white font-semibold mb-2">What happens next?</h3>
+                    <ul className="space-y-3 text-sm text-gray-300">
                         <li className="flex items-start">
-                            <span className="flex-shrink-0 w-8 h-8 rounded-full bg-oasis-cyan/20 text-oasis-cyan flex items-center justify-center text-sm font-bold mr-4">1</span>
-                            <div>
-                                <p className="font-medium text-white">Check your email</p>
-                                <p className="text-sm text-text-tertiary">We've sent a confirmation and onboarding guide to your inbox.</p>
-                            </div>
+                            <span className="mr-2 text-cyan-500">1.</span>
+                            Check your email for your receipt and order details.
                         </li>
                         <li className="flex items-start">
-                            <span className="flex-shrink-0 w-8 h-8 rounded-full bg-oasis-cyan/20 text-oasis-cyan flex items-center justify-center text-sm font-bold mr-4">2</span>
-                            <div>
-                                <p className="font-medium text-white">Complete your profile</p>
-                                <p className="text-sm text-text-tertiary">Log in to the client portal to provide details for your agent.</p>
-                            </div>
+                            <span className="mr-2 text-cyan-500">2.</span>
+                            An implementation specialist will contact you within 1 hour to schedule your setup call.
                         </li>
                         <li className="flex items-start">
-                            <span className="flex-shrink-0 w-8 h-8 rounded-full bg-oasis-cyan/20 text-oasis-cyan flex items-center justify-center text-sm font-bold mr-4">3</span>
-                            <div>
-                                <p className="font-medium text-white">We build & deploy</p>
-                                <p className="text-sm text-text-tertiary">Our team will have your agent ready in 3-5 business days.</p>
-                            </div>
+                            <span className="mr-2 text-cyan-500">3.</span>
+                            We'll begin customizing your automation immediately after our consultation.
                         </li>
-                    </ol>
+                    </ul>
                 </div>
 
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                    <Link to="/portal/dashboard" className="btn-primary inline-flex items-center justify-center shadow-oasis">
-                        Go to Dashboard <ArrowRight className="ml-2 w-5 h-5" />
+                <div className="space-y-3">
+                    <Link
+                        to="/"
+                        className="block w-full bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3 rounded-lg transition-colors"
+                    >
+                        Return to Home
                     </Link>
-                    <Link to="/" className="btn-secondary inline-flex items-center justify-center">
-                        Return Home
+                    <Link
+                        to="/login"
+                        className="block w-full bg-gray-800 hover:bg-gray-700 text-white font-bold py-3 rounded-lg transition-colors"
+                    >
+                        Client Portal Login
                     </Link>
                 </div>
-            </motion.div>
+            </div>
         </div>
     );
 };
