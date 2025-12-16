@@ -119,12 +119,22 @@ const PricingPage: React.FC = () => {
                                 ))}
                             </div>
 
-                            <button className={`
+                            <button
+                                onClick={() => {
+                                    if (bundle.ctaText === "Get Started") {
+                                        // For Launchpad, we might want to go to checkout or contact. 
+                                        // Assuming checkout for "Get Started" based on context, or a specific query param.
+                                        navigate('/checkout?bundle=launchpad');
+                                    } else {
+                                        navigate('/contact');
+                                    }
+                                }}
+                                className={`
                                 w-full py-4 rounded-xl font-bold text-lg transition-all duration-300 flex items-center justify-center
                                 ${bundle.tag === "MOST POPULAR"
-                                    ? 'bg-cyan-500 hover:bg-cyan-600 text-white hover:shadow-lg hover:shadow-cyan-500/20'
-                                    : 'bg-white text-black hover:bg-gray-200'
-                                }
+                                        ? 'bg-cyan-500 hover:bg-cyan-600 text-white hover:shadow-lg hover:shadow-cyan-500/20'
+                                        : 'bg-white text-black hover:bg-gray-200'
+                                    }
                             `}>
                                 {bundle.ctaText}
                                 <ArrowRight size={20} className="ml-2" />
@@ -199,7 +209,10 @@ const PricingPage: React.FC = () => {
                                 Full-scale automation infrastructure, HIPAA/SOC 2 compliance, and dedicated success managers for large organizations.
                             </p>
                         </div>
-                        <button className="whitespace-nowrap px-8 py-4 bg-transparent border-2 border-white text-white font-bold rounded-lg hover:bg-white hover:text-black transition-all">
+                        <button
+                            onClick={() => navigate('/contact')}
+                            className="whitespace-nowrap px-8 py-4 bg-transparent border-2 border-white text-white font-bold rounded-lg hover:bg-white hover:text-black transition-all"
+                        >
                             Contact Sales
                         </button>
                     </div>
