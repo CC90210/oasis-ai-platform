@@ -158,7 +158,8 @@ export default function CinematicDNA() {
             // AURA
             const auraSize = 300;
             const aura = ctx!.createRadialGradient(0, 0, 0, 0, 0, auraSize);
-            aura.addColorStop(0, `rgba(0, 150, 255, ${seg.opacity * 0.08 * seg.glowStrength})`);
+            // BRIGHTER AURA: 0.08 -> 0.12
+            aura.addColorStop(0, `rgba(0, 180, 255, ${seg.opacity * 0.12 * seg.glowStrength})`);
             aura.addColorStop(1, 'rgba(0, 0, 0, 0)');
             ctx!.fillStyle = aura;
             ctx!.fillRect(-auraSize, -auraSize, auraSize * 2, auraSize * 2);

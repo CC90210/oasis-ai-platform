@@ -81,14 +81,14 @@ export const Header = () => {
                             </span>
                         )}
                     </button>
-                    <Link to="/portal/login" className="text-sm font-medium text-white hover:text-oasis-cyan transition-colors">
+                    <NavLink to="/portal/login" className={({ isActive }) => `text-sm font-medium transition-colors hover:text-oasis-cyan ${isActive ? 'text-oasis-cyan' : 'text-white'}`}>
                         Client Portal
-                    </Link>
-                    <Link to="/contact">
+                    </NavLink>
+                    <NavLink to="/contact">
                         <button className="btn-primary py-2 px-4 text-sm">
                             Get Started
                         </button>
-                    </Link>
+                    </NavLink>
                 </div>
 
                 {/* Mobile Menu Button */}
@@ -124,32 +124,30 @@ export const Header = () => {
                     >
                         <div className="section-container py-8 flex flex-col gap-6">
                             {navLinks.map((link) => (
-                                <Link
+                                <NavLink
                                     key={link.name}
                                     to={link.path}
-                                    onClick={() => {
-                                        setIsMobileMenuOpen(false);
-                                    }}
-                                    className={`text-2xl font-display font-bold transition-colors ${isActive(link.path) ? 'text-oasis-cyan' : 'text-white/80'}`}
+                                    onClick={closeMenu}
+                                    className={({ isActive }) => `text-2xl font-display font-bold transition-colors ${isActive ? 'text-oasis-cyan' : 'text-white/80'}`}
                                 >
                                     {link.name}
-                                </Link>
+                                </NavLink>
                             ))}
                             <hr className="border-white/10 my-2" />
-                            <Link
+                            <NavLink
                                 to="/portal/login"
-                                onClick={() => setIsMobileMenuOpen(false)}
-                                className="text-xl font-medium text-white/80"
+                                onClick={closeMenu}
+                                className={({ isActive }) => `text-xl font-medium ${isActive ? 'text-oasis-cyan' : 'text-white/80'}`}
                             >
                                 Client Portal
-                            </Link>
-                            <Link
+                            </NavLink>
+                            <NavLink
                                 to="/contact"
                                 onClick={closeMenu}
                                 className="btn-primary text-center py-4 text-lg mt-4"
                             >
                                 Get Started
-                            </Link>
+                            </NavLink>
                         </div>
                     </motion.div>
                 )}
