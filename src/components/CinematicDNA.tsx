@@ -35,7 +35,7 @@ export default function CinematicDNA() {
         let nextId = 0;
 
         // Configuration
-        const MAX_SEGMENTS = 10;
+        const MAX_SEGMENTS = 5; // Reduced for cleaner look
         const SPAWN_ZONES = [
             { x: 0.2, y: 0.2 }, { x: 0.8, y: 0.2 },
             { x: 0.2, y: 0.8 }, { x: 0.8, y: 0.8 },
@@ -48,20 +48,17 @@ export default function CinematicDNA() {
         }
 
         function createSegment(zoneIndex?: number, parentX?: number, parentY?: number): DNASegment {
-            const zone = zoneIndex !== undefined
-                ? SPAWN_ZONES[zoneIndex % SPAWN_ZONES.length]
-                : SPAWN_ZONES[Math.floor(Math.random() * SPAWN_ZONES.length)];
+            // Spawn mainly near edges if no parent
+            const edge = Math.random() > 0.5 ? 'width' : 'height';
+            const baseX = edge === 'width' ? (Math.random() * canvas!.width) : (Math.random() > 0.5 ? 100 : canvas!.width - 100);
+            const baseY = edge === 'height' ? (Math.random() * canvas!.height) : (Math.random() > 0.5 ? 100 : canvas!.height - 100);
 
-            const baseX = parentX ?? (zone.x * canvas!.width);
-            const baseY = parentY ?? (zone.y * canvas!.height);
-
-            // If parent provided, spawn VERY close (mitosis look)
-            const spread = parentX ? 50 : 200;
-            const x = baseX + (Math.random() - 0.5) * spread;
-            const y = baseY + (Math.random() - 0.5) * spread;
+            // If parent provided/breakoff, nice spacing
+            const x = parentX ? parentX + (Math.random() - 0.5) * 100 : baseX;
+            const y = parentY ? parentY + (Math.random() - 0.5) * 100 : baseY;
 
             const angle = Math.random() * Math.PI * 2;
-            const speed = 0.15 + Math.random() * 0.1;
+            const speed = 0.05 + Math.random() * 0.05; // Very slow, majestic
 
             return {
                 id: nextId++,
@@ -70,50 +67,36 @@ export default function CinematicDNA() {
                 vx: Math.cos(angle) * speed,
                 vy: Math.sin(angle) * speed,
                 rotation: Math.random() * Math.PI * 2,
-                rotationSpeed: (Math.random() - 0.5) * 0.002,
-                points: 8 + Math.floor(Math.random() * 4),
-                amplitude: 30 + Math.random() * 15,
+                rotationSpeed: (Math.random() - 0.5) * 0.001, // Barely rotating
+                points: 10 + Math.floor(Math.random() * 6), // Longer elegance
+                amplitude: 25 + Math.random() * 10, // Tighter amplitude
                 phase: Math.random() * Math.PI * 2,
                 opacity: 0,
-                scale: 1.0 + Math.random() * 0.8, // Slightly reduced max scale
-                glowStrength: 0.4 + Math.random() * 0.4, // Reduced glow baseline
+                // MORE UNIFORM SCALE: 1.8 to 2.4
+                scale: 1.8 + Math.random() * 0.6,
+                glowStrength: 0.5 + Math.random() * 0.3, // Subtle glow
                 connectedTo: []
             };
         }
 
         function initSegments() {
             segments = [];
-            for (let i = 0; i < 5; i++) {
+            for (let i = 0; i < 4; i++) {
                 segments.push(createSegment(i));
             }
         }
 
         function updateSegments() {
-            // Mitosis / Spawning
-            if (segments.length < MAX_SEGMENTS && Math.random() < 0.005) {
-                // Break off from existing
-                if (segments.length > 0 && Math.random() < 0.6) {
-                    const parent = segments[Math.floor(Math.random() * segments.length)];
-                    const child = createSegment(undefined, parent.x, parent.y);
-
-                    // Push parent and child apart violently
-                    const angle = Math.atan2(child.y - parent.y, child.x - parent.x);
-                    child.vx += Math.cos(angle) * 0.5;
-                    child.vy += Math.sin(angle) * 0.5;
-                    parent.vx -= Math.cos(angle) * 0.5;
-                    parent.vy -= Math.sin(angle) * 0.5;
-
-                    segments.push(child);
-                } else {
-                    segments.push(createSegment());
-                }
+            // Very rare spawning
+            if (segments.length < MAX_SEGMENTS && Math.random() < 0.002) {
+                segments.push(createSegment());
             }
 
             for (let i = segments.length - 1; i >= 0; i--) {
                 const seg = segments[i];
 
                 // Fade in
-                if (seg.opacity < 0.7) { // Capped max opacity for "less overwhelming"
+                if (seg.opacity < 0.7) {
                     seg.opacity += 0.005;
                 }
 
@@ -121,43 +104,48 @@ export default function CinematicDNA() {
                 seg.x += seg.vx;
                 seg.y += seg.vy;
                 seg.rotation += seg.rotationSpeed;
-                seg.phase += 0.02;
+                seg.phase += 0.01;
 
-                // Organic drift
-                seg.vx += Math.sin(time * 0.005 + seg.id) * 0.001;
-                seg.vy += Math.cos(time * 0.005 + seg.id) * 0.001;
+                // CENTER AVOIDANCE (Critical for "UI that converts")
+                // Push DNA away from the center where text usually is
+                const centerX = canvas!.width / 2;
+                const centerY = canvas!.height / 2;
+                const dxC = seg.x - centerX;
+                const dyC = seg.y - centerY;
+                const distC = Math.sqrt(dxC * dxC + dyC * dyC);
+
+                // If too close to center, push out gently
+                if (distC < 400) {
+                    seg.vx += (dxC / distC) * 0.05;
+                    seg.vy += (dyC / distC) * 0.05;
+                }
 
                 // Friction
-                seg.vx *= 0.99;
-                seg.vy *= 0.99;
+                seg.vx *= 0.98; // High air resistance
+                seg.vy *= 0.98;
 
-                // Keep near center force (gentle)
-                const dxCenter = canvas!.width / 2 - seg.x;
-                const dyCenter = canvas!.height / 2 - seg.y;
-                seg.vx += dxCenter * 0.00001;
-                seg.vy += dyCenter * 0.00001;
-
-                // Repulsion
+                // REPULSION (Anti-clumping)
                 for (const other of segments) {
                     if (other.id === seg.id) continue;
                     const dx = other.x - seg.x;
                     const dy = other.y - seg.y;
                     const dist = Math.sqrt(dx * dx + dy * dy);
-                    const minDist = 250 * ((seg.scale + other.scale) / 2);
+                    // Massive exclusion zone
+                    const minDist = 500;
 
                     if (dist < minDist && dist > 0) {
-                        const force = (minDist - dist) / minDist * 0.01;
+                        const force = (minDist - dist) / minDist * 0.04; // Strong force
                         seg.vx -= (dx / dist) * force;
                         seg.vy -= (dy / dist) * force;
                     }
                 }
 
-                // Bounds
-                const margin = 100;
-                if (seg.x < margin) seg.vx += 0.02;
-                if (seg.x > canvas!.width - margin) seg.vx -= 0.02;
-                if (seg.y < margin) seg.vy += 0.02;
-                if (seg.y > canvas!.height - margin) seg.vy -= 0.02;
+                // Screen Bounds - gentle bounce
+                const margin = 150;
+                if (seg.x < margin) seg.vx += 0.01;
+                if (seg.x > canvas!.width - margin) seg.vx -= 0.01;
+                if (seg.y < margin) seg.vy += 0.01;
+                if (seg.y > canvas!.height - margin) seg.vy -= 0.01;
             }
         }
 
@@ -167,16 +155,15 @@ export default function CinematicDNA() {
             ctx!.rotate(seg.rotation);
             ctx!.scale(seg.scale, seg.scale);
 
-            // Subtle Aura (reduced from massive block)
-            // Just a faint glow behind the structure
-            const auraSize = 250;
+            // AURA
+            const auraSize = 300;
             const aura = ctx!.createRadialGradient(0, 0, 0, 0, 0, auraSize);
-            aura.addColorStop(0, `rgba(0, 150, 200, ${seg.opacity * 0.05})`); // Much subtler
+            aura.addColorStop(0, `rgba(0, 150, 255, ${seg.opacity * 0.08 * seg.glowStrength})`);
             aura.addColorStop(1, 'rgba(0, 0, 0, 0)');
             ctx!.fillStyle = aura;
             ctx!.fillRect(-auraSize, -auraSize, auraSize * 2, auraSize * 2);
 
-            const spacing = 18; // Tighter spacing
+            const spacing = 16;
             const startY = -(seg.points * spacing) / 2;
 
             const strand1: { x: number, y: number, depth: number }[] = [];
@@ -184,7 +171,7 @@ export default function CinematicDNA() {
 
             for (let i = 0; i < seg.points; i++) {
                 const y = startY + i * spacing;
-                const p = seg.phase + i * 0.5; // Tighter twists
+                const p = seg.phase + i * 0.5;
                 const depth1 = (Math.sin(p) + 1) / 2;
                 const depth2 = (Math.sin(p + Math.PI) + 1) / 2;
 
@@ -192,9 +179,9 @@ export default function CinematicDNA() {
                 strand2.push({ x: Math.sin(p + Math.PI) * seg.amplitude, y, depth: depth2 });
             }
 
-            // Rungs (Thinner, sharper)
+            // Rungs - cleaner
             ctx!.beginPath();
-            ctx!.strokeStyle = `rgba(0, 212, 255, ${seg.opacity * 0.15})`;
+            ctx!.strokeStyle = `rgba(0, 200, 255, ${seg.opacity * 0.1})`;
             ctx!.lineWidth = 1;
             for (let i = 0; i < seg.points; i++) {
                 ctx!.moveTo(strand1[i].x, strand1[i].y);
@@ -202,21 +189,11 @@ export default function CinematicDNA() {
             }
             ctx!.stroke();
 
-            // Defined Strands
+            // Outline - "Tech/Bio" look
             const drawStrandLine = (points: typeof strand1) => {
-                // Subtle Glow
-                ctx!.shadowBlur = 10;
-                ctx!.shadowColor = "rgba(0, 180, 255, 0.4)";
-                ctx!.strokeStyle = `rgba(100, 230, 255, ${seg.opacity * 0.4})`;
-                ctx!.lineWidth = 2; // Thinner lines for definition
-                ctx!.beginPath();
-                points.forEach((p, i) => i === 0 ? ctx!.moveTo(p.x, p.y) : ctx!.lineTo(p.x, p.y));
-                ctx!.stroke();
-
-                // Core (Sharp)
-                ctx!.shadowBlur = 0;
-                ctx!.strokeStyle = `rgba(200, 250, 255, ${seg.opacity * 0.8})`;
-                ctx!.lineWidth = 1;
+                ctx!.shadowBlur = 0; // No blur for cleaner look
+                ctx!.strokeStyle = `rgba(180, 240, 255, ${seg.opacity * 0.5})`;
+                ctx!.lineWidth = 0.5;
                 ctx!.beginPath();
                 points.forEach((p, i) => i === 0 ? ctx!.moveTo(p.x, p.y) : ctx!.lineTo(p.x, p.y));
                 ctx!.stroke();
@@ -225,25 +202,16 @@ export default function CinematicDNA() {
             drawStrandLine(strand1);
             drawStrandLine(strand2);
 
-            // Particles (Defined, incomplete circles)
+            // Particles
             const drawParticles = (points: typeof strand1) => {
                 points.forEach(p => {
-                    const size = 2 + p.depth * 2;
-                    const dotOpacity = seg.opacity * (0.4 + p.depth * 0.6);
+                    const size = 1.5 + p.depth * 2; // Smaller, sharper
+                    const dotOpacity = seg.opacity * (0.6 + p.depth * 0.4);
 
-                    // Crisp Dot
                     ctx!.beginPath();
                     ctx!.arc(p.x, p.y, size, 0, Math.PI * 2);
-                    ctx!.fillStyle = `rgba(200, 255, 255, ${dotOpacity})`;
+                    ctx!.fillStyle = `rgba(220, 255, 255, ${dotOpacity})`;
                     ctx!.fill();
-
-                    // Small "Orbital" dots for detail
-                    if (Math.random() < 0.2) {
-                        ctx!.beginPath();
-                        ctx!.arc(p.x + 5, p.y - 5, 1, 0, Math.PI * 2);
-                        ctx!.fillStyle = `rgba(0, 212, 255, ${dotOpacity * 0.5})`;
-                        ctx!.fill();
-                    }
                 });
             };
 
@@ -253,16 +221,11 @@ export default function CinematicDNA() {
             ctx!.restore();
         }
 
-        // Network Connections - Long range reconnection
+        // Long distance connections
         function drawNetwork() {
-            // No screen blend mode to avoid over-exposure
             ctx!.globalCompositeOperation = 'source-over';
 
             for (let i = 0; i < segments.length; i++) {
-                // Find nearest neighbor
-                let nearest = -1;
-                let minDist = 1000;
-
                 for (let j = i + 1; j < segments.length; j++) {
                     const a = segments[i];
                     const b = segments[j];
@@ -270,27 +233,16 @@ export default function CinematicDNA() {
                     const dy = b.y - a.y;
                     const dist = Math.sqrt(dx * dx + dy * dy);
 
-                    if (dist < 600) { // Very long range
-                        const opacity = (1 - dist / 600) * 0.15 * Math.min(a.opacity, b.opacity);
+                    if (dist < 800) { // Very long range for "Ecosystem" feel
+                        const opacity = (1 - dist / 800) * 0.1 * Math.min(a.opacity, b.opacity);
 
                         ctx!.beginPath();
                         ctx!.strokeStyle = `rgba(0, 212, 255, ${opacity})`;
-                        ctx!.lineWidth = 0.5; // Very thin crisp lines
+                        ctx!.lineWidth = 0.5;
                         ctx!.moveTo(a.x, a.y);
-
-                        // Taut connections (less curve) imply tension/snapping
+                        // Straight lines = modern/tech
                         ctx!.lineTo(b.x, b.y);
                         ctx!.stroke();
-
-                        // Data packet
-                        if (Date.now() % 2000 < 50) {
-                            ctx!.beginPath();
-                            const mx = (a.x + b.x) / 2;
-                            const my = (a.y + b.y) / 2;
-                            ctx!.arc(mx, my, 2, 0, Math.PI * 2);
-                            ctx!.fillStyle = `rgba(255, 255, 255, ${opacity * 3})`;
-                            ctx!.fill();
-                        }
                     }
                 }
             }

@@ -119,19 +119,21 @@ export const Header = () => {
                     >
                         <div className="section-container py-8 flex flex-col gap-6">
                             {navLinks.map((link) => (
-                                <NavLink
+                                <Link
                                     key={link.name}
                                     to={link.path}
-                                    onClick={closeMenu}
-                                    className={({ isActive }) => `text-2xl font-display font-bold transition-colors ${isActive ? 'text-oasis-cyan' : 'text-white/80'}`}
+                                    onClick={() => {
+                                        setIsMobileMenuOpen(false);
+                                    }}
+                                    className={`text-2xl font-display font-bold transition-colors ${isActive(link.path) ? 'text-oasis-cyan' : 'text-white/80'}`}
                                 >
                                     {link.name}
-                                </NavLink>
+                                </Link>
                             ))}
                             <hr className="border-white/10 my-2" />
                             <Link
                                 to="/portal/login"
-                                onClick={closeMenu}
+                                onClick={() => setIsMobileMenuOpen(false)}
                                 className="text-xl font-medium text-white/80"
                             >
                                 Client Portal
