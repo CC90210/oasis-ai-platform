@@ -31,11 +31,9 @@ export const Header = () => {
         { name: 'Contact', path: '/contact' },
     ];
 
-    const closeMenu = () => setIsMobileMenuOpen(false);
-
-    const isActive = (path: string) => {
-        if (path === '/') return location.pathname === '/';
-        return location.pathname.startsWith(path);
+    const handleNavClick = () => {
+        setIsMobileMenuOpen(false);
+        window.scrollTo(0, 0); // Ensure scroll to top on mobile nav
     };
 
     return (
@@ -44,7 +42,7 @@ export const Header = () => {
                 }`}
         >
             <div className="section-container flex items-center justify-between">
-                <Link to="/" className="flex items-center gap-2 group" onClick={closeMenu}>
+                <Link to="/" className="flex items-center gap-2 group" onClick={handleNavClick}>
                     <img
                         src="/images/oasis-logo.jpg"
                         alt="OASIS AI"
@@ -127,7 +125,7 @@ export const Header = () => {
                                 <NavLink
                                     key={link.name}
                                     to={link.path}
-                                    onClick={closeMenu}
+                                    onClick={handleNavClick}
                                     className={({ isActive }) => `text-2xl font-display font-bold transition-colors ${isActive ? 'text-oasis-cyan' : 'text-white/80'}`}
                                 >
                                     {link.name}
@@ -136,14 +134,14 @@ export const Header = () => {
                             <hr className="border-white/10 my-2" />
                             <NavLink
                                 to="/portal/login"
-                                onClick={closeMenu}
+                                onClick={handleNavClick}
                                 className={({ isActive }) => `text-xl font-medium ${isActive ? 'text-oasis-cyan' : 'text-white/80'}`}
                             >
                                 Client Portal
                             </NavLink>
                             <NavLink
                                 to="/contact"
-                                onClick={closeMenu}
+                                onClick={handleNavClick}
                                 className="btn-primary text-center py-4 text-lg mt-4"
                             >
                                 Get Started

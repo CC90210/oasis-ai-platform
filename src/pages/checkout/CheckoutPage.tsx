@@ -3,7 +3,6 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import './CheckoutPage.css';
 import { track } from '@vercel/analytics';
 import { PAYPAL_PLANS, CHECKOUT_PRICING, CHECKOUT_FEATURES, AUTOMATIONS } from '../../data/pricingData';
-import { Footer } from '../../components/layout/Footer';
 import { ShieldCheck, Lock, HelpCircle, ArrowLeft, Check } from 'lucide-react';
 
 declare global {
@@ -320,7 +319,6 @@ const CheckoutPage: React.FC = () => {
                 </div>
             </div>
 
-            <Footer />
         </div>
     );
 };
