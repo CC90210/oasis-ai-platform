@@ -44,7 +44,7 @@ const ServicesPage = () => {
     ];
 
     return (
-        <div className="bg-bg-primary min-h-screen overflow-x-hidden font-sans text-text-primary relative">
+        <div className="min-h-screen overflow-x-hidden font-sans text-text-primary relative">
             {/* Hero Section */}
             <section className="relative overflow-hidden pt-32 pb-20">
                 <div className="absolute inset-0 pointer-events-none">
@@ -73,7 +73,7 @@ const ServicesPage = () => {
             </section>
 
             {/* Services Grid */}
-            <section className="py-20 bg-bg-secondary">
+            <section className="py-20 relative">
                 <div className="section-container">
                     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                         {services.map((service, index) => (
@@ -106,7 +106,7 @@ const ServicesPage = () => {
             </section>
 
             {/* Technology Stack */}
-            <section className="py-24 bg-bg-primary relative overflow-hidden">
+            <section className="py-24 relative overflow-hidden">
                 <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-oasis-cyan/30 to-transparent" />
 
                 <div className="section-container relative z-10">
@@ -148,7 +148,7 @@ const ServicesPage = () => {
             </section>
 
             {/* CTA Section */}
-            <section className="py-32 bg-gradient-dark relative overflow-hidden">
+            <section className="py-32 relative overflow-hidden">
                 <div className="absolute inset-0 pointer-events-none">
                 </div>
 

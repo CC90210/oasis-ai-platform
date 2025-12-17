@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 
 const CaseStudiesPage = () => {
     return (
-        <div className="bg-bg-primary min-h-screen overflow-x-hidden font-sans text-text-primary relative">
+        <div className="min-h-screen overflow-x-hidden font-sans text-text-primary relative">
             {/* Hero */}
             <section className="relative overflow-hidden pt-32 pb-20">
                 <div className="section-container relative z-10">
@@ -29,7 +29,7 @@ const CaseStudiesPage = () => {
             </section>
 
             {/* Featured Case Study */}
-            <section className="py-20 bg-bg-primary">
+            <section className="py-20 relative">
                 <div className="section-container">
                     <div className="max-w-5xl mx-auto">
                         <motion.div
@@ -116,7 +116,7 @@ const CaseStudiesPage = () => {
             </section>
 
             {/* Results Overview */}
-            <section className="py-24 bg-bg-secondary">
+            <section className="py-24 relative">
                 <div className="section-container">
                     <motion.h2
                         initial={{ opacity: 0, y: 20 }}
@@ -180,7 +180,7 @@ const CaseStudiesPage = () => {
             </section>
 
             {/* Testimonials */}
-            <section className="py-24 bg-bg-primary">
+            <section className="py-24 relative">
                 <div className="section-container">
                     <motion.h2
                         initial={{ opacity: 0, y: 20 }}
@@ -254,7 +254,7 @@ const CaseStudiesPage = () => {
             </section>
 
             {/* CTA */}
-            <section className="py-24 bg-gradient-dark relative overflow-hidden">
+            <section className="py-24 relative overflow-hidden">
                 <div className="section-container relative z-10">
                     <div className="max-w-3xl mx-auto text-center">
                         <motion.h2

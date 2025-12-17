@@ -43,10 +43,10 @@ const LandingPage = () => {
 
 
     return (
-        <div className="min-h-screen bg-[#0A0A0A] overflow-x-hidden text-white font-sans">
+        <div className="min-h-screen overflow-x-hidden text-white font-sans">
             <ImmersiveHero />
             {/* Section 2: Pain Points */}
-            <section className="py-24 bg-bg-secondary relative">
+            <section className="py-24 relative">
                 <div className="section-container">
                     <div className="text-center mb-16">
                         <span className="text-oasis-cyan font-medium tracking-wider uppercase text-sm">Sound Familiar?</span>
@@ -79,7 +79,7 @@ const LandingPage = () => {
             </section>
 
             {/* Section 3: Services Overview */}
-            <section className="py-24 bg-bg-primary relative overflow-hidden">
+            <section className="py-24 relative overflow-hidden">
                 <div className="section-container relative z-10">
                     <div className="text-center mb-20">
                         <span className="text-oasis-cyan font-medium tracking-wider uppercase text-sm">What We Automate</span>
@@ -119,7 +119,7 @@ const LandingPage = () => {
             </section>
 
             {/* Section 4: How It Works */}
-            <section className="py-24 bg-bg-secondary relative">
+            <section className="py-24 relative">
                 <div className="section-container">
                     <div className="text-center mb-20">
                         <span className="text-oasis-cyan font-medium tracking-wider uppercase text-sm">How It Works</span>
@@ -168,7 +168,7 @@ const LandingPage = () => {
             </section>
 
             {/* Section 5: Pricing Preview */}
-            <section className="py-24 bg-bg-primary relative">
+            <section className="py-24 relative">
                 <div className="section-container">
                     <div className="text-center mb-20">
                         <span className="text-oasis-cyan font-medium tracking-wider uppercase text-sm">Simple Pricing</span>
@@ -224,7 +224,7 @@ const LandingPage = () => {
             </section>
 
             {/* Section 6: ROI Calculator */}
-            <section className="py-24 bg-bg-secondary relative">
+            <section className="py-24 relative">
                 <div className="section-container">
                     <div className="text-center mb-16">
                         <span className="text-oasis-cyan font-medium tracking-wider uppercase text-sm">Calculate Your Savings</span>
@@ -288,7 +288,7 @@ const LandingPage = () => {
             </section>
 
             {/* Section 7: Case Study */}
-            <section className="py-24 bg-bg-primary relative">
+            <section className="py-24 relative">
                 <div className="section-container">
                     <div className="glass-card p-8 md:p-12 border-oasis-cyan/20">
                         <div className="grid md:grid-cols-2 gap-12 items-center">
@@ -328,7 +328,7 @@ const LandingPage = () => {
             </section>
 
             {/* Section 8: FAQ */}
-            <section className="py-24 bg-bg-secondary">
+            <section className="py-24 relative">
                 <div className="section-container max-w-3xl">
                     <div className="text-center mb-16">
                         <h2 className="text-4xl font-display font-bold mb-6">Frequently Asked Questions</h2>
@@ -363,7 +363,7 @@ const LandingPage = () => {
             </section>
 
             {/* Section 9: Final CTA */}
-            <section className="py-32 bg-bg-secondary relative overflow-hidden">
+            <section className="py-32 relative overflow-hidden">
                 <div className="absolute inset-0">
                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-oasis-cyan/20 rounded-full blur-[150px] animate-pulse-glow" />
                 </div>

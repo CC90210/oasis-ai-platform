@@ -20,7 +20,7 @@ const BlogPage = () => {
     const featuredPost = blogPosts[0];
 
     return (
-        <div className="bg-bg-primary min-h-screen pt-24 pb-20 relative overflow-hidden">
+        <div className="min-h-screen pt-24 pb-20 relative overflow-hidden">
             <div className="section-container relative z-10">
                 <div className="text-center mb-16">
                     <h1 className="text-5xl md:text-7xl font-display font-bold mb-6">

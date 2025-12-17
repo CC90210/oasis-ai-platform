@@ -44,7 +44,7 @@ const ContactPage = () => {
     };
 
     return (
-        <div className="bg-bg-primary font-sans text-text-primary relative overflow-hidden">
+        <div className="font-sans text-text-primary relative overflow-hidden">
             {/* Hero */}
             <section className="relative overflow-hidden pt-32 pb-20">
                 <div className="absolute inset-0 pointer-events-none">
@@ -72,7 +72,7 @@ const ContactPage = () => {
             </section>
 
             {/* Contact Methods & Form */}
-            <section className="py-20 bg-bg-secondary">
+            <section className="py-20 relative">
                 <div className="section-container">
                     <div className="grid lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
                         {/* Contact Info */}
@@ -334,7 +334,7 @@ const ContactPage = () => {
             </section>
 
             {/* Why Contact Us */}
-            <section className="py-20 bg-bg-primary">
+            <section className="py-20 relative">
                 <div className="section-container">
                     <h2 className="text-4xl font-display font-bold text-center mb-16">
                         What Happens <span className="text-oasis-cyan">Next</span>?
