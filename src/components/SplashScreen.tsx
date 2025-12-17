@@ -89,7 +89,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
                         <video
                             ref={videoRef}
                             id="splash-screen-video"
-                            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${isPlaying ? 'opacity-100' : 'opacity-0'}`}
+                            className={`absolute inset-0 w-full h-full object-contain md:object-cover transition-opacity duration-500 ${isPlaying ? 'opacity-100' : 'opacity-0'}`}
                             src="/videos/video_2025-12-04_16-19-42.mp4"
                             playsInline
                             muted
