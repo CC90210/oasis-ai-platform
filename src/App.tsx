@@ -35,6 +35,7 @@ function App() {
     const handleSplashComplete = () => {
         setShowSplash(false);
         sessionStorage.setItem('splashPlayed', 'true');
+        window.dispatchEvent(new Event('oasis-splash-complete'));
     };
 
     // Loading fallback

@@ -245,6 +245,7 @@ export default function CinematicDNA() {
             animationId: number | null;
             width: number = 0;
             height: number = 0;
+            paused: boolean = false;
 
             config = {
                 // Colors - softer, more refined
@@ -266,10 +267,13 @@ export default function CinematicDNA() {
                 glowBlur: 8,                  // Soft glow
                 rungOpacity: 0.15,            // Very subtle rungs
 
-                // Layout
-                particleCount: 30,            // Minimal particles
-                nodesPerHelix: 25             // Smooth curves
+                // Layout - REDUCED FOR PERFORMANCE
+                particleCount: 15,            // Minimal particles
+                nodesPerHelix: 15,            // Reduced complexity
+                frameSkip: 2                  // Only render every 2nd frame
             };
+
+            frameCounter: number = 0;
 
             constructor(canvas: HTMLCanvasElement) {
                 this.canvas = canvas;
@@ -282,8 +286,17 @@ export default function CinematicDNA() {
 
                 // Mobile Optimization
                 if (window.innerWidth < 768) {
-                    this.config.particleCount = 15;
-                    this.config.nodesPerHelix = 18;
+                    this.config.particleCount = 10;
+                    this.config.nodesPerHelix = 12;
+                    this.config.frameSkip = 2;
+                }
+
+                // Check if splash screen is active - if so, start paused
+                const splashPlayed = sessionStorage.getItem('splashPlayed') === 'true';
+                if (!splashPlayed) {
+                    this.paused = true;
+                    this.canvas.style.opacity = '0';
+                    console.log("CinematicDNA: Starting paused for Splash Screen");
                 }
 
                 this.init();
@@ -294,7 +307,26 @@ export default function CinematicDNA() {
                 this.createHelixes();
                 this.createParticles();
                 this.bindEvents();
-                this.animate();
+
+                if (!this.paused) {
+                    this.animate();
+                }
+
+                // Listen for global resume event
+                window.addEventListener('oasis-splash-complete', () => this.resume());
+            }
+
+            resume() {
+                if (this.paused) {
+                    this.paused = false;
+                    console.log("CinematicDNA: Resuming animation");
+
+                    // Fade in canvas
+                    this.canvas.style.transition = 'opacity 2s ease';
+                    this.canvas.style.opacity = '1';
+
+                    this.animate();
+                }
             }
 
             resize() {
@@ -332,12 +364,9 @@ export default function CinematicDNA() {
                     // Right side  
                     { x: this.width * 0.88, y: this.height * 0.35, rotation: -10, length: this.height * 0.75 },
                     { x: this.width + 20, y: this.height * 0.55, rotation: 15, length: this.height * 0.85 },
-
-                    // Far edges (partial visibility)
-                    { x: this.width * 0.05, y: this.height * 0.8, rotation: -20, length: this.height * 0.5 },
-                    { x: this.width * 0.95, y: this.height * 0.15, rotation: 18, length: this.height * 0.5 }
                 ];
 
+                // Reduced helix count
                 positions.forEach((pos, index) => {
                     this.helixes.push(new Helix(pos, index, this.config));
                 });
@@ -350,6 +379,14 @@ export default function CinematicDNA() {
             }
 
             animate() {
+                if (this.paused) return;
+
+                this.frameCounter++;
+                if (this.frameCounter % this.config.frameSkip !== 0) {
+                    this.animationId = requestAnimationFrame(() => this.animate());
+                    return;
+                }
+
                 const time = performance.now() * 0.001;
 
                 // Clear canvas
@@ -374,6 +411,7 @@ export default function CinematicDNA() {
                 if (this.animationId) {
                     cancelAnimationFrame(this.animationId);
                 }
+                window.removeEventListener('oasis-splash-complete', () => this.resume());
             }
         }
 
@@ -398,7 +436,7 @@ export default function CinematicDNA() {
             <canvas
                 ref={canvasRef}
                 id="dna-canvas"
-                className="block w-full h-full"
+                className="block w-full h-full transition-opacity duration-1000"
             />
         </div>
     );
