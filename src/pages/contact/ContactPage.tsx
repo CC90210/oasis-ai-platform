@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Mail, Phone, MapPin, Send, CheckCircle } from 'lucide-react';
 import { useFormSubmit } from '../../hooks/useFormSubmit';
 import { motion } from 'framer-motion';
-import GlobalBackground from '../../components/GlobalBackground';
 
 const ContactPage = () => {
     const { isSubmitting, isSuccess, isError, errorMessage, submitForm, reset } = useFormSubmit();
@@ -46,8 +45,6 @@ const ContactPage = () => {
 
     return (
         <div className="bg-bg-primary font-sans text-text-primary relative overflow-hidden">
-            <GlobalBackground intensity="low" showDNA={false} />
-
             {/* Hero */}
             <section className="relative overflow-hidden pt-32 pb-20">
                 <div className="absolute inset-0 pointer-events-none">

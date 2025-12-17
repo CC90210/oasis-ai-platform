@@ -6,8 +6,6 @@ import PricingCard from '../../components/pricing/PricingCard';
 import { track } from '@vercel/analytics';
 import TierComparison from '../../components/pricing/TierComparison';
 
-import GlobalBackground from '../../components/GlobalBackground';
-
 const PricingPage: React.FC = () => {
     const [selectedAutomation, setSelectedAutomation] = useState<Automation | null>(null);
     const navigate = useNavigate();
@@ -63,8 +61,6 @@ const PricingPage: React.FC = () => {
 
     return (
         <div className="relative min-h-screen text-white pt-24 pb-20 overflow-hidden">
-            <GlobalBackground intensity="medium" showDNA={false} />
-
             {/* 1. Hero Section */}
             <div className="container mx-auto px-4 text-center mb-16">
                 <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 tracking-tight">

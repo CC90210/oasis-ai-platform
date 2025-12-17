@@ -1,13 +1,10 @@
 import { TrendingUp, Clock, Users, DollarSign, Star, ArrowRight, CheckCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import GlobalBackground from '../../components/GlobalBackground';
 
 const CaseStudiesPage = () => {
     return (
         <div className="bg-bg-primary min-h-screen overflow-x-hidden font-sans text-text-primary relative">
-            <GlobalBackground intensity="low" showDNA={false} />
-
             {/* Hero */}
             <section className="relative overflow-hidden pt-32 pb-20">
                 <div className="section-container relative z-10">

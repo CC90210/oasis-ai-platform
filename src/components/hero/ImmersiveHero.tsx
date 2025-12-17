@@ -1,38 +1,16 @@
 import React, { useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { useHeroAnimation } from '../../hooks/useHeroAnimation';
+import CinematicDNA from '../CinematicDNA';
 
 const ImmersiveHero: React.FC = () => {
     const heroRef = useRef<HTMLElement>(null);
-    useHeroAnimation();
 
     return (
         <section className="relative w-full min-h-[100vh] min-h-[100dvh] overflow-hidden flex items-center justify-center bg-[#050508]" id="hero" ref={heroRef}>
-            {/* Layer 0: Background with Noise */}
-            <div className="absolute inset-0 z-0 bg-[radial-gradient(ellipse_at_50%_0%,rgba(0,212,255,0.08)_0%,transparent_50%),radial-gradient(ellipse_at_80%_80%,rgba(0,212,255,0.05)_0%,transparent_40%),radial-gradient(ellipse_at_20%_90%,rgba(0,100,200,0.05)_0%,transparent_40%),linear-gradient(180deg,#050508_0%,#0A0A0F_100%)]">
-                <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[url('data:image/svg+xml,%3Csvg%20viewBox=%220%200%20400%20400%22%20xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter%20id=%22noiseFilter%22%3E%3CfeTurbulence%20type=%22fractalNoise%22%20baseFrequency=%220.9%22%20numOctaves=%224%22%20stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect%20width=%22100%25%22%20height=%22100%25%22%20filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E')]"></div>
-            </div>
+            {/* Cinematic DNA - small segments that drift, connect, split */}
+            <CinematicDNA />
 
-            {/* Layer 1: Distant Stars */}
-            <canvas id="stars-distant" className="absolute inset-0 w-full h-full pointer-events-none z-[1]" />
-
-            {/* Layer 2: Mid-field Particles */}
-            <canvas id="particles-mid" className="absolute inset-0 w-full h-full pointer-events-none z-[2]" />
-
-            {/* Layer 3: DNA Helix */}
-            <canvas id="dna-helix" className="absolute inset-0 w-full h-full pointer-events-none z-[3] md:scale-100 scale-150 origin-center" />
-
-            {/* Layer 4: Foreground Particles */}
-            <canvas id="particles-near" className="absolute inset-0 w-full h-full pointer-events-none z-[4]" />
-
-            {/* Layer 5: Ambient Glows */}
-            <div className="absolute inset-0 z-[5] pointer-events-none overflow-hidden">
-                <div className="ambient-glow w-[600px] h-[600px] bg-[radial-gradient(circle,rgba(0,212,255,0.3),transparent_70%)] -top-[200px] -right-[100px] animate-[glowPulse_8s_ease-in-out_infinite]" />
-                <div className="ambient-glow w-[400px] h-[400px] bg-[radial-gradient(circle,rgba(0,150,255,0.3),transparent_70%)] -bottom-[100px] -left-[100px] animate-[glowPulse_8s_ease-in-out_infinite_2.5s]" />
-                <div className="ambient-glow w-[300px] h-[300px] bg-[radial-gradient(circle,rgba(0,212,255,0.2),transparent_70%)] top-[40%] left-[60%] animate-[glowPulse_8s_ease-in-out_infinite_5s]" />
-            </div>
-
-            {/* Layer 6: Content */}
+            {/* Content */}
             <div className="relative z-[10] text-center max-w-[900px] px-5 flex flex-col items-center hero-content">
                 <div className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#00D4FF]/10 border border-[#00D4FF]/30 rounded-full text-[#00D4FF] text-sm font-medium mb-7 backdrop-blur-md animate-[badgeFloat_3s_ease-in-out_infinite]">
                     <span className="text-base">⚡</span>
@@ -81,9 +59,6 @@ const ImmersiveHero: React.FC = () => {
                     <span className="text-xs text-[#94A3B8] tracking-widest uppercase">Scroll to explore</span>
                 </div>
             </div>
-
-            {/* Layer 7: Cursor Glow */}
-            {/* Cursor Glow removed - handled by global component */}
         </section>
     );
 };

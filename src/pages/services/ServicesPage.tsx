@@ -2,7 +2,6 @@ import { useEffect, useRef } from 'react';
 import { Workflow, Bot, Database, Phone, BarChart3, Plug, Code, CheckCircle, ArrowRight, MessageSquare, Target, Calendar, Mail, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import GlobalBackground from '../../components/GlobalBackground';
 
 const ServicesPage = () => {
     const services = [
@@ -46,8 +45,6 @@ const ServicesPage = () => {
 
     return (
         <div className="bg-bg-primary min-h-screen overflow-x-hidden font-sans text-text-primary relative">
-            <GlobalBackground intensity="medium" showDNA={false} />
-
             {/* Hero Section */}
             <section className="relative overflow-hidden pt-32 pb-20">
                 <div className="absolute inset-0 pointer-events-none">
