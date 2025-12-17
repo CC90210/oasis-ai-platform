@@ -203,6 +203,84 @@
 }
 
 /* ============================================
+   HERO SECTION - FULL VIEWPORT IMMERSION
+   ============================================ */
+:root {
+  --color-bg-deep: #050508;
+  --color-bg-mid: #0A0A0F;
+  --color-cyan: #00D4FF;
+  --color-cyan-dark: #00A3CC;
+  --color-cyan-glow: rgba(0, 212, 255, 0.4);
+  --color-text: #FFFFFF;
+  --color-text-secondary: #94A3B8;
+}
+
+/* Animations & Keyframes */
+@keyframes glowPulse {
+
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.6;
+    transform: scale(1.2);
+  }
+}
+
+@keyframes badgeFloat {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes gradientShift {
+
+  0%,
+  100% {
+    background-position: 0% center;
+  }
+
+  50% {
+    background-position: 100% center;
+  }
+}
+
+@keyframes scrollWheel {
+
+  0%,
+  100% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  50% {
+    opacity: 0.3;
+    transform: translateX(-50%) translateY(10px);
+  }
+}
+
+@keyframes scrollBounce {
+
+  0%,
+  100% {
+    transform: translateX(-50%) translateY(0);
+  }
+
+  50% {
+    transform: translateX(-50%) translateY(8px);
+  }
+}
+
+/* ============================================
    PHASE 1: CRITICAL BUG FIXES - ADDITIONS
    Added: 2024-12-04
    Purpose: Fix text visibility, footer, mobile
