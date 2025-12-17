@@ -97,7 +97,11 @@ const CheckoutPage: React.FC = () => {
                     },
                     createSubscription: function (data: any, actions: any) {
                         return actions.subscription.create({
-                            plan_id: planId
+                            plan_id: planId,
+                            application_context: {
+                                brand_name: 'OASIS AI',
+                                user_action: 'SUBSCRIBE_NOW'
+                            }
                         });
                     },
                     onApprove: function (data: any, actions: any) {
