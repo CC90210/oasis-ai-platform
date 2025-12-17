@@ -29,13 +29,6 @@ export const useHeroAnimation = () => {
         const handleMouseMove = (e: MouseEvent) => {
             state.mouse.x = e.clientX;
             state.mouse.y = e.clientY;
-
-            const cursorGlow = document.getElementById('cursor-glow');
-            if (cursorGlow) {
-                cursorGlow.style.left = e.clientX + 'px';
-                cursorGlow.style.top = e.clientY + 'px';
-                cursorGlow.style.opacity = '1';
-            }
         };
 
         const handleTouchMove = (e: TouchEvent) => {
@@ -45,9 +38,10 @@ export const useHeroAnimation = () => {
             }
         };
 
+
+
         const handleMouseLeave = () => {
-            const cursorGlow = document.getElementById('cursor-glow');
-            if (cursorGlow) cursorGlow.style.opacity = '0';
+            // Optional: reset mouse pos or similar
         }
 
         document.addEventListener('mousemove', handleMouseMove);
@@ -329,71 +323,86 @@ export const useHeroAnimation = () => {
 
                     ctx.clearRect(0, 0, width, height);
 
-                    const centerX = width / 2;
-                    const amplitude = Math.min(width * 0.15, 180);
-                    // Increased spacing for performance (was 25)
-                    const pointSpacing = window.innerWidth < 768 ? 60 : 40;
-                    const totalPoints = Math.ceil(height / pointSpacing) + 10;
-                    const startY = -50;
+                    // DNA Configuration
+                    // 5 Strands: Left(2), Center(1), Right(2)
+                    const strands = [
+                        { x: 0.15, amp: 60, speed: 0.8, phase: 0 },
+                        { x: 0.35, amp: 80, speed: 0.9, phase: Math.PI / 2 },
+                        { x: 0.5, amp: 110, speed: 1.0, phase: Math.PI }, // Main
+                        { x: 0.65, amp: 80, speed: 0.9, phase: Math.PI * 1.5 },
+                        { x: 0.85, amp: 60, speed: 0.8, phase: Math.PI * 2 }
+                    ];
 
-                    const strand1Points: any[] = [];
-                    const strand2Points: any[] = [];
+                    const activeStrands = isMobile ? [strands[2]] : strands;
 
-                    for (let i = 0; i < totalPoints; i++) {
-                        const y = startY + i * pointSpacing;
-                        const phase = time * 0.001 + i * 0.15;
+                    const pointSpacing = isMobile ? 60 : 45;
+                    const totalPoints = Math.ceil(height / pointSpacing) + 5;
+                    const startY = -80;
 
-                        const x1 = centerX + Math.sin(phase) * amplitude;
-                        const depth1 = (Math.sin(phase) + 1) / 2;
+                    activeStrands.forEach((strand) => {
+                        const centerX = width * strand.x;
+                        const opacity = strand === strands[2] ? 0.6 : 0.3; // Center more visible
 
-                        const x2 = centerX + Math.sin(phase + Math.PI) * amplitude;
-                        const depth2 = (Math.sin(phase + Math.PI) + 1) / 2;
+                        const strand1Points: any[] = [];
+                        const strand2Points: any[] = [];
 
-                        strand1Points.push({ x: x1, y, depth: depth1 });
-                        strand2Points.push({ x: x2, y, depth: depth2 });
-                    }
+                        // Calculate points
+                        for (let i = 0; i < totalPoints; i++) {
+                            const y = startY + i * pointSpacing;
+                            const phase = time * 0.001 * strand.speed + i * 0.15 + strand.phase;
 
-                    ctx.strokeStyle = 'rgba(0, 212, 255, 0.15)';
-                    ctx.lineWidth = 1;
+                            const x1 = centerX + Math.sin(phase) * strand.amp;
+                            const depth1 = (Math.sin(phase) + 1) / 2;
 
-                    // Draw connections (simplified)
-                    ctx.beginPath();
-                    for (let i = 0; i < totalPoints; i++) {
-                        if (strand1Points[i] && strand2Points[i]) {
-                            ctx.moveTo(strand1Points[i].x, strand1Points[i].y);
-                            ctx.lineTo(strand2Points[i].x, strand2Points[i].y);
+                            const x2 = centerX + Math.sin(phase + Math.PI) * strand.amp;
+                            const depth2 = (Math.sin(phase + Math.PI) + 1) / 2;
+
+                            strand1Points.push({ x: x1, y, depth: depth1 });
+                            strand2Points.push({ x: x2, y, depth: depth2 });
                         }
-                    }
-                    ctx.stroke();
 
-                    const drawStrand = (points: any, offset: number) => {
-                        // Draw line
+                        // Draw Connections
+                        ctx.strokeStyle = `rgba(0, 212, 255, ${opacity * 0.2})`;
+                        ctx.lineWidth = 1;
                         ctx.beginPath();
-                        ctx.strokeStyle = 'rgba(0, 212, 255, 0.4)';
-                        ctx.lineWidth = 2;
+                        for (let i = 0; i < totalPoints; i++) {
+                            if (strand1Points[i] && strand2Points[i]) {
+                                ctx.moveTo(strand1Points[i].x, strand1Points[i].y);
+                                ctx.lineTo(strand2Points[i].x, strand2Points[i].y);
+                            }
+                        }
+                        ctx.stroke();
 
-                        if (points.length > 0) {
+                        // Draw Function
+                        const drawStrandLine = (points: any[]) => {
+                            if (points.length < 2) return;
+                            ctx.beginPath();
+                            ctx.strokeStyle = `rgba(0, 212, 255, ${opacity * 0.8})`;
+                            ctx.lineWidth = 1.5;
                             ctx.moveTo(points[0].x, points[0].y);
                             for (let i = 1; i < points.length; i++) {
                                 ctx.lineTo(points[i].x, points[i].y);
                             }
                             ctx.stroke();
-                        }
+                        };
 
-                        // Draw points (simplified - no gradients)
-                        points.forEach((point: any) => {
-                            const size = 3 + point.depth * 3;
-                            const opacity = 0.4 + point.depth * 0.6;
+                        drawStrandLine(strand1Points);
+                        drawStrandLine(strand2Points);
 
-                            ctx.beginPath();
-                            ctx.arc(point.x, point.y, size, 0, Math.PI * 2);
-                            ctx.fillStyle = `rgba(0, 212, 255, ${opacity})`;
-                            ctx.fill();
-                        });
-                    };
+                        // Draw Dots
+                        const drawDots = (points: any[]) => {
+                            points.forEach(p => {
+                                const size = (isMobile ? 2 : 3) + p.depth * 2;
+                                ctx.beginPath();
+                                ctx.arc(p.x, p.y, size, 0, Math.PI * 2);
+                                ctx.fillStyle = `rgba(0, 212, 255, ${opacity * (0.5 + p.depth * 0.5)})`;
+                                ctx.fill();
+                            });
+                        };
 
-                    drawStrand(strand1Points, 0);
-                    drawStrand(strand2Points, Math.PI);
+                        drawDots(strand1Points);
+                        drawDots(strand2Points);
+                    });
                 }
 
                 // DRAW NEAR PARTICLES

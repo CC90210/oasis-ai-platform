@@ -83,7 +83,7 @@ const ImmersiveHero: React.FC = () => {
             </div>
 
             {/* Layer 7: Cursor Glow */}
-            <div id="cursor-glow" className="fixed w-[400px] h-[400px] rounded-full bg-[radial-gradient(circle,rgba(0,212,255,0.15),transparent_70%)] pointer-events-none -translate-x-1/2 -translate-y-1/2 z-[6] opacity-0 transition-opacity duration-300" />
+            {/* Cursor Glow removed - handled by global component */}
         </section>
     );
 };

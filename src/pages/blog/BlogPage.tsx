@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Search, Calendar, User, Clock, ArrowRight } from 'lucide-react';
 import { blogPosts } from '@/data/blogPosts';
+import GlobalBackground from '../../components/GlobalBackground';
 
 const BlogPage = () => {
     const [searchQuery, setSearchQuery] = useState('');
@@ -20,8 +21,9 @@ const BlogPage = () => {
     const featuredPost = blogPosts[0];
 
     return (
-        <div className="bg-bg-primary min-h-screen pt-24 pb-20">
-            <div className="section-container">
+        <div className="bg-bg-primary min-h-screen pt-24 pb-20 relative overflow-hidden">
+            <GlobalBackground intensity="low" showDNA={false} />
+            <div className="section-container relative z-10">
                 <div className="text-center mb-16">
                     <h1 className="text-5xl md:text-7xl font-display font-bold mb-6">
                         OASIS <span className="text-oasis-cyan">Insights</span>
@@ -72,8 +74,8 @@ const BlogPage = () => {
                                 key={category}
                                 onClick={() => setSelectedCategory(category)}
                                 className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${selectedCategory === category
-                                        ? 'bg-oasis-cyan text-bg-primary'
-                                        : 'bg-bg-tertiary text-text-secondary hover:text-white'
+                                    ? 'bg-oasis-cyan text-bg-primary'
+                                    : 'bg-bg-tertiary text-text-secondary hover:text-white'
                                     }`}
                             >
                                 {category}

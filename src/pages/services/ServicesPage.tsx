@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { Workflow, Bot, Database, Phone, BarChart3, Plug, Code, CheckCircle, ArrowRight, MessageSquare, Target, Calendar, Mail, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import GlobalBackground from '../../components/GlobalBackground';
 
 const ServicesPage = () => {
     const services = [
@@ -44,11 +45,12 @@ const ServicesPage = () => {
     ];
 
     return (
-        <div className="bg-bg-primary min-h-screen overflow-x-hidden font-sans text-text-primary">
+        <div className="bg-bg-primary min-h-screen overflow-x-hidden font-sans text-text-primary relative">
+            <GlobalBackground intensity="medium" showDNA={false} />
+
             {/* Hero Section */}
             <section className="relative overflow-hidden pt-32 pb-20">
                 <div className="absolute inset-0 pointer-events-none">
-                    <div className="absolute top-20 right-10 w-96 h-96 bg-oasis-cyan/10 rounded-full blur-[120px] animate-pulse-glow" />
                 </div>
 
                 <div className="section-container relative z-10">
@@ -151,7 +153,6 @@ const ServicesPage = () => {
             {/* CTA Section */}
             <section className="py-32 bg-gradient-dark relative overflow-hidden">
                 <div className="absolute inset-0 pointer-events-none">
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-oasis-cyan/20 rounded-full blur-[150px] animate-pulse-glow" />
                 </div>
 
                 <div className="section-container relative z-10">

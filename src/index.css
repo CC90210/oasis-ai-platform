@@ -57,11 +57,36 @@
 @layer base {
   body {
     background-color: var(--bg-primary);
+    /* #0A0A0F */
     color: var(--text-primary);
     font-family: var(--font-body);
     overflow-x: hidden;
+    min-height: 100vh;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Ensure content sits above global background */
+  main,
+  .page-container,
+  .content-wrapper,
+  section {
+    position: relative;
+    z-index: 1;
+    background: transparent;
+  }
+
+  /* Subtle vignette overlay for depth */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(ellipse at center, transparent 0%, rgba(0, 0, 0, 0.4) 100%);
+    pointer-events: none;
+    z-index: 0;
   }
 
   h1,

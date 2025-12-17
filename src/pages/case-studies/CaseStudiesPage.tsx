@@ -1,16 +1,15 @@
 import { TrendingUp, Clock, Users, DollarSign, Star, ArrowRight, CheckCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import GlobalBackground from '../../components/GlobalBackground';
 
 const CaseStudiesPage = () => {
     return (
-        <div className="bg-bg-primary min-h-screen overflow-x-hidden font-sans text-text-primary">
+        <div className="bg-bg-primary min-h-screen overflow-x-hidden font-sans text-text-primary relative">
+            <GlobalBackground intensity="low" showDNA={false} />
+
             {/* Hero */}
             <section className="relative overflow-hidden pt-32 pb-20">
-                <div className="absolute inset-0 pointer-events-none">
-                    <div className="absolute top-20 right-10 w-96 h-96 bg-oasis-cyan/10 rounded-full blur-[120px] animate-pulse-glow" />
-                </div>
-
                 <div className="section-container relative z-10">
                     <div className="max-w-4xl mx-auto text-center">
                         <motion.h1
@@ -42,7 +41,6 @@ const CaseStudiesPage = () => {
                             viewport={{ once: true }}
                             className="glass-card rounded-3xl p-8 md:p-12 border-2 border-oasis-cyan shadow-oasis-strong relative overflow-hidden"
                         >
-                            <div className="absolute top-0 right-0 w-64 h-64 bg-oasis-cyan/5 rounded-full blur-[80px] pointer-events-none" />
 
                             <div className="flex items-center gap-2 mb-6">
                                 <Star className="w-6 h-6 text-oasis-cyan fill-oasis-cyan animate-pulse" />
@@ -260,10 +258,6 @@ const CaseStudiesPage = () => {
 
             {/* CTA */}
             <section className="py-24 bg-gradient-dark relative overflow-hidden">
-                <div className="absolute inset-0 pointer-events-none">
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-oasis-cyan/20 rounded-full blur-[150px] animate-pulse-glow" />
-                </div>
-
                 <div className="section-container relative z-10">
                     <div className="max-w-3xl mx-auto text-center">
                         <motion.h2

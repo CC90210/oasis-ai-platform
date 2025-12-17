@@ -6,12 +6,15 @@ import PricingCard from '../../components/pricing/PricingCard';
 import { track } from '@vercel/analytics';
 import TierComparison from '../../components/pricing/TierComparison';
 
+import GlobalBackground from '../../components/GlobalBackground';
+
 const PricingPage: React.FC = () => {
     const [selectedAutomation, setSelectedAutomation] = useState<Automation | null>(null);
     const navigate = useNavigate();
 
     const handleTierSelection = (tierKey: string) => {
         if (!selectedAutomation) return;
+        // ... (rest of function unchanged, just need to ensure import is added)
 
         // In a real app we'd use the ID mapping from the prompt, 
         // but since we are using the automation object directly here:
@@ -59,7 +62,8 @@ const PricingPage: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-[#0A0A0A] text-white pt-24 pb-20">
+        <div className="relative min-h-screen text-white pt-24 pb-20 overflow-hidden">
+            <GlobalBackground intensity="medium" showDNA={false} />
 
             {/* 1. Hero Section */}
             <div className="container mx-auto px-4 text-center mb-16">
