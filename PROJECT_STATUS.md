@@ -20,14 +20,15 @@ This project is the client portal for OASIS AI. We have just transformed it from
 - `public/client-data/`: Directory where client JSON files live.
 
 ## 📝 Recent Major Changes
-1. **Final UI/UX Overhaul:** Implemented `CinematicDNA` (dynamic interactions) and `StarField` (global consistency).
-2. **Hero Optimization:** Replaced static helix with living, drifting DNA ecosystem.
-3. **Global Consistency:** Enforced dense star field across ALL pages via Root Layout.
-4. **Performance:** Reduced `CursorGlow` size to 120px and optimized for desktop-only.
-5. **Cleanup:** Removed all legacy background animations and blobs.
-6. **Removed Fake Data:** All hardcoded stats removed from dashboard.
-7. **Fixed Auth Build Error:** Deleted conflicting `src/lib/auth.js`.
-8. **Created Workflow Guide:** context restoration guide located in `.agent/workflows/restore-context.md`.
+1. **Emergency Fix 2024-12-16:** Restored global star field by moving it to root layout (`App.tsx`).
+2. **DNA Visuals:** Updated `CinematicDNA` with repulsion logic to prevent clumping and refined visuals.
+3. **Hero Optimization:** Replaced static helix with living, drifting DNA ecosystem.
+4. **Global Consistency:** Enforced transparent page backgrounds to show stars.
+5. **Performance:** Reduced `CursorGlow` size to 120px and optimized for desktop-only.
+6. **Cleanup:** Removed all legacy background animations and blobs.
+7. **Removed Fake Data:** All hardcoded stats removed from dashboard.
+8. **Fixed Auth Build Error:** Deleted conflicting `src/lib/auth.js`.
+9. **Created Workflow Guide:** context restoration guide located in `.agent/workflows/restore-context.md`.
 
 ## 🚀 Deployment Command
 Use this to deploy updates:

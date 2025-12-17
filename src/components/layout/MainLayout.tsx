@@ -9,7 +9,7 @@ interface MainLayoutProps {
 
 export const MainLayout = ({ children, showChat = true }: MainLayoutProps) => {
     return (
-        <div className="min-h-screen flex flex-col bg-bg-primary">
+        <div className="min-h-screen bg-transparent text-text-primary relative overflow-x-hidden selection:bg-oasis-cyan/30 selection:text-white">
             <Header />
             {showChat && <ChatWidget />}
             <main className="flex-grow pt-16">

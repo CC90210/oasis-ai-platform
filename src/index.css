@@ -62,6 +62,8 @@
     font-family: var(--font-body);
     overflow-x: hidden;
     min-height: 100vh;
+    /* FIX: Transparent background for StarField visibility */
+    background: transparent !important;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -87,6 +89,17 @@
     background: radial-gradient(ellipse at center, transparent 0%, rgba(0, 0, 0, 0.4) 100%);
     pointer-events: none;
     z-index: 0;
+  }
+
+  /* FIX: Ensure StarField is always visible */
+  #global-star-field {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    z-index: 0 !important;
+    pointer-events: none !important;
+    background: #050508;
+    /* Fallback background color */
   }
 
   h1,
