@@ -14,9 +14,29 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
         const video = videoRef.current;
         if (!video) return;
 
+        // Force play immediately
+        const playVideo = async () => {
+            try {
+                // Determine if we are on mobile - optimized handling
+                const isMobile = window.innerWidth < 768;
+                if (isMobile) {
+                    // On mobile, ensure playsInline is respected and try to play
+                    video.setAttribute('playsinline', 'true');
+                }
+
+                await video.play();
+                setIsPlaying(true);
+            } catch (err) {
+                console.warn("Autoplay failed:", err);
+                setIsPlaying(false);
+            }
+        };
+
+        playVideo();
+
         const handleEnded = () => {
             setIsVisible(false);
-            setTimeout(onComplete, 1000);
+            setTimeout(onComplete, 800);
         };
 
         video.addEventListener('ended', handleEnded);
@@ -28,8 +48,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
 
     const handleManualPlay = () => {
         if (videoRef.current) {
-            videoRef.current.play();
-            setIsPlaying(true);
+            videoRef.current.play().then(() => setIsPlaying(true)).catch(console.error);
         }
     };
 
@@ -40,43 +59,35 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
                     key="splash-screen"
                     initial={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    transition={{ duration: 1, ease: "easeInOut" }}
-                    className="fixed inset-0 z-[9999] bg-black overflow-hidden w-screen h-[100dvh] flex items-center justify-center"
-                    onClick={handleManualPlay} // Allow clicking anywhere to play if blocked
+                    transition={{ duration: 0.8, ease: "easeOut" }}
+                    className="fixed inset-0 z-[9999] bg-black w-screen h-[100dvh] flex items-center justify-center overflow-hidden"
+                    onClick={handleManualPlay}
                 >
-                    {/* Background Blur Layer (Mobile Only - Fills screen) */}
-                    <div className="absolute inset-0 z-0 overflow-hidden opacity-40 md:hidden">
-                        <video
-                            className="w-full h-full object-cover blur-2xl scale-110"
-                            playsInline
-                        />
-                    </div>
-
-                    {/* Foreground Content Layer */}
-                    <div className="relative z-10 w-full h-full flex items-center justify-center p-0 md:p-0">
+                    <div className="relative w-full h-full flex items-center justify-center bg-black">
                         <video
                             ref={videoRef}
                             id="splash-screen-video"
-                            // Mobile: object-contain (show full logo), max-h-full
-                            // Desktop: object-cover (fill screen), w-full, h-full
-                            className="w-full h-full object-contain md:object-cover shadow-2xl md:shadow-none"
+                            className="w-full h-full object-cover"
                             src="/videos/video_2025-12-04_16-19-42.mp4"
                             playsInline
                             muted
+                            autoPlay
                             preload="auto"
+                            // Optimize rendering hint
+                            style={{ willChange: 'transform, opacity' }}
                         >
                             Your browser does not support the video tag.
                         </video>
 
-                        {/* Play Button Fallback (Only shows if autoplay failed and not playing) */}
+                        {/* Play Button Fallback */}
                         {!isPlaying && (
-                            <div className="absolute inset-0 flex items-center justify-center z-20 bg-black/20">
+                            <div className="absolute inset-0 flex items-center justify-center z-20 bg-black/40 backdrop-blur-sm transition-all duration-300">
                                 <button
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         handleManualPlay();
                                     }}
-                                    className="bg-white/10 backdrop-blur-md border border-white/20 text-white px-6 py-3 rounded-full font-bold uppercase tracking-wider hover:bg-white/20 transition-all"
+                                    className="px-8 py-3 bg-white/10 border border-white/20 hover:bg-white/20 text-white rounded-full font-display font-medium tracking-wide uppercase transition-all transform hover:scale-105 backdrop-blur-md shadow-[0_0_30px_rgba(0,212,255,0.2)]"
                                 >
                                     Enter OASIS
                                 </button>

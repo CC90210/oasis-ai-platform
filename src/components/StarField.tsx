@@ -1,6 +1,10 @@
 import { useEffect, useRef } from 'react';
 
-export default function StarField() {
+interface StarFieldProps {
+    paused?: boolean;
+}
+
+export default function StarField({ paused = false }: StarFieldProps) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
 
     useEffect(() => {
@@ -23,22 +27,24 @@ export default function StarField() {
         let animationId: number;
         let time = 0;
 
+        const currentCanvas = canvas;
+
         function resize() {
             // Full viewport size
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
+            currentCanvas.width = window.innerWidth;
+            currentCanvas.height = window.innerHeight;
             generateStars();
         }
 
         function generateStars() {
             stars = [];
             // Dense star field - approximately 150-200 stars
-            const count = Math.max(150, Math.floor((canvas.width * canvas.height) / 6000));
+            const count = Math.max(150, Math.floor((currentCanvas.width * currentCanvas.height) / 6000));
 
             for (let i = 0; i < count; i++) {
                 stars.push({
-                    x: Math.random() * canvas.width,
-                    y: Math.random() * canvas.height,
+                    x: Math.random() * currentCanvas.width,
+                    y: Math.random() * currentCanvas.height,
                     size: Math.random() * 2 + 0.5,
                     opacity: Math.random() * 0.7 + 0.3,
                     twinkleSpeed: Math.random() * 0.02 + 0.01,
@@ -48,7 +54,9 @@ export default function StarField() {
         }
 
         function draw() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if (paused) return; // Stop if paused
+
+            ctx!.clearRect(0, 0, canvas!.width, canvas!.height);
 
             stars.forEach(star => {
                 // Twinkle effect
@@ -56,10 +64,10 @@ export default function StarField() {
                 const currentOpacity = star.opacity * (0.5 + twinkle * 0.5);
 
                 // Draw star
-                ctx.beginPath();
-                ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(255, 255, 255, ${currentOpacity})`;
-                ctx.fill();
+                ctx!.beginPath();
+                ctx!.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+                ctx!.fillStyle = `rgba(255, 255, 255, ${currentOpacity})`;
+                ctx!.fill();
             });
 
             time++;
@@ -68,13 +76,16 @@ export default function StarField() {
 
         window.addEventListener('resize', resize);
         resize();
-        draw();
+
+        if (!paused) {
+            draw();
+        }
 
         return () => {
             window.removeEventListener('resize', resize);
             cancelAnimationFrame(animationId);
         };
-    }, []);
+    }, [paused]); // Re-run effect when paused changes
 
     return (
         <canvas
