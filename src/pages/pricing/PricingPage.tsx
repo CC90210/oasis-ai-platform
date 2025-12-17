@@ -1,63 +1,111 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Check, X, ArrowRight, Star, ShieldCheck, HelpCircle } from 'lucide-react';
 import { BUNDLES, AUTOMATIONS, COMMON_INCLUSIONS, Automation } from '../../data/pricingData';
 import PricingCard from '../../components/pricing/PricingCard';
-import { track } from '@vercel/analytics';
-import TierComparison from '../../components/pricing/TierComparison';
+
+// PayPal Plan Constants
+const PAYPAL_PLANS = {
+    // Structure A: $149 / $297 / $497
+    structureA: {
+        starter: 'P-0UL722628H391235WNFBN5EY',
+        professional: 'P-2RN15876AA645201CNFBN6XQ',
+        business: 'P-1BY815434S090494FNFBOAKQ'
+    },
+    // Structure B: $197 / $347 / $547
+    structureB: {
+        starter: 'P-36566271CD054164VNFBOBNY',
+        professional: 'P-82A63715XY4481150NFBOCKY',
+        business: 'P-8V791414E06352543NFBODJA'
+    }
+};
+
+const AUTOMATION_STRUCTURE: Record<string, 'structureA' | 'structureB'> = {
+    'website-chat': 'structureA',
+    'email-automation': 'structureA', // Fixed ID match
+    'google-reviews': 'structureA',   // Fixed ID match
+    'appointment-booking': 'structureA',
+    'voice-ai': 'structureB',
+    'lead-generation': 'structureB',
+    'social-media': 'structureB',
+    'revenue-operations': 'structureB', // Fixed ID match
+    'document-processing': 'structureB',
+    'hr-onboarding': 'structureB'
+};
 
 const PricingPage: React.FC = () => {
     const [selectedAutomation, setSelectedAutomation] = useState<Automation | null>(null);
     const navigate = useNavigate();
+    const paypalRef = useRef<any>(null);
 
-    const handleTierSelection = (tierKey: string) => {
-        if (!selectedAutomation) return;
-        // ... (rest of function unchanged, just need to ensure import is added)
+    // Load PayPal SDK
+    useEffect(() => {
+        const script = document.createElement('script');
+        script.src = "https://www.paypal.com/sdk/js?client-id=ARszgUzcALzWPVkBu8NOn47jSK4cKFWjVrZWMKJRXUXhEag2dqq2dVCx0A39-UCcqtZHsBV6q83j8n8A&vault=true&intent=subscription";
+        script.setAttribute('data-sdk-integration-source', 'button-factory');
+        script.async = true;
 
-        // In a real app we'd use the ID mapping from the prompt, 
-        // but since we are using the automation object directly here:
-        const tierIndex = selectedAutomation.tiers.findIndex(t => t.name.toLowerCase() === tierKey.toLowerCase());
-        const tier = selectedAutomation.tiers[tierIndex];
-
-        if (!tier) return;
-
-        // Build cart item
-        const cartItem = {
-            automationType: selectedAutomation.id,
-            automationName: selectedAutomation.name,
-            setupFee: selectedAutomation.setupFee,
-            tierKey: tierKey,
-            tierName: tier.name,
-            monthlyPrice: tier.price,
-            features: tier.features
+        script.onload = () => {
+            paypalRef.current = (window as any).paypal;
         };
 
-        // Save to session storage
-        let cart = JSON.parse(sessionStorage.getItem('oasis_cart') || '[]');
+        document.body.appendChild(script);
 
-        // Check if this automation type already exists in cart, update if so
-        const existingIndex = cart.findIndex((item: any) => item.automationType === selectedAutomation.id);
-        if (existingIndex >= 0) {
-            cart[existingIndex] = cartItem;
-        } else {
-            cart.push(cartItem);
+        return () => {
+            document.body.removeChild(script);
+        };
+    }, []);
+
+    // Render Buttons when modal opens
+    useEffect(() => {
+        if (!selectedAutomation || !paypalRef.current) return;
+
+        const structureKey = AUTOMATION_STRUCTURE[selectedAutomation.id];
+        if (!structureKey) {
+            console.error("Missing structure mapping for", selectedAutomation.id);
+            return;
         }
 
-        sessionStorage.setItem('oasis_cart', JSON.stringify(cart));
+        const renderButton = (tier: 'starter' | 'professional' | 'business', containerId: string) => {
+            const planId = PAYPAL_PLANS[structureKey][tier];
+            const container = document.getElementById(containerId);
 
-        // Close modal
-        setSelectedAutomation(null);
+            if (container) {
+                container.innerHTML = ''; // Clear existing
 
-        // Track tier selection
-        track('tier_selected', {
-            automation: selectedAutomation.name,
-            tier: tier.name,
-            price: tier.price
-        });
+                try {
+                    paypalRef.current.Buttons({
+                        style: {
+                            shape: 'rect',
+                            color: 'gold',
+                            layout: 'vertical',
+                            label: 'subscribe'
+                        },
+                        createSubscription: function (data: any, actions: any) {
+                            return actions.subscription.create({
+                                plan_id: planId
+                            });
+                        },
+                        onApprove: function (data: any, actions: any) {
+                            alert('Subscription successful! ID: ' + data.subscriptionID);
+                            navigate('/dashboard'); // Post-success redirect
+                        }
+                    }).render(`#${containerId}`);
+                } catch (err) {
+                    console.error("PayPal Render Error", err);
+                }
+            }
+        };
 
-        // Redirect to checkout
-        navigate(`/checkout?automation=${selectedAutomation.id}&tier=${tierKey}`);
-    };
+        // Delay slightly to ensure DOM is ready
+        setTimeout(() => {
+            renderButton('starter', 'paypal-button-starter');
+            renderButton('professional', 'paypal-button-professional');
+            renderButton('business', 'paypal-button-business');
+        }, 100);
+
+    }, [selectedAutomation]);
+
 
     return (
         <div className="relative min-h-screen text-white pt-24 pb-20 overflow-hidden">
@@ -122,8 +170,6 @@ const PricingPage: React.FC = () => {
                             <button
                                 onClick={() => {
                                     if (bundle.ctaText === "Get Started") {
-                                        // For Launchpad, we might want to go to checkout or contact. 
-                                        // Assuming checkout for "Get Started" based on context, or a specific query param.
                                         navigate('/checkout?bundle=launchpad');
                                     } else {
                                         navigate('/contact');
@@ -158,7 +204,6 @@ const PricingPage: React.FC = () => {
                 </div>
 
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
-                    {/* First 9 items */}
                     {AUTOMATIONS.slice(0, 9).map((automation) => (
                         <PricingCard
                             key={automation.id}
@@ -166,8 +211,6 @@ const PricingPage: React.FC = () => {
                             onViewTiers={setSelectedAutomation}
                         />
                     ))}
-
-                    {/* 10th item centered on large screens if possible, or just in grid */}
                     <div className="md:col-span-2 lg:col-span-1 lg:col-start-2">
                         <PricingCard
                             automation={AUTOMATIONS[9]}
@@ -177,7 +220,7 @@ const PricingPage: React.FC = () => {
                 </div>
             </div>
 
-            {/* 5. What's Included (Section 4 in plan, 5 in prompt) */}
+            {/* 5. What's Included */}
             <div className="container mx-auto px-4 mb-24">
                 <div className="bg-[#161B22] border border-gray-800 rounded-2xl p-8 md:p-12">
                     <div className="text-center mb-10">
@@ -242,26 +285,79 @@ const PricingPage: React.FC = () => {
                 </div>
             </div>
 
-            {/* Modal for Tier Details */}
+            {/* NEW PayPal Subscription Modal */}
             {selectedAutomation && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-[#161B22] w-full max-w-6xl max-h-[90vh] overflow-y-auto rounded-2xl border border-gray-700 shadow-2xl relative animate-in zoom-in-95 duration-200">
-                        <button
-                            onClick={() => setSelectedAutomation(null)}
-                            className="absolute top-4 right-4 p-2 bg-gray-800 rounded-full hover:bg-gray-700 text-gray-400 hover:text-white transition-colors z-10"
-                        >
-                            <X size={24} />
-                        </button>
+                    <div className="bg-[#161B22] w-full max-w-6xl max-h-[95vh] overflow-y-auto rounded-2xl border border-gray-700 shadow-2xl relative animate-in zoom-in-95 duration-200">
 
-                        <div className="p-8">
-                            <div className="text-center mb-10">
-                                <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">
-                                    {selectedAutomation.name} <span className="text-cyan-400">Tiers</span>
-                                </h2>
-                                <p className="text-gray-400">Select the plan that fits your volume.</p>
+                        {/* Header */}
+                        <div className="sticky top-0 bg-[#161B22] z-20 border-b border-gray-800 p-6 flex justify-between items-center">
+                            <div>
+                                <h2 className="text-2xl font-bold text-white">{selectedAutomation.name}</h2>
+                                <p className="text-gray-400 text-sm">Select your monthly plan</p>
                             </div>
+                            <button
+                                onClick={() => setSelectedAutomation(null)}
+                                className="p-2 bg-gray-800 rounded-full hover:bg-gray-700 text-gray-400 hover:text-white transition-colors"
+                            >
+                                <X size={24} />
+                            </button>
+                        </div>
 
-                            <TierComparison automation={selectedAutomation} onSelect={handleTierSelection} />
+                        {/* Tiers Grid */}
+                        <div className="p-8">
+                            <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+                                {/* Mapped from selectedAutomation.tiers, assuming 3 standard tiers */}
+                                {selectedAutomation.tiers.slice(0, 3).map((tier, idx) => {
+                                    const isPopular = tier.name === "Professional";
+                                    const tierIdMap = { "Starter": "starter", "Professional": "professional", "Business": "business" };
+                                    const tierId = tierIdMap[tier.name as keyof typeof tierIdMap] || 'starter';
+
+                                    return (
+                                        <div
+                                            key={idx}
+                                            className={`
+                                                relative bg-[#0d1117] border rounded-xl overflow-hidden flex flex-col
+                                                ${isPopular ? 'border-cyan-500 shadow-lg shadow-cyan-500/10 transform md:-translate-y-4' : 'border-gray-800'}
+                                            `}
+                                        >
+                                            {isPopular && (
+                                                <div className="bg-cyan-500 text-white text-xs font-bold text-center py-1 uppercase tracking-wider">
+                                                    Most Popular
+                                                </div>
+                                            )}
+
+                                            <div className="p-6 flex-grow">
+                                                <h3 className="text-xl font-bold text-white mb-2">{tier.name}</h3>
+                                                <div className="mb-6">
+                                                    <span className="text-4xl font-bold text-white">${tier.price}</span>
+                                                    <span className="text-gray-400 text-sm">/mo</span>
+                                                </div>
+
+                                                <ul className="space-y-3 mb-8">
+                                                    {tier.features.map((feature, fIdx) => (
+                                                        <li key={fIdx} className="flex items-start text-sm text-gray-300">
+                                                            <Check size={16} className="text-cyan-500 mr-2 flex-shrink-0 mt-0.5" />
+                                                            {feature}
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+
+                                            <div className="p-6 bg-gray-900/50 border-t border-gray-800">
+                                                {/* PayPal Button Container */}
+                                                <div id={`paypal-button-${tierId}`} className="w-full min-h-[150px] flex items-center justify-center">
+                                                    <div className="animate-pulse flex space-x-2">
+                                                        <div className="w-2 h-2 bg-gray-600 rounded-full"></div>
+                                                        <div className="w-2 h-2 bg-gray-600 rounded-full"></div>
+                                                        <div className="w-2 h-2 bg-gray-600 rounded-full"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
                         </div>
                     </div>
                 </div>

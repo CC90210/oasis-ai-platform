@@ -104,34 +104,24 @@ export const AUTOMATIONS: Automation[] = [
         setupFee: 1497,
         description: "Never miss a call. AI receptionist that books appointments and answers questions.",
         tag: "Handles 500+ calls/month",
-        monthlyFrom: 149,
+        monthlyFrom: 197,
         features: ["Custom voice persona", "Call transcription", "SMS follow-ups", "Appointment booking"],
         tiers: [
             {
                 name: "Starter",
-                price: 149,
+                price: 197,
                 features: ["200 minutes", "100 SMS", "Basic call routing", "Standard analytics"]
             },
             {
                 name: "Professional",
-                price: 297,
+                price: 347,
                 features: ["750 minutes", "500 SMS", "Call transcription", "CRM integration", "5 workflow automations"],
                 isPopular: true
             },
             {
                 name: "Business",
-                price: 497,
+                price: 547,
                 features: ["2,000 minutes", "1,500 SMS", "Advanced analytics", "Priority support"]
-            },
-            {
-                name: "Enterprise",
-                price: 797,
-                features: ["4,000 minutes", "3,000 SMS", "Dedicated support", "Custom integrations", "HIPAA-ready"]
-            },
-            {
-                name: "Enterprise Plus",
-                price: 1297,
-                features: ["Unlimited minutes", "5,000 SMS", "White-glove support", "Custom SLAs", "SOC 2 ready"]
             }
         ]
     },
@@ -265,7 +255,7 @@ export const AUTOMATIONS: Automation[] = [
             },
             {
                 name: "Business",
-                price: 497,
+                price: 547,
                 features: ["Unlimited platforms", "120 posts/mo", "Trend monitoring", "Engagement automation"]
             }
         ]
