@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, NavLink, useLocation } from 'react-router-dom';
 import { Menu, X, ShoppingCart } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '@/store/cartStore';
@@ -18,10 +18,10 @@ export const Header = () => {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
-    // Close mobile menu whenever the route changes
+    // Double-check closure on route change to prevent "stuck" menus
     useEffect(() => {
         setIsMobileMenuOpen(false);
-    }, [location.pathname]);
+    }, [location]);
 
     const navLinks = [
         { name: 'Services', path: '/services' },
@@ -31,18 +31,15 @@ export const Header = () => {
         { name: 'Contact', path: '/contact' },
     ];
 
-    const isActive = (path: string) => {
-        if (path === '/') return location.pathname === '/';
-        return location.pathname.startsWith(path);
-    };
+    const closeMenu = () => setIsMobileMenuOpen(false);
 
     return (
         <header
-            className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${isScrolled ? 'bg-bg-primary/80 backdrop-blur-md border-b border-white/5 py-4' : 'bg-transparent py-6'
+            className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${isScrolled || isMobileMenuOpen ? 'bg-[#050508]/90 backdrop-blur-xl border-b border-white/10 py-4' : 'bg-transparent py-6'
                 }`}
         >
             <div className="section-container flex items-center justify-between">
-                <Link to="/" className="flex items-center gap-2 group">
+                <Link to="/" className="flex items-center gap-2 group" onClick={closeMenu}>
                     <img
                         src="/images/oasis-logo.jpg"
                         alt="OASIS AI"
@@ -56,14 +53,13 @@ export const Header = () => {
                 {/* Desktop Nav */}
                 <nav className="hidden md:flex items-center gap-8">
                     {navLinks.map((link) => (
-                        <Link
+                        <NavLink
                             key={link.name}
                             to={link.path}
-                            className={`text-sm font-medium transition-colors hover:text-oasis-cyan ${isActive(link.path) ? 'text-oasis-cyan' : 'text-text-secondary'
-                                }`}
+                            className={({ isActive }) => `text-sm font-medium transition-colors hover:text-oasis-cyan ${isActive ? 'text-oasis-cyan' : 'text-text-secondary'}`}
                         >
                             {link.name}
-                        </Link>
+                        </NavLink>
                     ))}
                 </nav>
 
@@ -105,7 +101,7 @@ export const Header = () => {
                     </button>
                     <button
                         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                        className="text-white p-2"
+                        className="text-white p-2 focus:outline-none"
                     >
                         {isMobileMenuOpen ? <X /> : <Menu />}
                     </button>
@@ -117,34 +113,33 @@ export const Header = () => {
                 {isMobileMenuOpen && (
                     <motion.div
                         initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
+                        animate={{ opacity: 1, height: '100vh' }}
                         exit={{ opacity: 0, height: 0 }}
-                        className="md:hidden bg-bg-secondary border-b border-white/5 overflow-hidden"
+                        className="md:hidden bg-[#050508] fixed inset-0 top-[72px] z-30 overflow-y-auto"
                     >
-                        <div className="section-container py-6 flex flex-col gap-4">
+                        <div className="section-container py-8 flex flex-col gap-6">
                             {navLinks.map((link) => (
-                                <Link
+                                <NavLink
                                     key={link.name}
                                     to={link.path}
-                                    onClick={() => setIsMobileMenuOpen(false)}
-                                    className={`text-lg font-medium ${isActive(link.path) ? 'text-oasis-cyan' : 'text-text-secondary'
-                                        }`}
+                                    onClick={closeMenu}
+                                    className={({ isActive }) => `text-2xl font-display font-bold transition-colors ${isActive ? 'text-oasis-cyan' : 'text-white/80'}`}
                                 >
                                     {link.name}
-                                </Link>
+                                </NavLink>
                             ))}
-                            <hr className="border-white/5 my-2" />
+                            <hr className="border-white/10 my-2" />
                             <Link
                                 to="/portal/login"
-                                onClick={() => setIsMobileMenuOpen(false)}
-                                className="text-lg font-medium text-white"
+                                onClick={closeMenu}
+                                className="text-xl font-medium text-white/80"
                             >
                                 Client Portal
                             </Link>
                             <Link
                                 to="/contact"
-                                onClick={() => setIsMobileMenuOpen(false)}
-                                className="btn-primary text-center"
+                                onClick={closeMenu}
+                                className="btn-primary text-center py-4 text-lg mt-4"
                             >
                                 Get Started
                             </Link>
