@@ -73,24 +73,24 @@ export default function CinematicDNA() {
                 amplitude: 35 + Math.random() * 20, // Wider amplitude
                 phase: Math.random() * Math.PI * 2,
                 opacity: 0,
-                // BIGGER SCALE: 1.2 to 2.2
-                scale: 1.2 + Math.random() * 1.0,
-                glowStrength: 0.5 + Math.random() * 0.5
+                // BIGGER SCALE: 1.5 to 2.8 (was 1.2 to 2.2)
+                scale: 1.5 + Math.random() * 1.3,
+                glowStrength: 0.8 + Math.random() * 0.6 // Stronger glow base
             };
         }
 
         function initSegments() {
             segments = [];
-            for (let i = 0; i < 5; i++) {
+            for (let i = 0; i < 6; i++) { // Start with more segments
                 segments.push(createSegment(i));
             }
         }
 
         function updateSegments() {
             // Spawn new segments if needed
-            if (segments.length < MAX_SEGMENTS && Math.random() < 0.008) {
+            if (segments.length < MAX_SEGMENTS && Math.random() < 0.01) {
                 // Occasional "break off" from random existing segment
-                if (segments.length > 0 && Math.random() < 0.3) {
+                if (segments.length > 0 && Math.random() < 0.4) { // More frequent mitosis
                     const parent = segments[Math.floor(Math.random() * segments.length)];
                     segments.push(createSegment(undefined, parent.x, parent.y));
                 } else {
@@ -102,8 +102,8 @@ export default function CinematicDNA() {
                 const seg = segments[i];
 
                 // Fade in
-                if (seg.opacity < 0.8) {
-                    seg.opacity += 0.005;
+                if (seg.opacity < 0.9) { // High max opacity
+                    seg.opacity += 0.01;
                 }
 
                 // Move
@@ -113,8 +113,8 @@ export default function CinematicDNA() {
                 seg.phase += 0.02; // Slower DNA spin
 
                 // Living organism movement: Perlin-ish noise
-                seg.vx += Math.sin(time * 0.01 + seg.id) * 0.002;
-                seg.vy += Math.cos(time * 0.01 + seg.id) * 0.002;
+                seg.vx += Math.sin(time * 0.01 + seg.id) * 0.003; // More organic wiggle
+                seg.vy += Math.cos(time * 0.01 + seg.id) * 0.003;
 
                 // Repulsion
                 for (const other of segments) {
@@ -122,10 +122,10 @@ export default function CinematicDNA() {
                     const dx = other.x - seg.x;
                     const dy = other.y - seg.y;
                     const dist = Math.sqrt(dx * dx + dy * dy);
-                    const minDist = 300 * ((seg.scale + other.scale) / 2); // Scale-aware repulsion
+                    const minDist = 350 * ((seg.scale + other.scale) / 2); // Larger repulsion zone
 
                     if (dist < minDist && dist > 0) {
-                        const force = (minDist - dist) / minDist * 0.01;
+                        const force = (minDist - dist) / minDist * 0.015;
                         seg.vx -= (dx / dist) * force;
                         seg.vy -= (dy / dist) * force;
                     }
@@ -139,8 +139,8 @@ export default function CinematicDNA() {
                 if (seg.y > canvas!.height - margin) seg.vy -= 0.01;
 
                 // Remove if way off screen (rare due to boundary logic, but safety net)
-                if (seg.x < -500 || seg.x > canvas!.width + 500 ||
-                    seg.y < -500 || seg.y > canvas!.height + 500) {
+                if (seg.x < -600 || seg.x > canvas!.width + 600 ||
+                    seg.y < -600 || seg.y > canvas!.height + 600) {
                     segments.splice(i, 1);
                 }
             }
@@ -153,10 +153,11 @@ export default function CinematicDNA() {
             ctx!.scale(seg.scale, seg.scale);
 
             // AURA: Large radial gradient
-            const auraSize = 300;
+            const auraSize = 400; // Larger aura
             const aura = ctx!.createRadialGradient(0, 0, 0, 0, 0, auraSize);
-            aura.addColorStop(0, `rgba(0, 212, 255, ${seg.opacity * 0.05 * seg.glowStrength})`);
-            aura.addColorStop(0.5, `rgba(0, 212, 255, ${seg.opacity * 0.02})`);
+            // Increased opacity for aura: 0.05 -> 0.15
+            aura.addColorStop(0, `rgba(0, 212, 255, ${seg.opacity * 0.15 * seg.glowStrength})`);
+            aura.addColorStop(0.4, `rgba(0, 100, 255, ${seg.opacity * 0.05})`);
             aura.addColorStop(1, 'rgba(0, 0, 0, 0)');
             ctx!.fillStyle = aura;
             ctx!.fillRect(-auraSize, -auraSize, auraSize * 2, auraSize * 2);
@@ -179,8 +180,8 @@ export default function CinematicDNA() {
 
             // Rungs
             ctx!.beginPath();
-            ctx!.strokeStyle = `rgba(0, 212, 255, ${seg.opacity * 0.2})`;
-            ctx!.lineWidth = 2; // Thicker rungs
+            ctx!.strokeStyle = `rgba(0, 212, 255, ${seg.opacity * 0.3})`;
+            ctx!.lineWidth = 3;
             for (let i = 0; i < seg.points; i++) {
                 ctx!.moveTo(strand1[i].x, strand1[i].y);
                 ctx!.lineTo(strand2[i].x, strand2[i].y);
@@ -189,19 +190,19 @@ export default function CinematicDNA() {
 
             // Strands
             const drawStrandLine = (points: typeof strand1) => {
-                // Heavy Glow
-                ctx!.shadowBlur = 15;
-                ctx!.shadowColor = "rgba(0, 150, 255, 0.5)";
-                ctx!.strokeStyle = `rgba(0, 212, 255, ${seg.opacity * 0.4})`;
-                ctx!.lineWidth = 5;
+                // Heavy Glow - SUPERCHARGED
+                ctx!.shadowBlur = 25; // Increased blur
+                ctx!.shadowColor = "rgba(0, 200, 255, 0.8)";
+                ctx!.strokeStyle = `rgba(100, 230, 255, ${seg.opacity * 0.6})`;
+                ctx!.lineWidth = 6;
                 ctx!.beginPath();
                 points.forEach((p, i) => i === 0 ? ctx!.moveTo(p.x, p.y) : ctx!.lineTo(p.x, p.y));
                 ctx!.stroke();
 
                 // Reset shadow for core
                 ctx!.shadowBlur = 0;
-                ctx!.strokeStyle = `rgba(200, 240, 255, ${seg.opacity * 0.8})`;
-                ctx!.lineWidth = 2;
+                ctx!.strokeStyle = `rgba(220, 250, 255, ${seg.opacity * 0.9})`;
+                ctx!.lineWidth = 3;
                 ctx!.beginPath();
                 points.forEach((p, i) => i === 0 ? ctx!.moveTo(p.x, p.y) : ctx!.lineTo(p.x, p.y));
                 ctx!.stroke();
@@ -213,13 +214,13 @@ export default function CinematicDNA() {
             // Dots
             const drawDots = (points: typeof strand1) => {
                 points.forEach(p => {
-                    const size = 3 + p.depth * 4; // Bigger dots
-                    const dotOpacity = seg.opacity * (0.5 + p.depth * 0.5);
+                    const size = 4 + p.depth * 5; // Bigger dots
+                    const dotOpacity = seg.opacity * (0.6 + p.depth * 0.4);
 
                     // Glow
-                    const gradient = ctx!.createRadialGradient(p.x, p.y, 0, p.x, p.y, size * 2); // Larger glow radius
+                    const gradient = ctx!.createRadialGradient(p.x, p.y, 0, p.x, p.y, size * 2.5);
                     gradient.addColorStop(0, `rgba(0, 255, 255, ${dotOpacity})`);
-                    gradient.addColorStop(0.5, `rgba(0, 200, 255, ${dotOpacity * 0.4})`);
+                    gradient.addColorStop(0.5, `rgba(0, 200, 255, ${dotOpacity * 0.5})`);
                     gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
 
                     ctx!.beginPath();
@@ -246,17 +247,28 @@ export default function CinematicDNA() {
                     const dy = b.y - a.y;
                     const dist = Math.sqrt(dx * dx + dy * dy);
 
-                    if (dist < 400) {
-                        const opacity = (1 - dist / 400) * 0.15 * Math.min(a.opacity, b.opacity);
+                    if (dist < 450) { // Longer connection range
+                        const opacity = (1 - dist / 450) * 0.25 * Math.min(a.opacity, b.opacity);
                         ctx!.beginPath();
                         ctx!.strokeStyle = `rgba(0, 212, 255, ${opacity})`;
-                        ctx!.lineWidth = 1;
+                        ctx!.lineWidth = 2; // Thicker connections
                         ctx!.moveTo(a.x, a.y);
                         // Curved connection
-                        const cx = (a.x + b.x) / 2 + (Math.random() - 0.5) * 20;
-                        const cy = (a.y + b.y) / 2 + (Math.random() - 0.5) * 20;
+                        const cx = (a.x + b.x) / 2 + (Math.random() - 0.5) * 30;
+                        const cy = (a.y + b.y) / 2 + (Math.random() - 0.5) * 30;
                         ctx!.quadraticCurveTo(cx, cy, b.x, b.y);
                         ctx!.stroke();
+
+                        // Add traveling signal dot
+                        if (Math.random() < 0.05) {
+                            ctx!.beginPath();
+                            const t = (Date.now() % 1000) / 1000;
+                            const tx = (1 - t) * (1 - t) * a.x + 2 * (1 - t) * t * cx + t * t * b.x;
+                            const ty = (1 - t) * (1 - t) * a.y + 2 * (1 - t) * t * cy + t * t * b.y;
+                            ctx!.arc(tx, ty, 3, 0, Math.PI * 2);
+                            ctx!.fillStyle = `rgba(255, 255, 255, ${opacity * 2})`;
+                            ctx!.fill();
+                        }
                     }
                 }
             }
