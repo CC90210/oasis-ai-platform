@@ -350,3 +350,126 @@ export const COMMON_INCLUSIONS = [
     "Ongoing support & optimization",
     "No long-term contracts"
 ];
+
+// ============================================
+// SHARED CHECKOUT CONSTANTS
+// ============================================
+
+export const PAYPAL_PLANS = {
+    'website-chat': {
+        starter: 'P-3MU772138J745370HNFBORQQ',
+        professional: 'P-34X70663DW975844ENFBOTLY',
+        business: 'P-4N848268TU200611TNFBOULA'
+    },
+    'voice-ai': {
+        starter: 'P-8AA36889FE4145123NFBOVNY',
+        professional: 'P-6GW71565GV6872430NFBOWLA',
+        business: 'P-3M350623LL174160ANFBOXHQ'
+    },
+    'email-automation': {
+        starter: 'P-38U955341J3788902NFBOY2I',
+        professional: 'P-6EC32104UL148643DNFBO2DY',
+        business: 'P-3T256879KB967200YNFBO3BI'
+    },
+    'google-reviews': {
+        starter: 'P-0C689255MH1942725NFBO35Q',
+        professional: 'P-4DX979653S442763WNFBO44A',
+        business: 'P-0DH09386DL357525PNFBO5VA'
+    },
+    'appointment-booking': {
+        starter: 'P-10H56950L98762244NFBO6QA',
+        professional: 'P-9MR83590K0954492VNFBPAUA',
+        business: 'P-8HH62401LB383442HNFBPBWI'
+    },
+    'lead-generation': {
+        starter: 'P-3R38681176137723ENFBPDBA',
+        professional: 'P-4FW362845Y445354GNFBPE2I',
+        business: 'P-4L012312D7266721CNFBPFXA'
+    },
+    'social-media': {
+        starter: 'P-8MG15398V65559146NFBPGWQ',
+        professional: 'P-9KP89996T09139046NFBPHWI',
+        business: 'P-2DE59570SY590582ENFBPIUI'
+    },
+    'revenue-operations': {
+        starter: 'P-83574318L54780141NFBPJQA',
+        professional: 'P-6VL47228M50625940NFBPKQI',
+        business: 'P-1T502693V7759174XNFBPLJI'
+    },
+    'document-processing': {
+        starter: 'P-0LA414447U601032LNFBPMIA',
+        professional: 'P-8FG34938UG3911643NFBPNDI',
+        business: 'P-3C3195031M3359345NFBPOGQ'
+    },
+    'hr-onboarding': {
+        starter: 'P-03P5988802602403ANFBPPHA',
+        professional: 'P-7GC16284GR277112BNFBPQAA',
+        business: 'P-7SG838516L967791YNFBPQ2I'
+    }
+} as const;
+
+export const CHECKOUT_PRICING = {
+    'website-chat': { setup: 997, monthly: { starter: 149, professional: 297, business: 497 } },
+    'voice-ai': { setup: 1497, monthly: { starter: 197, professional: 347, business: 547 } },
+    'email-automation': { setup: 997, monthly: { starter: 149, professional: 297, business: 497 } },
+    'google-reviews': { setup: 797, monthly: { starter: 149, professional: 297, business: 497 } },
+    'appointment-booking': { setup: 897, monthly: { starter: 149, professional: 297, business: 497 } },
+    'lead-generation': { setup: 1497, monthly: { starter: 197, professional: 347, business: 547 } },
+    'social-media': { setup: 1197, monthly: { starter: 197, professional: 347, business: 547 } },
+    'revenue-operations': { setup: 1497, monthly: { starter: 197, professional: 347, business: 547 } },
+    'document-processing': { setup: 1697, monthly: { starter: 197, professional: 347, business: 547 } },
+    'hr-onboarding': { setup: 1497, monthly: { starter: 197, professional: 347, business: 547 } }
+} as const;
+
+export const CHECKOUT_FEATURES = {
+    'website-chat': {
+        starter: ['Up to 500 conversations/month', '1 website', 'Basic analytics', 'Email support'],
+        professional: ['Up to 2,000 conversations/month', '3 websites', 'Lead scoring', 'CRM sync', 'Priority support'],
+        business: ['Unlimited conversations', '10 websites', 'Advanced analytics', 'Custom integrations', 'Dedicated support']
+    },
+    'voice-ai': {
+        starter: ['200 minutes/month', '100 SMS', 'Basic call routing', 'Voicemail transcription'],
+        professional: ['750 minutes/month', '500 SMS', 'Call transcription', 'CRM integration', '5 workflow automations'],
+        business: ['2,000 minutes/month', '1,500 SMS', 'Advanced analytics', 'Multi-location routing', 'Priority support']
+    },
+    'email-automation': {
+        starter: ['500 emails/month', '1 inbox', 'Auto-categorization', 'Draft responses'],
+        professional: ['2,000 emails/month', '3 inboxes', 'Sentiment analysis', 'CRM sync', 'Follow-up sequences'],
+        business: ['Unlimited emails', 'Unlimited inboxes', 'Advanced workflows', 'Custom integrations', 'Dedicated support']
+    },
+    'google-reviews': {
+        starter: ['1 location', 'Automated review requests', 'AI responses', 'Weekly reports'],
+        professional: ['5 locations', 'Sentiment analysis', 'Smart AI responses', 'Review monitoring'],
+        business: ['Unlimited locations', 'Competitor monitoring', 'Advanced analytics', 'Reputation scoring']
+    },
+    'appointment-booking': {
+        starter: ['100 bookings/month', 'Calendar sync', 'SMS reminders', 'Rescheduling flows'],
+        professional: ['500 bookings/month', 'Multi-calendar', 'CRM sync', 'No-show reduction'],
+        business: ['Unlimited bookings', 'Team calendars', 'Resource allocation', 'Custom workflows']
+    },
+    'lead-generation': {
+        starter: ['200 leads/month', 'Multi-source scraping', 'Data enrichment', 'Basic CRM sync'],
+        professional: ['1,000 leads/month', 'Lead scoring', 'Hot lead alerts', 'Pipeline tracking'],
+        business: ['Unlimited leads', 'Advanced scoring', 'Custom workflows', 'Dedicated support']
+    },
+    'social-media': {
+        starter: ['3 platforms', '30 posts/month', 'AI captions', 'Content calendar'],
+        professional: ['5 platforms', '90 posts/month', 'Engagement automation', 'Hashtag optimization'],
+        business: ['Unlimited platforms', 'Unlimited posts', 'Trend analysis', 'Team collaboration']
+    },
+    'revenue-operations': {
+        starter: ['50 invoices/month', 'Auto-generation', 'Payment reminders', 'Basic reporting'],
+        professional: ['200 invoices/month', 'Pipeline tracking', 'Revenue forecasting', 'CRM sync'],
+        business: ['Unlimited invoices', 'Advanced analytics', 'Multi-entity', 'CFO dashboards']
+    },
+    'document-processing': {
+        starter: ['100 documents', 'PDF/image OCR', 'Basic search', 'Data extraction'],
+        professional: ['500 documents', 'Semantic search', 'AI Q&A', 'Database integrations'],
+        business: ['Unlimited documents', 'Advanced RAG', 'Custom AI training', 'API access']
+    },
+    'hr-onboarding': {
+        starter: ['10 hires/month', 'Document collection', 'Training sequences', 'Task checklists'],
+        professional: ['5 hires/month', 'Compliance tracking', 'HRIS integration', 'Performance workflows'],
+        business: ['Unlimited hires', 'Multi-department', 'Advanced compliance', 'Custom integrations']
+    }
+} as const;

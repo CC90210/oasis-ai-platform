@@ -1,111 +1,31 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Check, X, ArrowRight, Star, ShieldCheck, HelpCircle } from 'lucide-react';
-import { BUNDLES, AUTOMATIONS, COMMON_INCLUSIONS, Automation } from '../../data/pricingData';
+import { BUNDLES, AUTOMATIONS, COMMON_INCLUSIONS, Automation, CHECKOUT_PRICING, CHECKOUT_FEATURES } from '../../data/pricingData';
 import PricingCard from '../../components/pricing/PricingCard';
 
-// PayPal Plan Constants
-const PAYPAL_PLANS = {
-    // Structure A: $149 / $297 / $497
-    structureA: {
-        starter: 'P-0UL722628H391235WNFBN5EY',
-        professional: 'P-2RN15876AA645201CNFBN6XQ',
-        business: 'P-1BY815434S090494FNFBOAKQ'
-    },
-    // Structure B: $197 / $347 / $547
-    structureB: {
-        starter: 'P-36566271CD054164VNFBOBNY',
-        professional: 'P-82A63715XY4481150NFBOCKY',
-        business: 'P-8V791414E06352543NFBODJA'
-    }
-};
-
-const AUTOMATION_STRUCTURE: Record<string, 'structureA' | 'structureB'> = {
-    'website-chat': 'structureA',
-    'email-automation': 'structureA', // Fixed ID match
-    'google-reviews': 'structureA',   // Fixed ID match
-    'appointment-booking': 'structureA',
-    'voice-ai': 'structureB',
-    'lead-generation': 'structureB',
-    'social-media': 'structureB',
-    'revenue-operations': 'structureB', // Fixed ID match
-    'document-processing': 'structureB',
-    'hr-onboarding': 'structureB'
-};
+type Tier = 'starter' | 'professional' | 'business';
 
 const PricingPage: React.FC = () => {
+    // Modal State
     const [selectedAutomation, setSelectedAutomation] = useState<Automation | null>(null);
     const navigate = useNavigate();
-    const paypalRef = useRef<any>(null);
 
-    // Load PayPal SDK
+    // Reset overflow when opening/closing modal
     useEffect(() => {
-        const script = document.createElement('script');
-        script.src = "https://www.paypal.com/sdk/js?client-id=ARszgUzcALzWPVkBu8NOn47jSK4cKFWjVrZWMKJRXUXhEag2dqq2dVCx0A39-UCcqtZHsBV6q83j8n8A&vault=true&intent=subscription";
-        script.setAttribute('data-sdk-integration-source', 'button-factory');
-        script.async = true;
-
-        script.onload = () => {
-            paypalRef.current = (window as any).paypal;
-        };
-
-        document.body.appendChild(script);
-
-        return () => {
-            document.body.removeChild(script);
-        };
-    }, []);
-
-    // Render Buttons when modal opens
-    useEffect(() => {
-        if (!selectedAutomation || !paypalRef.current) return;
-
-        const structureKey = AUTOMATION_STRUCTURE[selectedAutomation.id];
-        if (!structureKey) {
-            console.error("Missing structure mapping for", selectedAutomation.id);
-            return;
+        if (selectedAutomation) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'auto';
         }
-
-        const renderButton = (tier: 'starter' | 'professional' | 'business', containerId: string) => {
-            const planId = PAYPAL_PLANS[structureKey][tier];
-            const container = document.getElementById(containerId);
-
-            if (container) {
-                container.innerHTML = ''; // Clear existing
-
-                try {
-                    paypalRef.current.Buttons({
-                        style: {
-                            shape: 'rect',
-                            color: 'gold',
-                            layout: 'vertical',
-                            label: 'subscribe'
-                        },
-                        createSubscription: function (data: any, actions: any) {
-                            return actions.subscription.create({
-                                plan_id: planId
-                            });
-                        },
-                        onApprove: function (data: any, actions: any) {
-                            alert('Subscription successful! ID: ' + data.subscriptionID);
-                            navigate('/dashboard'); // Post-success redirect
-                        }
-                    }).render(`#${containerId}`);
-                } catch (err) {
-                    console.error("PayPal Render Error", err);
-                }
-            }
-        };
-
-        // Delay slightly to ensure DOM is ready
-        setTimeout(() => {
-            renderButton('starter', 'paypal-button-starter');
-            renderButton('professional', 'paypal-button-professional');
-            renderButton('business', 'paypal-button-business');
-        }, 100);
-
     }, [selectedAutomation]);
 
+    // Handle Tier Selection - Redirect to Checkout
+    const handleSelectTier = (tier: Tier) => {
+        if (!selectedAutomation) return;
+        // Navigate to dedicated checkout page
+        navigate(`/checkout?automation=${selectedAutomation.id}&tier=${tier}`);
+    };
 
     return (
         <div className="relative min-h-screen text-white pt-24 pb-20 overflow-hidden">
@@ -285,80 +205,82 @@ const PricingPage: React.FC = () => {
                 </div>
             </div>
 
-            {/* NEW PayPal Subscription Modal */}
+            {/* TIER SELECTION MODAL */}
             {selectedAutomation && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-[#161B22] w-full max-w-6xl max-h-[95vh] overflow-y-auto rounded-2xl border border-gray-700 shadow-2xl relative animate-in zoom-in-95 duration-200">
+                <div
+                    id="tier-modal"
+                    className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200"
+                    onClick={(e) => e.target === e.currentTarget && setSelectedAutomation(null)}
+                >
+                    <div className="bg-[#0a0a14] border border-[#1a1a2e] rounded-2xl max-w-5xl w-full max-h-[90vh] overflow-y-auto relative animate-in zoom-in-95 duration-200">
+
+                        {/* Close Button */}
+                        <button
+                            onClick={() => setSelectedAutomation(null)}
+                            className="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl z-10 w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10 transition"
+                        >
+                            &times;
+                        </button>
 
                         {/* Header */}
-                        <div className="sticky top-0 bg-[#161B22] z-20 border-b border-gray-800 p-6 flex justify-between items-center">
-                            <div>
-                                <h2 className="text-2xl font-bold text-white">{selectedAutomation.name}</h2>
-                                <p className="text-gray-400 text-sm">Select your monthly plan</p>
-                            </div>
-                            <button
-                                onClick={() => setSelectedAutomation(null)}
-                                className="p-2 bg-gray-800 rounded-full hover:bg-gray-700 text-gray-400 hover:text-white transition-colors"
-                            >
-                                <X size={24} />
-                            </button>
+                        <div className="p-8 pb-0">
+                            <h2 className="text-2xl md:text-3xl font-bold text-white">{selectedAutomation.name}</h2>
+                            <p className="text-gray-400 mt-2">Select your monthly plan</p>
                         </div>
 
-                        {/* Tiers Grid */}
+                        {/* Tier Selection */}
                         <div className="p-8">
-                            <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-                                {/* Mapped from selectedAutomation.tiers, assuming 3 standard tiers */}
-                                {selectedAutomation.tiers.slice(0, 3).map((tier, idx) => {
-                                    const isPopular = tier.name === "Professional";
-                                    const tierIdMap = { "Starter": "starter", "Professional": "professional", "Business": "business" };
-                                    const tierId = tierIdMap[tier.name as keyof typeof tierIdMap] || 'starter';
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                {(['starter', 'professional', 'business'] as Tier[]).map((tier) => {
+                                    // Handle missing pricing data gracefully
+                                    const pricing = CHECKOUT_PRICING[selectedAutomation.id as keyof typeof CHECKOUT_PRICING];
+                                    const feats = CHECKOUT_FEATURES[selectedAutomation.id as keyof typeof CHECKOUT_FEATURES]?.[tier];
+
+                                    if (!pricing || !feats) return null;
+
+                                    const price = pricing.monthly[tier];
+                                    const isPopular = tier === 'professional';
 
                                     return (
                                         <div
-                                            key={idx}
+                                            key={tier}
                                             className={`
-                                                relative bg-[#0d1117] border rounded-xl overflow-hidden flex flex-col
-                                                ${isPopular ? 'border-cyan-500 shadow-lg shadow-cyan-500/10 transform md:-translate-y-4' : 'border-gray-800'}
+                                                bg-[#12121f] rounded-xl p-6 cursor-pointer group flex flex-col
+                                                ${isPopular ? 'border-2 border-cyan-500 relative transform md:scale-105' : 'border border-[#2a2a4a] hover:border-cyan-500/50 transition'}
                                             `}
+                                            onClick={() => handleSelectTier(tier)}
                                         >
                                             {isPopular && (
-                                                <div className="bg-cyan-500 text-white text-xs font-bold text-center py-1 uppercase tracking-wider">
+                                                <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-cyan-500 text-black text-xs font-bold px-4 py-1 rounded-full uppercase tracking-wide">
                                                     Most Popular
-                                                </div>
+                                                </span>
                                             )}
-
-                                            <div className="p-6 flex-grow">
-                                                <h3 className="text-xl font-bold text-white mb-2">{tier.name}</h3>
-                                                <div className="mb-6">
-                                                    <span className="text-4xl font-bold text-white">${tier.price}</span>
-                                                    <span className="text-gray-400 text-sm">/mo</span>
-                                                </div>
-
-                                                <ul className="space-y-3 mb-8">
-                                                    {tier.features.map((feature, fIdx) => (
-                                                        <li key={fIdx} className="flex items-start text-sm text-gray-300">
-                                                            <Check size={16} className="text-cyan-500 mr-2 flex-shrink-0 mt-0.5" />
-                                                            {feature}
-                                                        </li>
-                                                    ))}
-                                                </ul>
+                                            <h3 className="text-xl font-semibold text-white mb-4 capitalize">{tier}</h3>
+                                            <div className="mb-6">
+                                                <span className="text-4xl font-bold text-white">${price}<span className="text-lg font-normal text-gray-400">/mo</span></span>
                                             </div>
-
-                                            <div className="p-6 bg-gray-900/50 border-t border-gray-800">
-                                                {/* PayPal Button Container */}
-                                                <div id={`paypal-button-${tierId}`} className="w-full min-h-[150px] flex items-center justify-center">
-                                                    <div className="animate-pulse flex space-x-2">
-                                                        <div className="w-2 h-2 bg-gray-600 rounded-full"></div>
-                                                        <div className="w-2 h-2 bg-gray-600 rounded-full"></div>
-                                                        <div className="w-2 h-2 bg-gray-600 rounded-full"></div>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                            <ul className="space-y-3 text-gray-300 text-sm mb-6 flex-grow">
+                                                {feats.map((f, i) => (
+                                                    <li key={i} className="flex items-start gap-2">
+                                                        <span className="text-cyan-400 mt-1">✓</span><span>{f}</span>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                            <button className={`
+                                                w-full py-3 px-4 rounded-lg font-semibold transition mt-auto
+                                                ${isPopular
+                                                    ? 'bg-cyan-500 text-black hover:bg-cyan-400'
+                                                    : 'border border-cyan-500 text-cyan-400 hover:bg-cyan-500 hover:text-black group-hover:bg-cyan-500 group-hover:text-black'
+                                                }
+                                            `}>
+                                                Select {tier.charAt(0).toUpperCase() + tier.slice(1)}
+                                            </button>
                                         </div>
                                     );
                                 })}
                             </div>
                         </div>
+
                     </div>
                 </div>
             )}

@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import './CheckoutPage.css';
 import { track } from '@vercel/analytics';
+import { PAYPAL_PLANS, CHECKOUT_PRICING, CHECKOUT_FEATURES, AUTOMATIONS } from '../../data/pricingData';
 
 declare global {
     interface Window {
@@ -11,63 +12,40 @@ declare global {
 
 const CheckoutPage: React.FC = () => {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
     const [loading, setLoading] = useState(false);
+
+    // Parse Query Params
+    const automationId = searchParams.get('automation');
+    const tierId = searchParams.get('tier') as 'starter' | 'professional' | 'business';
+
+    // Derived Data
+    const automation = AUTOMATIONS.find(a => a.id === automationId);
+
+    // State
     const [scriptLoaded, setScriptLoaded] = useState(false);
-
-    // Form State
-    const [formData, setFormData] = useState({
-        firstName: '',
-        lastName: '',
-        email: '',
-        phone: '',
-        company: '',
-        industry: ''
-    });
-
-    const [errorMsg, setErrorMsg] = useState<string | null>(null);
-    const [cart, setCart] = useState<any[]>([]);
-
-    // Get Cart
-    useEffect(() => {
-        const storedCart = sessionStorage.getItem('oasis_cart');
-        if (!storedCart) {
-            // Demo cart logic from user prompt
-            // But we should probably redirect if empty in real app
-            // Keeping user logic:
-            setCart([{
-                automationType: 'website-chat',
-                automationName: 'Website Chat Automation',
-                setupFee: 997,
-                tierKey: 'professional',
-                tierName: 'Professional',
-                monthlyPrice: 297
-            }]);
-        } else {
-            setCart(JSON.parse(storedCart));
-            // Track checkout started
-            try {
-                const cartData = JSON.parse(storedCart);
-                const total = cartData.reduce((acc: number, item: any) => acc + (item.setupFee || 0) + (item.monthlyPrice || 0), 0);
-                track('checkout_started', {
-                    total: total,
-                    items: cartData.map((i: any) => i.automationName + '-' + i.tierName)
-                });
-            } catch (e) { console.error(e); }
-        }
-    }, []);
+    const [paypalError, setPaypalError] = useState<string | null>(null);
 
     // Load PayPal SDK
     useEffect(() => {
-        if (document.getElementById('paypal-sdk-script')) {
+        // Validation Redirect
+        if (!automation || !tierId || !CHECKOUT_PRICING[automationId as keyof typeof CHECKOUT_PRICING]) {
+            console.error("Invalid checkout params");
+            // navigate('/pricing'); // Disabled for debugging, better to show error
+            return;
+        }
+
+        // Check if script already exists
+        if (window.paypal) {
             setScriptLoaded(true);
             return;
         }
 
         const script = document.createElement('script');
         script.id = 'paypal-sdk-script';
-        // USE PROVIDED CREDENTIALS AND URL EXACTLY
-        script.src = "https://www.paypal.com/sdk/js?client-id=AWj36CkXVGVjHIIO7LHsvtRQoACy6Gbg4KTJu0CD1dJrRBkLqm8G9PYIpr40vCZ8ZZl63o-5eHDfD-8J&currency=CAD&intent=capture&components=buttons,card-fields";
-        script.setAttribute('data-partner-attribution-id', 'OASIS_AI');
+        // Add disable-funding=paylater,credit as per instructions
+        script.src = "https://www.paypal.com/sdk/js?client-id=ARszgUzcALzWPVkBu8NOn47jSK4cKFWjVrZWMKJRXUXhEag2dqq2dVCx0A39-UCcqtZHsBV6q83j8n8A&vault=true&intent=subscription&disable-funding=paylater,credit";
+        script.setAttribute('data-sdk-integration-source', 'button-factory');
         script.async = true;
 
         script.onload = () => {
@@ -75,291 +53,195 @@ const CheckoutPage: React.FC = () => {
         };
 
         script.onerror = () => {
-            setErrorMsg('Payment system failed to load. Please refresh the page.');
+            setPaypalError('Failed to connect to payment processor. Please verify your connection.');
         };
 
         document.body.appendChild(script);
 
         return () => {
-            // Cleanup? Usually better to keep SDK if loaded
+            // Cleanup logic if needed
         };
-    }, []);
+    }, [automationId, tierId, automation]);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value
-        });
-        // Remove error class on change
-        e.target.classList.remove('error');
-    };
 
-    const validateForm = () => {
-        let isValid = true;
-        const required = ['firstName', 'lastName', 'email', 'company'];
-
-        required.forEach(field => {
-            const el = document.getElementById(field) as HTMLInputElement;
-            if (el && !el.value.trim()) {
-                el.classList.add('error');
-                isValid = false;
-            }
-        });
-
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (formData.email && !emailRegex.test(formData.email)) {
-            const el = document.getElementById('email') as HTMLInputElement;
-            if (el) el.classList.add('error');
-            isValid = false;
-        }
-
-        if (!isValid) {
-            setErrorMsg('Please fill in all required fields correctly.');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-            setTimeout(() => setErrorMsg(null), 5000);
-        }
-        return isValid;
-    };
-
-    const calculateTotals = () => {
-        let setupTotal = 0;
-        let monthlyTotal = 0;
-        cart.forEach(item => {
-            setupTotal += item.setupFee || 0;
-            monthlyTotal += item.monthlyPrice || 0;
-        });
-        const subtotal = setupTotal + monthlyTotal;
-        const tax = subtotal * 0.13;
-        const grandTotal = subtotal + tax;
-        return { setupTotal, monthlyTotal, tax, grandTotal, subtotal };
-    };
-
-    const totals = calculateTotals();
-
-    // Render Buttons
+    // Render PayPal Buttons
     useEffect(() => {
-        if (scriptLoaded && window.paypal) {
-            const container = document.getElementById('paypal-button-container');
-            if (container) container.innerHTML = ''; // Clear previous
+        if (!scriptLoaded || !window.paypal || !automationId || !tierId) return;
 
-            window.paypal.Buttons({
-                style: {
-                    layout: 'vertical',
-                    color: 'blue',
-                    shape: 'rect',
-                    label: 'pay',
-                    height: 50
-                },
-                createOrder: (data: any, actions: any) => {
-                    if (!validateForm()) {
-                        return actions.reject();
-                    }
+        const containerId = 'paypal-button-container';
+        const container = document.getElementById(containerId);
 
-                    // Client-side totals calculation for PayPal
-                    const currentTotals = calculateTotals();
+        if (container) {
+            container.innerHTML = ''; // Clear previous
 
-                    return actions.order.create({
-                        purchase_units: [{
-                            description: `OASIS AI - ${cart.map(i => i.automationName).join(', ')}`,
-                            amount: {
-                                currency_code: 'CAD',
-                                value: currentTotals.grandTotal.toFixed(2),
-                                breakdown: {
-                                    item_total: {
-                                        currency_code: 'CAD',
-                                        value: currentTotals.subtotal.toFixed(2)
-                                    },
-                                    tax_total: {
-                                        currency_code: 'CAD',
-                                        value: currentTotals.tax.toFixed(2)
-                                    }
-                                }
-                            },
-                            items: cart.map(item => ({
-                                name: (item.automationName + ' - ' + item.tierName).substring(0, 127), // PayPal limit
-                                description: `Setup: $${item.setupFee}, Monthly: $${item.monthlyPrice}`,
-                                unit_amount: {
-                                    currency_code: 'CAD',
-                                    value: (item.setupFee + item.monthlyPrice).toFixed(2)
-                                },
-                                quantity: '1',
-                                category: 'DIGITAL_GOODS'
-                            }))
-                        }],
-                        application_context: {
-                            brand_name: 'OASIS AI Solutions',
-                            shipping_preference: 'NO_SHIPPING',
-                            user_action: 'PAY_NOW'
-                        }
-                    });
-                },
-                onApprove: (data: any, actions: any) => {
-                    setLoading(true);
-                    return actions.order.capture().then((orderData: any) => {
-                        console.log('Payment captured:', orderData);
-                        track('payment_completed', {
-                            orderID: data.orderID,
-                            total: orderData.purchase_units[0].amount.value,
-                            currency: orderData.purchase_units[0].amount.currency_code
-                        });
+            try {
+                // Get Plan ID
+                const planId = PAYPAL_PLANS[automationId as keyof typeof PAYPAL_PLANS]?.[tierId];
 
-                        const orderInfo = {
-                            orderID: data.orderID,
-                            payerEmail: orderData.payer.email_address,
-                            payerName: orderData.payer.name.given_name + ' ' + orderData.payer.name.surname,
-                            amount: orderData.purchase_units[0].amount.value,
-                            currency: orderData.purchase_units[0].amount.currency_code,
-                            status: orderData.status,
-                            customer: formData,
-                            cart: cart,
-                            timestamp: new Date().toISOString()
-                        };
-
-                        sessionStorage.setItem('oasis_order', JSON.stringify(orderInfo));
-                        sessionStorage.removeItem('oasis_cart');
-                        navigate(`/checkout/success?order=${data.orderID}`);
-                    }).catch((err: any) => {
-                        setLoading(false);
-                        console.error('Capture error:', err);
-                        setErrorMsg('Payment could not be processed. Please try again.');
-                    });
-                },
-                onError: (err: any) => {
-                    console.error('PayPal error:', err);
-                    setLoading(false);
-                    setErrorMsg('Something went wrong with the payment. Please try again.');
+                if (!planId) {
+                    setPaypalError("Plan not found for this selection.");
+                    return;
                 }
-            }).render('#paypal-button-container');
+
+                window.paypal.Buttons({
+                    style: {
+                        shape: 'rect',
+                        color: 'gold',
+                        layout: 'vertical',
+                        label: 'subscribe'
+                    },
+                    createSubscription: function (data: any, actions: any) {
+                        return actions.subscription.create({
+                            plan_id: planId
+                        });
+                    },
+                    onApprove: function (data: any, actions: any) {
+                        setLoading(true);
+                        // Track success
+                        track('purchase_approved', {
+                            subscription_id: data.subscriptionID,
+                            automation: automationId,
+                            tier: tierId
+                        });
+                        navigate(`/subscription-success?subscription_id=${data.subscriptionID}&automation=${automationId}&tier=${tierId}`);
+                    },
+                    onError: function (err: any) {
+                        console.error('PayPal onError:', err);
+                        // setPaypalError('An error occurred during payment. Please try again.');
+                        // Sometimes onError fires for window closures, so be careful showing generic errors immediately
+                    },
+                    onCancel: function (data: any) {
+                        console.log('PayPal onCancel', data);
+                        // User closed window, do nothing
+                    }
+                }).render(`#${containerId}`);
+
+            } catch (err) {
+                console.error("Button Render Error", err);
+                setPaypalError("Could not render checkout buttons.");
+            }
         }
-    }, [scriptLoaded, cart, formData, navigate]);
+
+    }, [scriptLoaded, automationId, tierId]);
+
+
+    // Render Error State if Params Invalid
+    if (!automation || !tierId) {
+        return (
+            <div className="min-h-screen pt-24 text-white text-center">
+                <h2>Invalid Checkout Link</h2>
+                <button onClick={() => navigate('/pricing')} className="text-cyan-400 mt-4 underline">Return to Pricing</button>
+            </div>
+        );
+    }
+
+    const pricing = CHECKOUT_PRICING[automationId as keyof typeof CHECKOUT_PRICING];
+    const monthlyPrice = pricing.monthly[tierId];
+    const setupFee = pricing.setup;
+    const totalToday = setupFee + monthlyPrice;
+    const features = CHECKOUT_FEATURES[automationId as keyof typeof CHECKOUT_FEATURES]?.[tierId] || [];
 
     return (
-        <div className="checkout-page pt-24">
+        <div className="checkout-page pt-24 min-h-screen bg-[#0a0a14] text-white">
+            {/* Loading Overlay */}
             {loading && (
-                <div className="loading-overlay active">
-                    <div className="spinner"></div>
-                    <div className="loading-text">Processing your payment...</div>
+                <div className="fixed inset-0 bg-black/80 z-50 flex flex-col items-center justify-center">
+                    <div className="w-12 h-12 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+                    <div className="text-xl font-semibold">Processing your subscription...</div>
                 </div>
             )}
 
-            <div className="checkout-header">
-                <h1>Secure Checkout</h1>
-            </div>
+            <div className="container mx-auto px-4 max-w-6xl">
+                <h1 className="text-3xl font-bold mb-8 text-center md:text-left">Secure Checkout</h1>
 
-            {errorMsg && (
-                <div className="error-banner active">
-                    {errorMsg}
-                </div>
-            )}
+                {paypalError && (
+                    <div className="bg-red-500/10 border border-red-500/50 text-red-400 p-4 rounded-lg mb-8 text-center">
+                        {paypalError}
+                    </div>
+                )}
 
-            <div className="checkout-grid">
-                <div className="checkout-forms">
-                    <div className="checkout-card">
-                        <h2>Contact Information</h2>
-                        <div id="customer-form">
-                            <div className="form-row">
-                                <div className="form-group">
-                                    <label htmlFor="firstName">First Name *</label>
-                                    <input type="text" id="firstName" name="firstName" value={formData.firstName} onChange={handleChange} placeholder="John" />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-16">
+
+                    {/* LEFT COLUMN: ORDER SUMMARY */}
+                    <div className="space-y-6">
+                        <div className="bg-[#12121f] border border-[#2a2a4a] rounded-xl p-6">
+                            <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
+                                <span className="w-1 h-6 bg-cyan-500 rounded-full"></span>
+                                Order Summary
+                            </h2>
+
+                            <div className="space-y-4 mb-6">
+                                <div className="flex justify-between items-center text-gray-300">
+                                    <span className="font-medium">{automation.name}</span>
                                 </div>
-                                <div className="form-group">
-                                    <label htmlFor="lastName">Last Name *</label>
-                                    <input type="text" id="lastName" name="lastName" value={formData.lastName} onChange={handleChange} placeholder="Doe" />
+                                <div className="flex justify-between items-center text-gray-400 text-sm">
+                                    <span className="capitalize">{tierId} Plan</span>
                                 </div>
                             </div>
-                            <div className="form-group">
-                                <label htmlFor="email">Email Address *</label>
-                                <input type="email" id="email" name="email" value={formData.email} onChange={handleChange} placeholder="john@company.com" />
+
+                            <div className="border-t border-[#2a2a4a] pt-4 space-y-3">
+                                <div className="flex justify-between text-gray-300">
+                                    <span>One-time setup fee</span>
+                                    <span>${setupFee.toLocaleString()}</span>
+                                </div>
+                                <div className="flex justify-between text-gray-300">
+                                    <span>First month</span>
+                                    <span>${monthlyPrice}</span>
+                                </div>
                             </div>
-                            <div className="form-group">
-                                <label htmlFor="phone">Phone Number</label>
-                                <input type="tel" id="phone" name="phone" value={formData.phone} onChange={handleChange} placeholder="(555) 123-4567" />
+
+                            <div className="border-t border-[#2a2a4a] mt-4 pt-4">
+                                <div className="flex justify-between items-center">
+                                    <span className="text-lg font-bold">Total Due Today</span>
+                                    <span className="text-2xl font-bold text-cyan-400">${totalToday.toLocaleString()}</span>
+                                </div>
+                                <p className="text-right text-gray-500 text-sm mt-1">
+                                    Then ${monthlyPrice}/mo
+                                </p>
                             </div>
-                            <div className="form-group">
-                                <label htmlFor="company">Company Name *</label>
-                                <input type="text" id="company" name="company" value={formData.company} onChange={handleChange} placeholder="Your Business Inc." />
+                        </div>
+
+                        {/* What's Included */}
+                        <div className="bg-[#12121f] border border-[#2a2a4a] rounded-xl p-6">
+                            <h3 className="text-lg font-semibold mb-4 text-gray-200">What's Included</h3>
+                            <ul className="space-y-3">
+                                {features.map((feat, idx) => (
+                                    <li key={idx} className="flex gap-3 text-sm text-gray-300">
+                                        <span className="text-cyan-400 font-bold">✓</span>
+                                        {feat}
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    </div>
+
+                    {/* RIGHT COLUMN: PAYMENT */}
+                    <div className="space-y-6">
+                        <div className="bg-[#12121f] border border-[#2a2a4a] rounded-xl p-6">
+                            <h2 className="text-xl font-semibold mb-2">Payment Method</h2>
+                            <p className="text-gray-400 text-sm mb-6">Secure, encrypted transaction</p>
+
+                            {/* PayPal Container */}
+                            <div className="min-h-[200px] flex flex-col justify-center">
+                                <div id="paypal-button-container" className="w-full">
+                                    {!scriptLoaded && (
+                                        <div className="animate-pulse space-y-3">
+                                            <div className="h-12 bg-gray-700 rounded"></div>
+                                            <div className="h-12 bg-gray-700 rounded"></div>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
-                            <div className="form-group">
-                                <label htmlFor="industry">Industry</label>
-                                <select id="industry" name="industry" value={formData.industry} onChange={handleChange}>
-                                    <option value="">Select your industry</option>
-                                    <option value="hvac">HVAC / Home Services</option>
-                                    <option value="fitness">Fitness / Gym</option>
-                                    <option value="beauty">Beauty / Wellness</option>
-                                    <option value="ecommerce">E-commerce</option>
-                                    <option value="healthcare">Healthcare</option>
-                                    <option value="realestate">Real Estate</option>
-                                    <option value="professional">Professional Services</option>
-                                    <option value="other">Other</option>
-                                </select>
+
+                            <div className="mt-6 pt-6 border-t border-[#2a2a4a]">
+                                <div className="flex items-center justify-center gap-2 text-gray-500 text-xs">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                                    <span>Guaranteed Safe & Secure Checkout</span>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <div className="checkout-card">
-                        <h2>Payment Method</h2>
-                        <div className="payment-section">
-                            <div id="paypal-button-container"></div>
-
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', margin: '24px 0' }}>
-                                <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.1)' }}></div>
-                                <span style={{ color: '#64748B', fontSize: '14px' }}>Secured by PayPal</span>
-                                <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.1)' }}></div>
-                            </div>
-
-                            <p className="text-gray-500 text-sm text-center">
-                                Note: Credit Card fields will appear in the PayPal popup or you can log in to PayPal.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Order Summary */}
-                <div className="summary-card text-white">
-                    <div className="checkout-card">
-                        <h2>Order Summary</h2>
-                        <div id="order-items">
-                            {cart.map((item, idx) => (
-                                <div className="order-item" key={idx}>
-                                    <div className="item-info">
-                                        <h4>{item.automationName}</h4>
-                                        <span className="tier-badge">{item.tierName} Plan</span>
-                                    </div>
-                                    <div className="item-pricing">
-                                        <div className="setup">${item.setupFee?.toLocaleString()} setup</div>
-                                        <div className="monthly">${item.monthlyPrice}/mo</div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-
-                        <div className="summary-divider"></div>
-
-                        <div className="summary-row">
-                            <span>Setup Fees</span>
-                            <span>${totals.setupTotal.toLocaleString()}</span>
-                        </div>
-                        <div className="summary-row">
-                            <span>First Month</span>
-                            <span>${totals.monthlyTotal.toLocaleString()}</span>
-                        </div>
-                        <div className="summary-row">
-                            <span>Tax (13% HST)</span>
-                            <span>${totals.tax.toFixed(2)}</span>
-                        </div>
-                        <div className="summary-row total">
-                            <span>Total Today</span>
-                            <span>${totals.grandTotal.toLocaleString()}</span>
-                        </div>
-                        <p className="recurring-note">Then ${totals.monthlyTotal.toLocaleString()}/mo starting next month</p>
-
-                        <div className="trust-badge">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ width: 20, height: 20 }}>
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
-                            </svg>
-                            <span>256-bit SSL Encrypted Checkout</span>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
