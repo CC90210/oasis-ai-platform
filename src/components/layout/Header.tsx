@@ -33,6 +33,11 @@ export const Header = () => {
 
     const closeMenu = () => setIsMobileMenuOpen(false);
 
+    const isActive = (path: string) => {
+        if (path === '/') return location.pathname === '/';
+        return location.pathname.startsWith(path);
+    };
+
     return (
         <header
             className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${isScrolled || isMobileMenuOpen ? 'bg-[#050508]/90 backdrop-blur-xl border-b border-white/10 py-4' : 'bg-transparent py-6'
