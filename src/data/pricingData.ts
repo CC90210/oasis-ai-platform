@@ -83,17 +83,17 @@ export const AUTOMATIONS: Automation[] = [
             {
                 name: "Starter",
                 price: 149,
-                features: ["Up to 500 conversations", "1 website", "Basic analytics"]
+                features: ["Up to 500 conversations/month", "1 website", "Basic analytics", "Email support"]
             },
             {
                 name: "Professional",
                 price: 297,
-                features: ["Up to 2,000 conversations", "3 websites", "Lead scoring", "CRM sync"]
+                features: ["Up to 2,000 conversations/month", "3 websites", "Lead scoring", "CRM sync", "Priority support"]
             },
             {
                 name: "Business",
                 price: 497,
-                features: ["Unlimited conversations", "10 websites", "Advanced analytics", "Priority support"]
+                features: ["Unlimited conversations", "10 websites", "Advanced analytics", "Custom integrations", "Dedicated support"]
             }
         ]
     },
@@ -110,26 +110,26 @@ export const AUTOMATIONS: Automation[] = [
             {
                 name: "Starter",
                 price: 197,
-                features: ["200 minutes", "100 SMS", "Basic call routing", "Standard analytics"]
+                features: ["200 minutes/month", "100 SMS", "Basic call routing", "Voicemail transcription"]
             },
             {
                 name: "Professional",
                 price: 347,
-                features: ["750 minutes", "500 SMS", "Call transcription", "CRM integration", "5 workflow automations"],
+                features: ["750 minutes/month", "500 SMS", "Call transcription", "CRM integration", "5 workflow automations"],
                 isPopular: true
             },
             {
                 name: "Business",
                 price: 547,
-                features: ["2,000 minutes", "1,500 SMS", "Advanced analytics", "Priority support"]
+                features: ["2,000 minutes/month", "1,500 SMS", "Advanced analytics", "Multi-location routing", "Priority support"]
             }
         ]
     },
     {
-        id: "email-automation",
-        name: "Email Intelligent Automation",
+        id: "email-automation", // Changed ID to match prompt keys if unique, but prompt used 'email'. Will align in Page.
+        name: "Email Automation",
         icon: Mail,
-        setupFee: 1297,
+        setupFee: 997,
         description: "Categorize, draft, and route emails automatically. Inbox zero on autopilot.",
         tag: "Saves 15+ hours/week",
         monthlyFrom: 149,
@@ -138,17 +138,17 @@ export const AUTOMATIONS: Automation[] = [
             {
                 name: "Starter",
                 price: 149,
-                features: ["Up to 500 emails/mo", "Auto-categorization", "Draft responses"]
+                features: ["500 emails/month", "1 inbox", "Auto-categorization", "Draft responses"]
             },
             {
                 name: "Professional",
                 price: 297,
-                features: ["Up to 2,500 emails/mo", "Priority flagging", "Human-in-loop workflows", "CRM sync"]
+                features: ["2,000 emails/month", "3 inboxes", "Sentiment analysis", "CRM sync", "Follow-up sequences"]
             },
             {
                 name: "Business",
                 price: 497,
-                features: ["Up to 10,000 emails/mo", "Multi-inbox", "Advanced routing", "Sentiment analysis"]
+                features: ["Unlimited emails", "Unlimited inboxes", "Advanced workflows", "Custom integrations", "Dedicated support"]
             }
         ]
     },
@@ -165,17 +165,17 @@ export const AUTOMATIONS: Automation[] = [
             {
                 name: "Starter",
                 price: 149,
-                features: ["1 calendar", "100 bookings/mo", "Email confirmations"]
+                features: ["100 bookings/month", "Calendar sync", "SMS reminders", "Rescheduling flows"]
             },
             {
                 name: "Professional",
-                price: 247,
-                features: ["5 calendars", "500 bookings/mo", "SMS reminders", "Rescheduling flows"]
+                price: 297,
+                features: ["500 bookings/month", "Multi-calendar", "CRM sync", "No-show reduction"]
             },
             {
                 name: "Business",
-                price: 397,
-                features: ["Unlimited calendars", "Unlimited bookings", "Zoom/Meet integration", "Waitlist management"]
+                price: 497,
+                features: ["Unlimited bookings", "Team calendars", "Resource allocation", "Custom workflows"]
             }
         ]
     },
@@ -192,22 +192,22 @@ export const AUTOMATIONS: Automation[] = [
             {
                 name: "Starter",
                 price: 197,
-                features: ["250 leads/mo", "Basic enrichment", "CRM push"]
+                features: ["200 leads/month", "Multi-source scraping", "Data enrichment", "Basic CRM sync"]
             },
             {
                 name: "Professional",
                 price: 347,
-                features: ["1,000 leads/mo", "Multi-source scraping", "Lead scoring", "Automated sequences"]
+                features: ["1,000 leads/month", "Lead scoring", "Hot lead alerts", "Pipeline tracking"]
             },
             {
                 name: "Business",
                 price: 547,
-                features: ["5,000 leads/mo", "Custom criteria", "Intent signals", "Multi-channel outreach"]
+                features: ["Unlimited leads", "Advanced scoring", "Custom workflows", "Dedicated support"]
             }
         ]
     },
     {
-        id: "google-reviews",
+        id: "google-reviews", // Prompt uses 'google-review'. Will handle mapping in page.
         name: "Google Review Automation",
         icon: Star,
         setupFee: 797,
@@ -219,17 +219,17 @@ export const AUTOMATIONS: Automation[] = [
             {
                 name: "Starter",
                 price: 149,
-                features: ["1 location", "Automated review requests", "Response templates"]
+                features: ["1 location", "Automated review requests", "AI responses", "Weekly reports"]
             },
             {
                 name: "Professional",
-                price: 247,
-                features: ["5 locations", "Sentiment analysis", "Smart response drafting", "Review monitoring"]
+                price: 297,
+                features: ["5 locations", "Sentiment analysis", "Smart AI responses", "Review monitoring"]
             },
             {
                 name: "Business",
-                price: 397,
-                features: ["Unlimited locations", "Competitor monitoring", "Review analytics dashboard"]
+                price: 497,
+                features: ["Unlimited locations", "Competitor monitoring", "Advanced analytics", "Reputation scoring"]
             }
         ]
     },
@@ -246,22 +246,22 @@ export const AUTOMATIONS: Automation[] = [
             {
                 name: "Starter",
                 price: 197,
-                features: ["2 platforms", "30 posts/mo", "Content calendar", "Basic analytics"]
+                features: ["3 platforms", "30 posts/month", "AI captions", "Content calendar"]
             },
             {
                 name: "Professional",
                 price: 347,
-                features: ["4 platforms", "60 posts/mo", "AI content generation", "Hashtag optimization"]
+                features: ["5 platforms", "90 posts/month", "Engagement automation", "Hashtag optimization"]
             },
             {
                 name: "Business",
                 price: 547,
-                features: ["Unlimited platforms", "120 posts/mo", "Trend monitoring", "Engagement automation"]
+                features: ["Unlimited platforms", "Unlimited posts", "Trend analysis", "Team collaboration"]
             }
         ]
     },
     {
-        id: "revenue-operations",
+        id: "revenue-operations", // Prompt 'revenue-ops'
         name: "Revenue Operations Automation",
         icon: DollarSign,
         setupFee: 1497,
@@ -273,17 +273,17 @@ export const AUTOMATIONS: Automation[] = [
             {
                 name: "Starter",
                 price: 197,
-                features: ["Automated invoicing", "Payment reminders", "Basic reporting"]
+                features: ["50 invoices/month", "Auto-generation", "Payment reminders", "Basic reporting"]
             },
             {
                 name: "Professional",
                 price: 347,
-                features: ["Pipeline automation", "Quote generation", "Payment processing integration"]
+                features: ["200 invoices/month", "Pipeline tracking", "Revenue forecasting", "CRM sync"]
             },
             {
                 name: "Business",
                 price: 547,
-                features: ["Full revenue cycle automation", "Forecasting", "Multi-currency", "Advanced analytics"]
+                features: ["Unlimited invoices", "Advanced analytics", "Multi-entity", "CFO dashboards"]
             }
         ]
     },
@@ -300,17 +300,17 @@ export const AUTOMATIONS: Automation[] = [
             {
                 name: "Starter",
                 price: 197,
-                features: ["500 documents/mo", "Basic extraction", "Searchable archive"]
+                features: ["100 documents", "PDF/image OCR", "Basic search", "Data extraction"]
             },
             {
                 name: "Professional",
                 price: 347,
-                features: ["2,500 documents/mo", "Structured data output", "CRM/database sync"]
+                features: ["500 documents", "Semantic search", "AI Q&A", "Database integrations"]
             },
             {
                 name: "Business",
                 price: 547,
-                features: ["10,000 documents/mo", "Custom extraction models", "API access"]
+                features: ["Unlimited documents", "Advanced RAG", "Custom AI training", "API access"]
             }
         ]
     },
@@ -327,17 +327,17 @@ export const AUTOMATIONS: Automation[] = [
             {
                 name: "Starter",
                 price: 197,
-                features: ["5 employees/mo", "Document collection", "Task checklists"]
+                features: ["10 hires/month", "Document collection", "Training sequences", "Task checklists"]
             },
             {
                 name: "Professional",
                 price: 347,
-                features: ["20 employees/mo", "Training sequences", "Compliance tracking"]
+                features: ["5 hires/month", "Compliance tracking", "HRIS integration", "Performance workflows"]
             },
             {
                 name: "Business",
                 price: 547,
-                features: ["Unlimited employees", "Custom workflows", "Performance tracking"]
+                features: ["Unlimited hires", "Multi-department", "Advanced compliance", "Custom integrations"]
             }
         ]
     }

@@ -24,6 +24,7 @@ const LoginPage = lazy(() => import('./pages/login'));
 const ClientDashboard = lazy(() => import('./pages/dashboard/[clientId]'));
 const PrivacyPage = lazy(() => import('./pages/legal/PrivacyPage'));
 const TermsPage = lazy(() => import('./pages/legal/TermsPage'));
+const SubscriptionSuccessPage = lazy(() => import('./pages/subscription-success/SubscriptionSuccessPage'));
 
 function App() {
     // Initialize state based on session storage to prevent flash of content
@@ -64,6 +65,8 @@ function App() {
                         <Route path="/blog/:slug" element={<MainLayout showChat={!showSplash}><BlogPost /></MainLayout>} />
                         <Route path="/case-studies" element={<MainLayout showChat={!showSplash}><CaseStudiesPage /></MainLayout>} />
                         <Route path="/checkout" element={<MainLayout showChat={!showSplash}><CheckoutPage /></MainLayout>} />
+                        <Route path="/subscription-success" element={<MainLayout showChat={!showSplash}><SubscriptionSuccessPage /></MainLayout>} />
+
 
                         {/* Legal Pages */}
                         <Route path="/privacy" element={<MainLayout showChat={!showSplash}><PrivacyPage /></MainLayout>} />
