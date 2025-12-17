@@ -14,26 +14,6 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
         const video = videoRef.current;
         if (!video) return;
 
-        // Force play immediately
-        const playVideo = async () => {
-            try {
-                // Determine if we are on mobile - optimized handling
-                const isMobile = window.innerWidth < 768;
-                if (isMobile) {
-                    // On mobile, ensure playsInline is respected and try to play
-                    video.setAttribute('playsinline', 'true');
-                }
-
-                await video.play();
-                setIsPlaying(true);
-            } catch (err) {
-                console.warn("Autoplay failed:", err);
-                setIsPlaying(false);
-            }
-        };
-
-        playVideo();
-
         const handleEnded = () => {
             setIsVisible(false);
             setTimeout(onComplete, 800);
@@ -71,7 +51,6 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
                             src="/videos/video_2025-12-04_16-19-42.mp4"
                             playsInline
                             muted
-                            autoPlay
                             preload="auto"
                             // Optimize rendering hint
                             style={{ willChange: 'transform, opacity' }}
