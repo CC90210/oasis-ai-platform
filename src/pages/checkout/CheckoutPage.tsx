@@ -19,9 +19,45 @@ const CheckoutPage: React.FC = () => {
     // Parse Query Params
     const automationId = searchParams.get('automation');
     const tierId = searchParams.get('tier') as 'starter' | 'professional' | 'business';
+    const bundleId = searchParams.get('bundle');
+
+    // Determine what is being purchased
+    const isLaunchpad = bundleId === 'launchpad';
 
     // Derived Data
-    const automation = AUTOMATIONS.find(a => a.id === automationId);
+    let name = '';
+    let planName = '';
+    let setupFee = 0;
+    let monthlyPrice = 0;
+    let features: readonly string[] = [];
+    let planId: string | undefined;
+
+    // derived automation (only if not launchpad)
+    const automation = automationId ? AUTOMATIONS.find(a => a.id === automationId) : null;
+
+    if (isLaunchpad) {
+        name = 'OASIS Launchpad';
+        planName = 'Launchpad Plan';
+        // @ts-ignore - Explicitly accessing launchpad data
+        const pricing = CHECKOUT_PRICING['launchpad'];
+        setupFee = pricing.setup;
+        monthlyPrice = pricing.monthly.standard;
+        // @ts-ignore
+        features = CHECKOUT_FEATURES['launchpad'].standard;
+        // @ts-ignore
+        planId = PAYPAL_PLANS['launchpad'].standard;
+    } else if (automation && tierId && CHECKOUT_PRICING[automationId as keyof typeof CHECKOUT_PRICING]) {
+        name = automation.name;
+        planName = `${tierId} Plan`; // Capitalize first letter in UI
+        const pricing = CHECKOUT_PRICING[automationId as keyof typeof CHECKOUT_PRICING];
+        monthlyPrice = pricing.monthly[tierId];
+        setupFee = pricing.setup;
+        features = CHECKOUT_FEATURES[automationId as keyof typeof CHECKOUT_FEATURES]?.[tierId] || [];
+        // @ts-ignore - Tier is valid here
+        planId = PAYPAL_PLANS[automationId as keyof typeof PAYPAL_PLANS]?.[tierId];
+    }
+
+    const totalToday = setupFee + monthlyPrice;
 
     // State
     const [scriptLoaded, setScriptLoaded] = useState(false);
@@ -35,9 +71,9 @@ const CheckoutPage: React.FC = () => {
     // Load PayPal SDK
     useEffect(() => {
         // Validation Redirect
-        if (!automation || !tierId || !CHECKOUT_PRICING[automationId as keyof typeof CHECKOUT_PRICING]) {
+        if (!isLaunchpad && (!automation || !tierId)) {
             console.error("Invalid checkout params");
-            return;
+            return; // Component will render error state below
         }
 
         // Check if script already exists
@@ -66,12 +102,12 @@ const CheckoutPage: React.FC = () => {
         return () => {
             // Cleanup logic if needed
         };
-    }, [automationId, tierId, automation]);
+    }, [automationId, tierId, automation, isLaunchpad]);
 
 
     // Render PayPal Buttons
     useEffect(() => {
-        if (!scriptLoaded || !window.paypal || !automationId || !tierId) return;
+        if (!scriptLoaded || !window.paypal || !planId) return;
 
         const containerId = 'paypal-button-container';
         const container = document.getElementById(containerId);
@@ -80,14 +116,6 @@ const CheckoutPage: React.FC = () => {
             container.innerHTML = ''; // Clear previous
 
             try {
-                // Get Plan ID
-                const planId = PAYPAL_PLANS[automationId as keyof typeof PAYPAL_PLANS]?.[tierId];
-
-                if (!planId) {
-                    setPaypalError("Plan not found for this selection.");
-                    return;
-                }
-
                 window.paypal.Buttons({
                     style: {
                         shape: 'rect',
@@ -109,10 +137,22 @@ const CheckoutPage: React.FC = () => {
                         // Track success
                         track('purchase_approved', {
                             subscription_id: data.subscriptionID,
-                            automation: automationId,
-                            tier: tierId
+                            product: isLaunchpad ? 'launchpad' : automationId,
+                            tier: isLaunchpad ? 'standard' : tierId
                         });
-                        navigate(`/subscription-success?subscription_id=${data.subscriptionID}&automation=${automationId}&tier=${tierId}`);
+
+                        const successParams = new URLSearchParams({
+                            subscription_id: data.subscriptionID,
+                        });
+
+                        if (isLaunchpad) {
+                            successParams.append('product', 'launchpad');
+                        } else {
+                            if (automationId) successParams.append('automation', automationId);
+                            if (tierId) successParams.append('tier', tierId);
+                        }
+
+                        navigate(`/subscription-success?${successParams.toString()}`);
                     },
                     onError: function (err: any) {
                         console.error('PayPal onError:', err);
@@ -128,11 +168,11 @@ const CheckoutPage: React.FC = () => {
             }
         }
 
-    }, [scriptLoaded, automationId, tierId]);
+    }, [scriptLoaded, planId, isLaunchpad, automationId, tierId]); // planId is main dependency
 
 
     // Render Error State if Params Invalid
-    if (!automation || !tierId) {
+    if (!isLaunchpad && (!automation || !tierId)) {
         return (
             <div className="min-h-screen pt-32 text-white text-center bg-[#0a0a14]">
                 <h2 className="text-2xl font-bold mb-4">Invalid Checkout Link</h2>
@@ -145,12 +185,6 @@ const CheckoutPage: React.FC = () => {
             </div>
         );
     }
-
-    const pricing = CHECKOUT_PRICING[automationId as keyof typeof CHECKOUT_PRICING];
-    const monthlyPrice = pricing.monthly[tierId];
-    const setupFee = pricing.setup;
-    const totalToday = setupFee + monthlyPrice;
-    const features = CHECKOUT_FEATURES[automationId as keyof typeof CHECKOUT_FEATURES]?.[tierId] || [];
 
     return (
         <div className="min-h-screen bg-[#0a0a14] text-white flex flex-col">
@@ -197,8 +231,8 @@ const CheckoutPage: React.FC = () => {
                                 <div className="space-y-4 mb-8">
                                     <div className="flex justify-between items-start">
                                         <div>
-                                            <h3 className="font-bold text-lg text-white">{automation.name}</h3>
-                                            <p className="text-cyan-400 text-sm font-medium capitalize">{tierId} Plan</p>
+                                            <h3 className="font-bold text-lg text-white">{name}</h3>
+                                            <p className="text-cyan-400 text-sm font-medium capitalize">{planName}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -305,7 +339,7 @@ const CheckoutPage: React.FC = () => {
 
                             {/* Features List */}
                             <div className="bg-[#12121f] border border-[#2a2a4a] rounded-2xl p-6">
-                                <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Included in {tierId} Plan</h3>
+                                <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Included in {planName}</h3>
                                 <ul className="space-y-3">
                                     {features.map((feat, idx) => (
                                         <li key={idx} className="flex items-start gap-3 text-sm text-gray-300">

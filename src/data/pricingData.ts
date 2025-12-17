@@ -405,6 +405,9 @@ export const PAYPAL_PLANS = {
         starter: 'P-03P5988802602403ANFBPPHA',
         professional: 'P-7GC16284GR277112BNFBPQAA',
         business: 'P-7SG838516L967791YNFBPQ2I'
+    },
+    'launchpad': {
+        standard: 'P-4TJ0328322289205DNFBRWUI'
     }
 } as const;
 
@@ -418,7 +421,8 @@ export const CHECKOUT_PRICING = {
     'social-media': { setup: 1197, monthly: { starter: 197, professional: 347, business: 547 } },
     'revenue-operations': { setup: 1497, monthly: { starter: 197, professional: 347, business: 547 } },
     'document-processing': { setup: 1697, monthly: { starter: 197, professional: 347, business: 547 } },
-    'hr-onboarding': { setup: 1497, monthly: { starter: 197, professional: 347, business: 547 } }
+    'hr-onboarding': { setup: 1497, monthly: { starter: 197, professional: 347, business: 547 } },
+    'launchpad': { setup: 1497, monthly: { standard: 347 } }
 } as const;
 
 export const CHECKOUT_FEATURES = {
@@ -471,5 +475,15 @@ export const CHECKOUT_FEATURES = {
         starter: ['10 hires/month', 'Document collection', 'Training sequences', 'Task checklists'],
         professional: ['5 hires/month', 'Compliance tracking', 'HRIS integration', 'Performance workflows'],
         business: ['Unlimited hires', 'Multi-department', 'Advanced compliance', 'Custom integrations']
+    },
+    'launchpad': {
+        standard: [
+            "90-minute discovery consultation",
+            "Custom automation roadmap",
+            "1 automation of your choice",
+            "First month included",
+            "7-day priority implementation",
+            "Monthly ROI documentation"
+        ]
     }
 } as const;
