@@ -27,9 +27,9 @@ const ImmersiveHero: React.FC = () => {
 
             {/* Layer 5: Ambient Glows */}
             <div className="absolute inset-0 z-[5] pointer-events-none overflow-hidden">
-                <div className="absolute w-[600px] h-[600px] rounded-full bg-[radial-gradient(circle,rgba(0,212,255,0.3),transparent_70%)] -top-[200px] -right-[100px] animate-[glowPulse_8s_ease-in-out_infinite]" />
-                <div className="absolute w-[400px] h-[400px] rounded-full bg-[radial-gradient(circle,rgba(0,150,255,0.3),transparent_70%)] -bottom-[100px] -left-[100px] animate-[glowPulse_8s_ease-in-out_infinite_2.5s]" />
-                <div className="absolute w-[300px] h-[300px] rounded-full bg-[radial-gradient(circle,rgba(0,212,255,0.2),transparent_70%)] top-[40%] left-[60%] animate-[glowPulse_8s_ease-in-out_infinite_5s]" />
+                <div className="ambient-glow w-[600px] h-[600px] bg-[radial-gradient(circle,rgba(0,212,255,0.3),transparent_70%)] -top-[200px] -right-[100px] animate-[glowPulse_8s_ease-in-out_infinite]" />
+                <div className="ambient-glow w-[400px] h-[400px] bg-[radial-gradient(circle,rgba(0,150,255,0.3),transparent_70%)] -bottom-[100px] -left-[100px] animate-[glowPulse_8s_ease-in-out_infinite_2.5s]" />
+                <div className="ambient-glow w-[300px] h-[300px] bg-[radial-gradient(circle,rgba(0,212,255,0.2),transparent_70%)] top-[40%] left-[60%] animate-[glowPulse_8s_ease-in-out_infinite_5s]" />
             </div>
 
             {/* Layer 6: Content */}
@@ -83,7 +83,7 @@ const ImmersiveHero: React.FC = () => {
             </div>
 
             {/* Layer 7: Cursor Glow */}
-            <div id="cursor-glow" className="fixed w-[400px] h-[400px] rounded-full bg-[radial-gradient(circle,rgba(0,212,255,0.15),transparent_70%)] pointer-events-none -translate-x-1/2 -translate-y-1/2 z-[6] opacity-0 transition-opacity duration-300 blur-[40px]" />
+            <div id="cursor-glow" className="fixed w-[400px] h-[400px] rounded-full bg-[radial-gradient(circle,rgba(0,212,255,0.15),transparent_70%)] pointer-events-none -translate-x-1/2 -translate-y-1/2 z-[6] opacity-0 transition-opacity duration-300" />
         </section>
     );
 };

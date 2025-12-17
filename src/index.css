@@ -84,10 +84,12 @@
 @layer components {
   .glass-card {
     background: var(--bg-card);
-    backdrop-filter: blur(20px);
+    backdrop-filter: blur(12px);
+    /* Reduced from 20px */
     border: 1px solid rgba(0, 212, 255, 0.15);
     border-radius: 16px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform, box-shadow;
   }
 
   .glass-card:hover {
@@ -221,13 +223,21 @@
   0%,
   100% {
     opacity: 0.3;
-    transform: scale(1);
+    transform: translate3d(0, 0, 0) scale(1);
   }
 
   50% {
     opacity: 0.6;
-    transform: scale(1.2);
+    transform: translate3d(0, 0, 0) scale(1.2);
   }
+}
+
+.ambient-glow {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  transform: translate3d(0, 0, 0);
+  will-change: transform, opacity;
 }
 
 @keyframes badgeFloat {

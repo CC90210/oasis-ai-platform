@@ -7,6 +7,7 @@ export const useHeroAnimation = () => {
         scrollY: 0,
         isVisible: true,
         animationFrameId: 0,
+        lastFrameTime: 0,
         cleanupFunctions: [] as (() => void)[],
 
         // Canvas contexts
@@ -76,7 +77,9 @@ export const useHeroAnimation = () => {
 
         // Visibility Check (Performance)
         const checkVisibility = () => {
-            state.isVisible = !document.hidden;
+            const splashVideo = document.getElementById('splash-screen-video');
+            // Visible only if: document not hidden AND splash screen video is NOT in DOM
+            state.isVisible = !document.hidden && !splashVideo;
         };
 
         // Use IntersectionObserver specifically for the hero section
@@ -85,10 +88,14 @@ export const useHeroAnimation = () => {
 
         if (heroSection) {
             observer = new IntersectionObserver((entries) => {
-                state.isVisible = entries[0].isIntersecting && !document.hidden;
+                const splashVideo = document.getElementById('splash-screen-video');
+                state.isVisible = entries[0].isIntersecting && !document.hidden && !splashVideo;
             }, { threshold: 0 });
             observer.observe(heroSection);
         }
+
+        // Poll for splash screen removal (to start animation when it ends)
+        const splashInterval = setInterval(checkVisibility, 500);
 
         document.addEventListener('visibilitychange', checkVisibility);
 
@@ -104,7 +111,14 @@ export const useHeroAnimation = () => {
 
             const generate = () => {
                 state.stars = [];
-                const count = Math.floor((window.innerWidth * window.innerHeight) / 8000);
+                // Optimized counts
+                const isMobile = window.innerWidth < 768;
+                const area = window.innerWidth * window.innerHeight;
+
+                const count = isMobile
+                    ? Math.min(Math.floor(area / 25000), 50)
+                    : Math.min(Math.floor(area / 20000), 150);
+
                 for (let i = 0; i < count; i++) {
                     state.stars.push({
                         x: Math.random() * window.innerWidth,
@@ -136,7 +150,13 @@ export const useHeroAnimation = () => {
 
             const generate = () => {
                 state.particlesMid = [];
-                const count = Math.floor((window.innerWidth * window.innerHeight) / 25000);
+                const isMobile = window.innerWidth < 768;
+                const area = window.innerWidth * window.innerHeight;
+
+                const count = isMobile
+                    ? Math.min(Math.floor(area / 80000), 15)
+                    : Math.min(Math.floor(area / 60000), 40);
+
                 for (let i = 0; i < count; i++) {
                     state.particlesMid.push({
                         x: Math.random() * window.innerWidth,
@@ -184,7 +204,13 @@ export const useHeroAnimation = () => {
 
             const generate = () => {
                 state.particlesNear = [];
-                const count = Math.floor((window.innerWidth * window.innerHeight) / 50000);
+                const isMobile = window.innerWidth < 768;
+                const area = window.innerWidth * window.innerHeight;
+
+                const count = isMobile
+                    ? Math.min(Math.floor(area / 150000), 8)
+                    : Math.min(Math.floor(area / 120000), 20);
+
                 for (let i = 0; i < count; i++) {
                     state.particlesNear.push({
                         x: Math.random() * window.innerWidth,
@@ -220,7 +246,18 @@ export const useHeroAnimation = () => {
         // ==========================================
 
         const animate = () => {
+            state.animationFrameId = requestAnimationFrame(animate);
+
             const time = performance.now();
+            const elapsed = time - state.lastFrameTime;
+
+            // Limit to 30fps (approx 33ms per frame) - or 24fps on mobile
+            const isMobile = window.innerWidth < 768;
+            const fpsInterval = isMobile ? 41 : 33;
+
+            if (elapsed < fpsInterval) return;
+
+            state.lastFrameTime = time - (elapsed % fpsInterval);
 
             if (state.isVisible) {
                 // DRAW STARTS
@@ -244,9 +281,10 @@ export const useHeroAnimation = () => {
                         ctx.fill();
 
                         if (star.brightness > 0.7 && star.size > 1.5) {
+                            // Simplified glow
                             ctx.beginPath();
-                            ctx.arc(x, y, star.size * 3, 0, Math.PI * 2);
-                            ctx.fillStyle = star.color + (opacity * 0.2) + ')';
+                            ctx.arc(x, y, star.size + 1, 0, Math.PI * 2);
+                            ctx.fillStyle = star.color + (opacity * 0.3) + ')';
                             ctx.fill();
                         }
                     });
@@ -293,7 +331,8 @@ export const useHeroAnimation = () => {
 
                     const centerX = width / 2;
                     const amplitude = Math.min(width * 0.15, 180);
-                    const pointSpacing = 25;
+                    // Increased spacing for performance (was 25)
+                    const pointSpacing = window.innerWidth < 768 ? 60 : 40;
                     const totalPoints = Math.ceil(height / pointSpacing) + 10;
                     const startY = -50;
 
@@ -317,17 +356,18 @@ export const useHeroAnimation = () => {
                     ctx.strokeStyle = 'rgba(0, 212, 255, 0.15)';
                     ctx.lineWidth = 1;
 
+                    // Draw connections (simplified)
+                    ctx.beginPath();
                     for (let i = 0; i < totalPoints; i++) {
-                        // Type safety check
                         if (strand1Points[i] && strand2Points[i]) {
-                            ctx.beginPath();
                             ctx.moveTo(strand1Points[i].x, strand1Points[i].y);
                             ctx.lineTo(strand2Points[i].x, strand2Points[i].y);
-                            ctx.stroke();
                         }
                     }
+                    ctx.stroke();
 
                     const drawStrand = (points: any, offset: number) => {
+                        // Draw line
                         ctx.beginPath();
                         ctx.strokeStyle = 'rgba(0, 212, 255, 0.4)';
                         ctx.lineWidth = 2;
@@ -340,31 +380,14 @@ export const useHeroAnimation = () => {
                             ctx.stroke();
                         }
 
+                        // Draw points (simplified - no gradients)
                         points.forEach((point: any) => {
-                            const size = 4 + point.depth * 4;
+                            const size = 3 + point.depth * 3;
                             const opacity = 0.4 + point.depth * 0.6;
-
-                            const gradient = ctx.createRadialGradient(
-                                point.x, point.y, 0,
-                                point.x, point.y, size * 3
-                            );
-                            gradient.addColorStop(0, `rgba(0, 212, 255, ${opacity})`);
-                            gradient.addColorStop(0.4, `rgba(0, 212, 255, ${opacity * 0.3})`);
-                            gradient.addColorStop(1, 'rgba(0, 212, 255, 0)');
-
-                            ctx.beginPath();
-                            ctx.arc(point.x, point.y, size * 3, 0, Math.PI * 2);
-                            ctx.fillStyle = gradient;
-                            ctx.fill();
 
                             ctx.beginPath();
                             ctx.arc(point.x, point.y, size, 0, Math.PI * 2);
                             ctx.fillStyle = `rgba(0, 212, 255, ${opacity})`;
-                            ctx.fill();
-
-                            ctx.beginPath();
-                            ctx.arc(point.x, point.y, size * 0.4, 0, Math.PI * 2);
-                            ctx.fillStyle = `rgba(255, 255, 255, ${opacity * 0.8})`;
                             ctx.fill();
                         });
                     };
@@ -396,14 +419,13 @@ export const useHeroAnimation = () => {
                         ctx.beginPath();
                         ctx.arc(x, y, particle.size, 0, Math.PI * 2);
                         ctx.fillStyle = `rgba(0, 212, 255, ${particle.opacity})`;
-                        ctx.filter = 'blur(1px)';
+                        // Removed expensive blur filter
                         ctx.fill();
-                        ctx.filter = 'none';
                     });
                 }
             }
 
-            state.animationFrameId = requestAnimationFrame(animate);
+            // Request next frame is handled at start of function now
         };
 
         state.animationFrameId = requestAnimationFrame(animate);
@@ -419,6 +441,7 @@ export const useHeroAnimation = () => {
             if (observer) observer.disconnect();
 
             state.cleanupFunctions.forEach(fn => fn());
+            clearInterval(splashInterval);
         };
     }, []);
 };
