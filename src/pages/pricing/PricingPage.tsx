@@ -1,34 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Check, X, ArrowRight, Star, ShieldCheck, HelpCircle } from 'lucide-react';
-import { BUNDLES, AUTOMATIONS, COMMON_INCLUSIONS, Automation, CHECKOUT_PRICING, CHECKOUT_FEATURES } from '../../data/pricingData';
-import PricingCard from '../../components/pricing/PricingCard';
+import { Check, ArrowRight, Star, ShieldCheck, HelpCircle } from 'lucide-react';
+import { ALL_AUTOMATIONS, BUNDLES as BUNDLES_OBJ } from '@/lib/pricing';
+import { AutomationPaymentCard } from '@/components/checkout/AutomationPaymentCard';
+import { StripeCheckoutButton } from '@/components/checkout/StripeCheckoutButton';
+import { COMMON_INCLUSIONS } from '@/data/pricingData';
 
-type Tier = 'starter' | 'professional' | 'business';
+const BUNDLES = Object.values(BUNDLES_OBJ);
 
 const PricingPage: React.FC = () => {
-    // Modal State
-    const [selectedAutomation, setSelectedAutomation] = useState<Automation | null>(null);
     const navigate = useNavigate();
 
-    // Reset overflow when opening/closing modal
-    useEffect(() => {
-        if (selectedAutomation) {
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = 'auto';
-        }
-    }, [selectedAutomation]);
-
-    // Handle Tier Selection - Redirect to Checkout
-    const handleSelectTier = (tier: Tier) => {
-        if (!selectedAutomation) return;
-        // Navigate to dedicated checkout page
-        navigate(`/checkout?automation=${selectedAutomation.id}&tier=${tier}`);
-    };
-
     return (
-        <div className="relative min-h-screen text-white pt-24 pb-20 overflow-hidden">
+        <div className="min-h-screen bg-[#0A0A0A] text-white pt-24 pb-20">
+
             {/* 1. Hero Section */}
             <div className="container mx-auto px-4 text-center mb-16">
                 <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 tracking-tight">
@@ -67,14 +52,21 @@ const PricingPage: React.FC = () => {
                             )}
 
                             <h3 className="text-2xl font-bold text-white mb-2">{bundle.name}</h3>
-                            <div className="flex items-baseline mb-2">
-                                <span className="text-4xl font-bold text-white">${bundle.price.toLocaleString()}</span>
-                                <span className="text-gray-400 ml-2 text-sm uppercase tracking-wider">one-time</span>
+                            <div className="flex flex-col mb-4">
+                                <div className="flex items-baseline">
+                                    <span className="text-4xl font-bold text-white">${bundle.setupFee.toLocaleString()}</span>
+                                    <span className="text-gray-400 ml-2 text-sm uppercase tracking-wider">one-time setup</span>
+                                </div>
+                                <div className="flex items-baseline mt-1">
+                                    <span className="text-xl font-semibold text-gray-300">+ ${bundle.monthlyFee.toLocaleString()}</span>
+                                    <span className="text-gray-500 ml-2 text-sm">/mo</span>
+                                </div>
                             </div>
-                            {bundle.roiHighlight && (
+
+                            {bundle.roi && (
                                 <div className="mb-6 p-3 bg-cyan-900/20 border border-cyan-500/30 rounded-lg text-cyan-400 text-sm font-medium flex items-center justify-center text-center">
                                     <Star size={16} className="mr-2 fill-cyan-400" />
-                                    {bundle.roiHighlight}
+                                    {bundle.roi}
                                 </div>
                             )}
 
@@ -87,24 +79,13 @@ const PricingPage: React.FC = () => {
                                 ))}
                             </div>
 
-                            <button
-                                onClick={() => {
-                                    if (bundle.ctaText === "Get Started") {
-                                        navigate('/checkout?bundle=launchpad');
-                                    } else {
-                                        navigate('/contact');
-                                    }
-                                }}
-                                className={`
-                                w-full py-4 rounded-xl font-bold text-lg transition-all duration-300 flex items-center justify-center
-                                ${bundle.tag === "MOST POPULAR"
-                                        ? 'bg-cyan-500 hover:bg-cyan-600 text-white hover:shadow-lg hover:shadow-cyan-500/20'
-                                        : 'bg-white text-black hover:bg-gray-200'
-                                    }
-                            `}>
-                                {bundle.ctaText}
-                                <ArrowRight size={20} className="ml-2" />
-                            </button>
+                            <StripeCheckoutButton
+                                productId={bundle.id}
+                                productType="bundle"
+                                buttonText={bundle.cta}
+                                className="w-full py-4 text-lg"
+                                variant={bundle.tag === "MOST POPULAR" ? 'primary' : 'secondary'}
+                            />
 
                             {bundle.idealFor && (
                                 <p className="text-center text-sm text-gray-500 mt-4">
@@ -124,19 +105,13 @@ const PricingPage: React.FC = () => {
                 </div>
 
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
-                    {AUTOMATIONS.slice(0, 9).map((automation) => (
-                        <PricingCard
+                    {Object.values(ALL_AUTOMATIONS).map((automation) => (
+                        <AutomationPaymentCard
                             key={automation.id}
                             automation={automation}
-                            onViewTiers={setSelectedAutomation}
+                            paypalEnabled={true}
                         />
                     ))}
-                    <div className="md:col-span-2 lg:col-span-1 lg:col-start-2">
-                        <PricingCard
-                            automation={AUTOMATIONS[9]}
-                            onViewTiers={setSelectedAutomation}
-                        />
-                    </div>
                 </div>
             </div>
 
@@ -204,86 +179,6 @@ const PricingPage: React.FC = () => {
                     ))}
                 </div>
             </div>
-
-            {/* TIER SELECTION MODAL */}
-            {selectedAutomation && (
-                <div
-                    id="tier-modal"
-                    className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200"
-                    onClick={(e) => e.target === e.currentTarget && setSelectedAutomation(null)}
-                >
-                    <div className="bg-[#0a0a14] border border-[#1a1a2e] rounded-2xl max-w-5xl w-full max-h-[90vh] overflow-y-auto relative animate-in zoom-in-95 duration-200">
-
-                        {/* Close Button */}
-                        <button
-                            onClick={() => setSelectedAutomation(null)}
-                            className="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl z-10 w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10 transition"
-                        >
-                            &times;
-                        </button>
-
-                        {/* Header */}
-                        <div className="p-8 pb-0">
-                            <h2 className="text-2xl md:text-3xl font-bold text-white">{selectedAutomation.name}</h2>
-                            <p className="text-gray-400 mt-2">Select your monthly plan</p>
-                        </div>
-
-                        {/* Tier Selection */}
-                        <div className="p-8">
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                {(['starter', 'professional', 'business'] as Tier[]).map((tier) => {
-                                    // Handle missing pricing data gracefully
-                                    const pricing = CHECKOUT_PRICING[selectedAutomation.id as keyof typeof CHECKOUT_PRICING];
-                                    const feats = CHECKOUT_FEATURES[selectedAutomation.id as keyof typeof CHECKOUT_FEATURES]?.[tier];
-
-                                    if (!pricing || !feats) return null;
-
-                                    const price = pricing.monthly[tier];
-                                    const isPopular = tier === 'professional';
-
-                                    return (
-                                        <div
-                                            key={tier}
-                                            className={`
-                                                bg-[#12121f] rounded-xl p-6 cursor-pointer group flex flex-col
-                                                ${isPopular ? 'border-2 border-cyan-500 relative transform md:scale-105' : 'border border-[#2a2a4a] hover:border-cyan-500/50 transition'}
-                                            `}
-                                            onClick={() => handleSelectTier(tier)}
-                                        >
-                                            {isPopular && (
-                                                <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-cyan-500 text-black text-xs font-bold px-4 py-1 rounded-full uppercase tracking-wide">
-                                                    Most Popular
-                                                </span>
-                                            )}
-                                            <h3 className="text-xl font-semibold text-white mb-4 capitalize">{tier}</h3>
-                                            <div className="mb-6">
-                                                <span className="text-4xl font-bold text-white">${price}<span className="text-lg font-normal text-gray-400">/mo</span></span>
-                                            </div>
-                                            <ul className="space-y-3 text-gray-300 text-sm mb-6 flex-grow">
-                                                {feats.map((f, i) => (
-                                                    <li key={i} className="flex items-start gap-2">
-                                                        <span className="text-cyan-400 mt-1">✓</span><span>{f}</span>
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                            <button className={`
-                                                w-full py-3 px-4 rounded-lg font-semibold transition mt-auto
-                                                ${isPopular
-                                                    ? 'bg-cyan-500 text-black hover:bg-cyan-400'
-                                                    : 'border border-cyan-500 text-cyan-400 hover:bg-cyan-500 hover:text-black group-hover:bg-cyan-500 group-hover:text-black'
-                                                }
-                                            `}>
-                                                Select {tier.charAt(0).toUpperCase() + tier.slice(1)}
-                                            </button>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-            )}
         </div>
     );
 };
