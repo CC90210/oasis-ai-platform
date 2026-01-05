@@ -6,6 +6,8 @@ import ErrorBoundary from './components/ErrorBoundary';
 import SplashScreen from './components/SplashScreen';
 import { CartDrawer } from './components/cart/CartDrawer';
 import { Analytics } from '@vercel/analytics/react';
+import StarField from './components/StarField';
+import CinematicDNA from './components/CinematicDNA';
 
 // Lazy load pages for performance
 const LandingPage = lazy(() => import('./pages/landing/LandingPage'));
@@ -43,6 +45,8 @@ function App() {
 
     return (
         <ErrorBoundary>
+            <StarField paused={showSplash} />
+            <CinematicDNA />
             {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
 
             {/* Main content is always rendered behind the splash screen for seamless transition */}

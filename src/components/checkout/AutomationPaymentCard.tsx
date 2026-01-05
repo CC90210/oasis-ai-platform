@@ -24,7 +24,7 @@ export function AutomationPaymentCard({
     const totalDueToday = automation.setupFee + selectedPrice;
 
     return (
-        <div className="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
+        <div className="bg-gray-900/80 backdrop-blur-sm rounded-2xl border border-gray-800 overflow-hidden">
             {/* Header */}
             <div className="p-6 border-b border-gray-800">
                 <div className="flex items-start justify-between">
@@ -84,8 +84,8 @@ export function AutomationPaymentCard({
                     <button
                         onClick={() => setPaymentMethod('stripe')}
                         className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition flex items-center justify-center gap-2 ${paymentMethod === 'stripe'
-                                ? 'bg-cyan-500 text-black'
-                                : 'text-gray-400 hover:text-white'
+                            ? 'bg-cyan-500 text-black'
+                            : 'text-gray-400 hover:text-white'
                             }`}
                     >
                         💳 Card / Apple Pay
@@ -97,8 +97,8 @@ export function AutomationPaymentCard({
                         <button
                             onClick={() => setPaymentMethod('paypal')}
                             className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition ${paymentMethod === 'paypal'
-                                    ? 'bg-cyan-500 text-black'
-                                    : 'text-gray-400 hover:text-white'
+                                ? 'bg-cyan-500 text-black'
+                                : 'text-gray-400 hover:text-white'
                                 }`}
                         >
                             PayPal

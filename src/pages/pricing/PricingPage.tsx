@@ -1,18 +1,18 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Check, ArrowRight, Star, ShieldCheck, HelpCircle } from 'lucide-react';
-import { ALL_AUTOMATIONS, BUNDLES as BUNDLES_OBJ } from '@/lib/pricing';
+import { ALL_AUTOMATIONS, BUNDLES as BUNDLES_OBJ, BundleProduct } from '@/lib/pricing';
 import { AutomationPaymentCard } from '@/components/checkout/AutomationPaymentCard';
 import { StripeCheckoutButton } from '@/components/checkout/StripeCheckoutButton';
 import { COMMON_INCLUSIONS } from '@/data/pricingData';
 
-const BUNDLES = Object.values(BUNDLES_OBJ);
+const BUNDLES: BundleProduct[] = Object.values(BUNDLES_OBJ);
 
 const PricingPage: React.FC = () => {
     const navigate = useNavigate();
 
     return (
-        <div className="min-h-screen bg-[#0A0A0A] text-white pt-24 pb-20">
+        <div className="relative min-h-screen pt-24 pb-20 overflow-hidden">
 
             {/* 1. Hero Section */}
             <div className="container mx-auto px-4 text-center mb-16">
@@ -34,8 +34,8 @@ const PricingPage: React.FC = () => {
                             className={`
                                 relative p-8 rounded-2xl border transition-all duration-300 flex flex-col
                                 ${bundle.tag === "MOST POPULAR"
-                                    ? 'bg-[#161B22] border-cyan-500/50 shadow-xl shadow-cyan-500/10'
-                                    : 'bg-[#161B22] border-gray-800'
+                                    ? 'bg-gray-900/90 backdrop-blur-sm border-cyan-500/50 shadow-xl shadow-cyan-500/20'
+                                    : 'bg-gray-900/80 backdrop-blur-sm border-gray-800'
                                 }
                             `}
                         >
@@ -117,7 +117,7 @@ const PricingPage: React.FC = () => {
 
             {/* 5. What's Included */}
             <div className="container mx-auto px-4 mb-24">
-                <div className="bg-[#161B22] border border-gray-800 rounded-2xl p-8 md:p-12">
+                <div className="bg-gray-900/80 backdrop-blur-sm border border-gray-800 rounded-2xl p-8 md:p-12">
                     <div className="text-center mb-10">
                         <h3 className="text-2xl font-bold text-white mb-4">Included with Every Automation</h3>
                         <div className="h-1 w-20 bg-cyan-500 mx-auto rounded-full" />
@@ -169,7 +169,7 @@ const PricingPage: React.FC = () => {
                         { q: "What's included in monthly ROI documentation?", a: "You get a detailed report showing exactly what your automation achieved: hours saved, leads captured, revenue generated, and interactions handled." },
                         { q: "Can I upgrade my plan later?", a: "Yes! You can upgrade or downgrade your subscription tier at any time. Changes take effect on your next billing cycle." }
                     ].map((faq, idx) => (
-                        <div key={idx} className="bg-[#161B22] border border-gray-800 rounded-lg p-6 text-left">
+                        <div key={idx} className="bg-gray-900/80 backdrop-blur-sm border border-gray-800 rounded-lg p-6 text-left">
                             <h4 className="flex items-center text-lg font-semibold text-white mb-3">
                                 <HelpCircle size={18} className="text-cyan-500 mr-3 flex-shrink-0" />
                                 {faq.q}
