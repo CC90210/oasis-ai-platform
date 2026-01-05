@@ -258,11 +258,11 @@ export const PREMIUM_AUTOMATIONS = {
         name: 'Website Building & Hosting',
         description: 'Custom website design, development, hosting, and maintenance.',
         icon: 'Globe',
-        setupFee: 1997,
+        setupFee: 997,
         tiers: {
-            starter: { price: 197, name: 'Starter' },
-            professional: { price: 347, name: 'Professional' },
-            business: { price: 547, name: 'Business' }
+            starter: { price: 149, name: 'Starter' },
+            professional: { price: 297, name: 'Professional' },
+            business: { price: 497, name: 'Business' }
         },
         highlight: 'Live in 14 days or less',
         features: [

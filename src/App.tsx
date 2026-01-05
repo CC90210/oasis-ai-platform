@@ -13,6 +13,7 @@ import CinematicDNA from './components/CinematicDNA';
 const LandingPage = lazy(() => import('./pages/landing/LandingPage'));
 const ServicesPage = lazy(() => import('./pages/services/ServicesPage'));
 const PricingPage = lazy(() => import('./pages/pricing/PricingPage'));
+const ProductConfigPage = lazy(() => import('./pages/pricing/ProductConfigPage'));
 const ContactPage = lazy(() => import('./pages/contact/ContactPage'));
 const CheckoutPage = lazy(() => import('./pages/checkout/CheckoutPage'));
 const CheckoutSuccessPage = lazy(() => import('./pages/checkout/SuccessPage'));
@@ -60,6 +61,7 @@ function App() {
                         <Route path="/" element={<MainLayout showChat={!showSplash}><LandingPage /></MainLayout>} />
                         <Route path="/services" element={<MainLayout showChat={!showSplash}><ServicesPage /></MainLayout>} />
                         <Route path="/pricing" element={<MainLayout showChat={!showSplash}><PricingPage /></MainLayout>} />
+                        <Route path="/pricing/:productId" element={<MainLayout showChat={!showSplash}><ProductConfigPage /></MainLayout>} />
                         <Route path="/contact" element={<MainLayout showChat={!showSplash}><ContactPage /></MainLayout>} />
                         <Route path="/blog" element={<MainLayout showChat={!showSplash}><BlogPage /></MainLayout>} />
                         <Route path="/blog/:slug" element={<MainLayout showChat={!showSplash}><BlogPost /></MainLayout>} />

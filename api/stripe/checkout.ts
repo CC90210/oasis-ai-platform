@@ -21,6 +21,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
+    if (!process.env.STRIPE_SECRET_KEY) {
+        console.error('STRIPE_SECRET_KEY is not set');
+        return res.status(500).json({ error: 'Payment system not configured' });
+    }
+
     try {
         const {
             productId,

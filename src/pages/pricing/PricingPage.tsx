@@ -1,9 +1,8 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Check, ArrowRight, Star, ShieldCheck, HelpCircle } from 'lucide-react';
+import { ShieldCheck, HelpCircle } from 'lucide-react';
 import { ALL_AUTOMATIONS, BUNDLES as BUNDLES_OBJ, BundleProduct } from '@/lib/pricing';
-import { AutomationPaymentCard } from '@/components/checkout/AutomationPaymentCard';
-import { StripeCheckoutButton } from '@/components/checkout/StripeCheckoutButton';
+import { SimplePricingCard } from '@/components/pricing/SimplePricingCard';
 import { COMMON_INCLUSIONS } from '@/data/pricingData';
 
 const BUNDLES: BundleProduct[] = Object.values(BUNDLES_OBJ);
@@ -27,72 +26,14 @@ const PricingPage: React.FC = () => {
 
             {/* 2. Bundle Packages */}
             <div className="container mx-auto px-4 mb-24">
+                <h2 className="text-3xl font-bold text-white mb-8 text-center">Comprehensive Bundles</h2>
                 <div className="grid lg:grid-cols-2 gap-8 max-w-5xl mx-auto">
                     {BUNDLES.map((bundle, idx) => (
-                        <div
+                        <SimplePricingCard
                             key={idx}
-                            className={`
-                                relative p-8 rounded-2xl border transition-all duration-300 flex flex-col
-                                ${bundle.tag === "MOST POPULAR"
-                                    ? 'bg-gray-900/90 backdrop-blur-sm border-cyan-500/50 shadow-xl shadow-cyan-500/20'
-                                    : 'bg-gray-900/80 backdrop-blur-sm border-gray-800'
-                                }
-                            `}
-                        >
-                            {bundle.tag && (
-                                <div className={`
-                                    absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full text-sm font-bold uppercase tracking-wider shadow-lg
-                                    ${bundle.tag === "MOST POPULAR"
-                                        ? 'bg-cyan-500 text-white'
-                                        : 'bg-gray-800 border border-gray-700 text-gray-400'
-                                    }
-                                `}>
-                                    {bundle.tag}
-                                </div>
-                            )}
-
-                            <h3 className="text-2xl font-bold text-white mb-2">{bundle.name}</h3>
-                            <div className="flex flex-col mb-4">
-                                <div className="flex items-baseline">
-                                    <span className="text-4xl font-bold text-white">${bundle.setupFee.toLocaleString()}</span>
-                                    <span className="text-gray-400 ml-2 text-sm uppercase tracking-wider">one-time setup</span>
-                                </div>
-                                <div className="flex items-baseline mt-1">
-                                    <span className="text-xl font-semibold text-gray-300">+ ${bundle.monthlyFee.toLocaleString()}</span>
-                                    <span className="text-gray-500 ml-2 text-sm">/mo</span>
-                                </div>
-                            </div>
-
-                            {bundle.roi && (
-                                <div className="mb-6 p-3 bg-cyan-900/20 border border-cyan-500/30 rounded-lg text-cyan-400 text-sm font-medium flex items-center justify-center text-center">
-                                    <Star size={16} className="mr-2 fill-cyan-400" />
-                                    {bundle.roi}
-                                </div>
-                            )}
-
-                            <div className="space-y-4 mb-8 flex-grow">
-                                {bundle.features.map((feature, fIdx) => (
-                                    <div key={fIdx} className="flex items-start">
-                                        <Check size={20} className="text-cyan-500 mr-3 flex-shrink-0 mt-0.5" />
-                                        <span className="text-gray-300">{feature}</span>
-                                    </div>
-                                ))}
-                            </div>
-
-                            <StripeCheckoutButton
-                                productId={bundle.id}
-                                productType="bundle"
-                                buttonText={bundle.cta}
-                                className="w-full py-4 text-lg"
-                                variant={bundle.tag === "MOST POPULAR" ? 'primary' : 'secondary'}
-                            />
-
-                            {bundle.idealFor && (
-                                <p className="text-center text-sm text-gray-500 mt-4">
-                                    Ideal for: {bundle.idealFor}
-                                </p>
-                            )}
-                        </div>
+                            product={bundle}
+                            type="bundle"
+                        />
                     ))}
                 </div>
             </div>
@@ -106,10 +47,10 @@ const PricingPage: React.FC = () => {
 
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
                     {Object.values(ALL_AUTOMATIONS).map((automation) => (
-                        <AutomationPaymentCard
+                        <SimplePricingCard
                             key={automation.id}
-                            automation={automation}
-                            paypalEnabled={true}
+                            product={automation}
+                            type="automation"
                         />
                     ))}
                 </div>
