@@ -60,11 +60,37 @@ export default function PortalDashboard() {
     const loadDashboardData = async (userId: string) => {
         try {
             // Load profile
-            const { data: profileData } = await supabase
+            let { data: profileData, error: profileError } = await supabase
                 .from('profiles')
                 .select('*')
                 .eq('id', userId)
                 .single();
+
+            // Self-Healing: If profile is missing, create it on the fly
+            if (!profileData && (profileError?.code === 'PGRST116' || !profileError)) {
+                console.log('Profile missing, creating default profile...');
+                // Get user details to populate name
+                const { data: { user } } = await supabase.auth.getUser();
+                const fullName = user?.user_metadata?.full_name || 'Client';
+                const companyName = user?.user_metadata?.company_name || '';
+
+                const { data: newProfile, error: createError } = await supabase
+                    .from('profiles')
+                    .insert([{
+                        id: userId,
+                        email: user?.email,
+                        full_name: fullName,
+                        company_name: companyName
+                    }])
+                    .select()
+                    .single();
+
+                if (!createError && newProfile) {
+                    profileData = newProfile;
+                } else {
+                    console.error('Failed to auto-create profile:', createError);
+                }
+            }
 
             if (profileData) {
                 setProfile(profileData);
