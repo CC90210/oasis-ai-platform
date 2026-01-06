@@ -34,32 +34,83 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             return res.status(400).json({ error: 'Email and password are required' });
         }
 
-        // 1. Create User with Admin API (Auto-confirm email)
+        // 1. Try to Create User with Admin API (Auto-confirm email)
         const { data: user, error: createError } = await supabase.auth.admin.createUser({
             email,
             password,
-            email_confirm: true, // This bypasses the email verification requirement!
+            email_confirm: true,
             user_metadata: {
                 full_name: fullName,
                 company_name: companyName
             }
         });
 
+        let targetUser = user.user;
+
+        // Handle "User already registered" case
         if (createError) {
-            console.error('Signup Error:', createError);
-            return res.status(400).json({ error: createError.message });
+            // If user exists, we want to allow them to "signup" again (essentially login) 
+            // OR fix their hung "unverified" state.
+            console.log('User exists, attempting checks...', createError.message);
+
+            // 2. Try to Sign In
+            const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+                email,
+                password
+            });
+
+            if (signInData.session) {
+                // It worked! Just return the session.
+                return res.status(200).json({
+                    success: true,
+                    user: signInData.user,
+                    session: signInData.session,
+                    access_token: signInData.session.access_token,
+                    refresh_token: signInData.session.refresh_token,
+                    message: 'Account existed, logged in successfully.'
+                });
+            }
+
+            // 3. If Sign In failed because "Email not confirmed", fix it.
+            if (signInError && signInError.message.includes('Email not confirmed')) {
+                console.log('User unverified, forcing verification...');
+
+                // We need the User ID to update them. Since we have Service Key, we can search.
+                // Note: listUsers is not efficient for millions of users, but fine for portal.
+                const { data: userList } = await supabase.auth.admin.listUsers();
+                const existingUser = userList.users.find(u => u.email === email);
+
+                if (existingUser) {
+                    // Force confirm
+                    await supabase.auth.admin.updateUserById(existingUser.id, { email_confirm: true });
+
+                    // Retry Login
+                    const { data: retryData } = await supabase.auth.signInWithPassword({ email, password });
+
+                    if (retryData.session) {
+                        return res.status(200).json({
+                            success: true,
+                            user: retryData.user,
+                            session: retryData.session,
+                            access_token: retryData.session.access_token,
+                            refresh_token: retryData.session.refresh_token
+                        });
+                    }
+                }
+            }
+
+            // If password was wrong or other error
+            if (signInError) {
+                console.error('Login failed during signup reuse:', signInError);
+                return res.status(400).json({ error: 'Account already exists. Please use the correct password or a different email.' });
+            }
         }
 
-        if (!user.user) {
-            return res.status(500).json({ error: 'Failed to create user object' });
+        if (!targetUser) {
+            return res.status(500).json({ error: 'Failed to create or retrieve user object' });
         }
 
-        // 2. Insert into Profiles table (if you have one, usually handled by triggers, but safe to ensure)
-        // We'll trust the trigger or existing flows if you have them, but since we are admin, we can modify public.profiles if needed.
-        // For now, we assume the Auth creation is sufficient as triggers usually handle the rest.
-
-        // 3. Log the user in immediately to get a session token to return to client
-        // Since we just created them, we know the password.
+        // 4. Log the new user in (if we just created them)
         const { data: sessionData, error: sessionError } = await supabase.auth.signInWithPassword({
             email,
             password
@@ -70,13 +121,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             return res.status(200).json({
                 success: true,
                 message: 'Account created, but auto-login failed. Please sign in manually.',
-                user: user.user
+                user: targetUser
             });
         }
 
         return res.status(200).json({
             success: true,
-            user: user.user,
+            user: targetUser,
             session: sessionData.session, // Return the session so the client can auto-login
             access_token: sessionData.session?.access_token,
             refresh_token: sessionData.session?.refresh_token
