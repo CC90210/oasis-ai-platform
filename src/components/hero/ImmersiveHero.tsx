@@ -43,22 +43,26 @@ const ImmersiveHero: React.FC = () => {
     return (
         <section className="relative w-full min-h-[100vh] min-h-[100dvh] overflow-hidden flex items-center justify-center bg-[#050508]" id="hero" ref={heroRef}>
             {/* Background Elements */}
+            {/* Background Elements - Particles */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none z-[1]">
-                {/* Large cyan orb - top right */}
-                <div
-                    className="absolute -top-40 -right-40 w-96 h-96 bg-[#00D4FF]/20 rounded-full blur-3xl animate-pulse"
-                    style={{ animationDuration: '4s' }}
-                />
-                {/* Purple orb - bottom left */}
-                <div
-                    className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-500/15 rounded-full blur-3xl animate-pulse"
-                    style={{ animationDuration: '6s', animationDelay: '1s' }}
-                />
-                {/* Smaller cyan orb - center left */}
-                <div
-                    className="absolute top-1/3 left-1/4 w-64 h-64 bg-[#00D4FF]/10 rounded-full blur-2xl animate-pulse"
-                    style={{ animationDuration: '5s', animationDelay: '2s' }}
-                />
+                {[...Array(40)].map((_, i) => (
+                    <div
+                        key={i}
+                        className="absolute rounded-full bg-white/20 animate-pulse"
+                        style={{
+                            top: `${Math.random() * 100}%`,
+                            left: `${Math.random() * 100}%`,
+                            width: `${Math.random() * 3 + 1}px`,
+                            height: `${Math.random() * 3 + 1}px`,
+                            animationDuration: `${Math.random() * 3 + 2}s`,
+                            animationDelay: `${Math.random() * 2}s`,
+                            opacity: Math.random() * 0.5 + 0.1,
+                        }}
+                    />
+                ))}
+
+                {/* Subtle gradient glow instead of orbs */}
+                <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-[#00D4FF]/5 to-transparent opacity-30" />
             </div>
 
             {/* Grid Pattern Overlay */}

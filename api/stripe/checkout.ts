@@ -176,7 +176,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 price_data: {
                     currency: currency,
                     product_data: {
-                        name: `${productName}${tierName} - Setup Fee`,
+                        name: `${productName} (${currency.toUpperCase()})${tierName} - Setup Fee`,
                         description: promoCode
                             ? `One-time setup (${discountPercent}% discount with ${promoCode})`
                             : 'One-time setup, implementation, and onboarding',
@@ -191,12 +191,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 price_data: {
                     currency: currency,
                     product_data: {
-                        name: `${productName}${tierName} - Monthly`,
+                        name: `${productName} (${currency.toUpperCase()})${tierName} - Monthly`,
                         description: 'Ongoing maintenance, support, and optimization',
                     },
                     unit_amount: finalMonthlyFee * 100,
                     recurring: {
-                        interval: 'month',
+                        interval: 'month' as any, // Cast to any to fix TS error
                     },
                 },
                 quantity: quantity,
