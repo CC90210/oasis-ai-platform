@@ -45,10 +45,10 @@ const ImmersiveHero: React.FC = () => {
             {/* Background Elements */}
             {/* Background Elements - Particles */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none z-[1]">
-                {[...Array(40)].map((_, i) => (
+                {[...Array(100)].map((_, i) => (
                     <div
                         key={i}
-                        className="absolute rounded-full bg-white/20 animate-pulse"
+                        className="absolute rounded-full bg-white/40 animate-pulse"
                         style={{
                             top: `${Math.random() * 100}%`,
                             left: `${Math.random() * 100}%`,
@@ -56,7 +56,7 @@ const ImmersiveHero: React.FC = () => {
                             height: `${Math.random() * 3 + 1}px`,
                             animationDuration: `${Math.random() * 3 + 2}s`,
                             animationDelay: `${Math.random() * 2}s`,
-                            opacity: Math.random() * 0.5 + 0.1,
+                            opacity: Math.random() * 0.7 + 0.3,
                         }}
                     />
                 ))}
@@ -79,16 +79,6 @@ const ImmersiveHero: React.FC = () => {
 
             {/* Floating Tech Icons */}
             <FloatingIcons />
-
-            {/* Animated Particles/Circles */}
-            <div className="absolute inset-0 overflow-hidden pointer-events-none z-[3]">
-                <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-[#00D4FF] rounded-full animate-ping" style={{ animationDuration: '3s' }} />
-                <div className="absolute bottom-1/3 right-1/4 w-3 h-3 bg-purple-500 rounded-full animate-pulse" style={{ animationDuration: '4s' }} />
-
-                {/* Rotating Rings */}
-                <div className="absolute -left-20 top-1/2 -translate-y-1/2 w-96 h-96 border border-[#00D4FF]/10 rounded-full animate-[spin_20s_linear_infinite]" />
-                <div className="absolute -right-20 bottom-0 w-80 h-80 border border-purple-500/10 rounded-full animate-[spin_15s_linear_infinite_reverse]" />
-            </div>
 
             {/* Content */}
             <div className="relative z-[10] text-center max-w-[900px] px-5 flex flex-col items-center hero-content">
