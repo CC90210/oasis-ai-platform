@@ -194,13 +194,10 @@ export function AutomationPaymentCard({
                     </button>
                     {paypalEnabled && (
                         <button
-                            onClick={() => setPaymentMethod('paypal')}
-                            className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition ${paymentMethod === 'paypal'
-                                ? 'bg-cyan-500 text-black'
-                                : 'text-gray-400 hover:text-white'
-                                }`}
+                            disabled
+                            className="flex-1 py-2 px-4 rounded-md text-sm font-medium text-gray-500 cursor-not-allowed opacity-50 border border-gray-800"
                         >
-                            PayPal
+                            PayPal (Coming Soon)
                         </button>
                     )}
                 </div>

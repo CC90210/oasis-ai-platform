@@ -57,6 +57,15 @@ export function StripeCheckoutButton({
                 }),
             });
 
+            // Check if response is JSON
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                // Response is not JSON - likely an error page
+                const text = await response.text();
+                console.error('Non-JSON response:', text.substring(0, 200));
+                throw new Error('Server error. Please try again or contact support.');
+            }
+
             const data = await response.json();
 
             if (!response.ok) {
@@ -65,10 +74,12 @@ export function StripeCheckoutButton({
 
             if (data.url) {
                 window.location.href = data.url;
+            } else {
+                throw new Error('No checkout URL returned');
             }
         } catch (err: any) {
             console.error('Checkout error:', err);
-            setError(err.message || 'Something went wrong');
+            setError(err.message || 'Something went wrong. Please try again.');
         } finally {
             setLoading(false);
         }
