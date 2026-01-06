@@ -55,20 +55,34 @@ alter table public.automation_metrics enable row level security;
 
 -- 3. Create Permissive Policies (Fixes "Empty Table" issues for users)
 -- Profiles
+drop policy if exists "Users can view own profile" on public.profiles;
 create policy "Users can view own profile" on public.profiles for select using (auth.uid() = id);
+
+drop policy if exists "Users can update own profile" on public.profiles;
 create policy "Users can update own profile" on public.profiles for update using (auth.uid() = id);
+
+drop policy if exists "Users can insert own profile" on public.profiles;
 create policy "Users can insert own profile" on public.profiles for insert with check (auth.uid() = id);
 
 -- Automations
+drop policy if exists "Users can view own automations" on public.client_automations;
 create policy "Users can view own automations" on public.client_automations for select using (auth.uid() = user_id);
+
+drop policy if exists "Users can insert own automations" on public.client_automations;
 create policy "Users can insert own automations" on public.client_automations for insert with check (auth.uid() = user_id);
+
+drop policy if exists "Users can update own automations" on public.client_automations;
 create policy "Users can update own automations" on public.client_automations for update using (auth.uid() = user_id);
 
 -- Logs
+drop policy if exists "Users can view own logs" on public.automation_logs;
 create policy "Users can view own logs" on public.automation_logs for select using (auth.uid() = user_id);
+
+drop policy if exists "Users can insert own logs" on public.automation_logs;
 create policy "Users can insert own logs" on public.automation_logs for insert with check (auth.uid() = user_id);
 
 -- Metrics
+drop policy if exists "Users can view own metrics" on public.automation_metrics;
 create policy "Users can view own metrics" on public.automation_metrics for select using (auth.uid() = user_id);
 
 -- 4. Advanced Trigger: Auto-Create Profile ONLY (No Default Automation)
