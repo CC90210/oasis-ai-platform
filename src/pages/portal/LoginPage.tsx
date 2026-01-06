@@ -2,10 +2,11 @@ import { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
 
-// Use environment variables injected by Vite
-// Checks process.env first (via define) then standard import.meta.env
-const SUPABASE_URL = process.env.VITE_SUPABASE_URL || import.meta.env.VITE_SUPABASE_URL || '';
-const SUPABASE_ANON_KEY = process.env.VITE_SUPABASE_ANON_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+// Use global constants defined in vite.config.ts
+// @ts-ignore - Defined in vite.config.ts
+const SUPABASE_URL = __SUPABASE_URL__;
+// @ts-ignore - Defined in vite.config.ts
+const SUPABASE_ANON_KEY = __SUPABASE_ANON_KEY__;
 
 export default function LoginPage() {
     const [searchParams] = useSearchParams();
