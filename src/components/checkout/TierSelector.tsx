@@ -75,6 +75,7 @@ export function TierSelector({
                                         </div>
                                     )}
                                 </div>
+                            </div>
                         </button>
                     );
                 })}
