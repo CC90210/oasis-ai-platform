@@ -13,16 +13,9 @@ export default defineConfig(({ mode }) => {
     plugins: [react()],
     define: {
       'window.PAYPAL_CLIENT_ID': JSON.stringify(env.PAYPAL_CLIENT_ID),
-      // Robustly define keys - checking both loadEnv result AND direct process.env
-      // CRITICAL: Ensure we get a valid URL string, not undefined
-      '__SUPABASE_URL__': JSON.stringify(
-        process.env.NEXT_PUBLIC_SUPABASE_URL ||
-        env.NEXT_PUBLIC_SUPABASE_URL ||
-        process.env.VITE_SUPABASE_URL ||
-        env.VITE_SUPABASE_URL ||
-        'https://skgrbweyscysyetubemg.supabase.co' // Fallback to hardcoded if all else fails
-      ),
-      '__SUPABASE_ANON_KEY__': JSON.stringify(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || env.VITE_SUPABASE_ANON_KEY),
+      // GUARANTEED CONNECTIVITY: Hardcoded correct values provided by user
+      '__SUPABASE_URL__': JSON.stringify('https://skgrbweyscysyetubemg.supabase.co'),
+      '__SUPABASE_ANON_KEY__': JSON.stringify('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNrZ3Jid2V5c2N5c3lldHViZW1nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc2NjY2NzQsImV4cCI6MjA4MzI0MjY3NH0.00kIbn4a4PwfIRzidwRWMigqHIcn_ssk_u1nN8_S2Pc'),
     },
     resolve: {
       alias: {
