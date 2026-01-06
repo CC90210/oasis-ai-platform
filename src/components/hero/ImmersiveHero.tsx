@@ -1,12 +1,81 @@
 import React, { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import CinematicDNA from '../CinematicDNA';
+import { Cpu, Zap, Bot, Workflow, MessageSquare, Mail, Calendar, Phone } from 'lucide-react';
+
+// Floating icons component
+const FloatingIcons = () => {
+    const icons = [
+        { Icon: Cpu, top: '15%', left: '10%', delay: '0s', size: 'w-8 h-8' },
+        { Icon: Zap, top: '25%', right: '15%', delay: '1s', size: 'w-6 h-6' },
+        { Icon: Bot, top: '60%', left: '8%', delay: '2s', size: 'w-7 h-7' },
+        { Icon: Workflow, top: '70%', right: '12%', delay: '0.5s', size: 'w-8 h-8' },
+        { Icon: MessageSquare, top: '40%', left: '5%', delay: '1.5s', size: 'w-5 h-5' },
+        { Icon: Mail, top: '20%', right: '8%', delay: '2.5s', size: 'w-6 h-6' },
+        { Icon: Calendar, top: '80%', left: '15%', delay: '3s', size: 'w-5 h-5' },
+        { Icon: Phone, top: '50%', right: '5%', delay: '1s', size: 'w-6 h-6' },
+    ];
+
+    return (
+        <div className="absolute inset-0 overflow-hidden pointer-events-none z-[5]">
+            {icons.map((item, i) => (
+                <div
+                    key={i}
+                    className="absolute animate-float opacity-20"
+                    style={{
+                        top: item.top,
+                        left: item.left,
+                        right: item.right,
+                        animationDelay: item.delay,
+                        animationDuration: '6s',
+                    }}
+                >
+                    <item.Icon className={`${item.size} text-[#00D4FF]`} />
+                </div>
+            ))}
+        </div>
+    );
+};
 
 const ImmersiveHero: React.FC = () => {
     const heroRef = useRef<HTMLElement>(null);
 
     return (
         <section className="relative w-full min-h-[100vh] min-h-[100dvh] overflow-hidden flex items-center justify-center bg-[#050508]" id="hero" ref={heroRef}>
+            {/* Background Elements */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none z-[1]">
+                {/* Large cyan orb - top right */}
+                <div
+                    className="absolute -top-40 -right-40 w-96 h-96 bg-[#00D4FF]/20 rounded-full blur-3xl animate-pulse"
+                    style={{ animationDuration: '4s' }}
+                />
+                {/* Purple orb - bottom left */}
+                <div
+                    className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-500/15 rounded-full blur-3xl animate-pulse"
+                    style={{ animationDuration: '6s', animationDelay: '1s' }}
+                />
+                {/* Smaller cyan orb - center left */}
+                <div
+                    className="absolute top-1/3 left-1/4 w-64 h-64 bg-[#00D4FF]/10 rounded-full blur-2xl animate-pulse"
+                    style={{ animationDuration: '5s', animationDelay: '2s' }}
+                />
+            </div>
+
+            {/* Grid Pattern Overlay */}
+            <div
+                className="absolute inset-0 opacity-5 pointer-events-none z-[2]"
+                style={{
+                    backgroundImage: `
+                    linear-gradient(rgba(0, 212, 255, 0.1) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(0, 212, 255, 0.1) 1px, transparent 1px)
+                    `,
+                    backgroundSize: '50px 50px',
+                }}
+            />
+
+            {/* Floating Tech Icons */}
+            <FloatingIcons />
+
             {/* Cinematic DNA - small segments that drift, connect, split */}
             <CinematicDNA />
 
@@ -49,6 +118,24 @@ const ImmersiveHero: React.FC = () => {
                         </svg>
                         <span>Book Demo</span>
                     </Link>
+                </div>
+
+                {/* Stats Counter (Social Proof) */}
+                <div className="flex items-center justify-center gap-8 mt-12 pt-8 border-t border-gray-800/50 w-full max-w-2xl animate-fade-in-up" style={{ animationDelay: '0.5s' }}>
+                    <div className="text-center">
+                        <div className="text-3xl font-bold text-[#00D4FF]">500+</div>
+                        <div className="text-sm text-gray-500">Automations Deployed</div>
+                    </div>
+                    <div className="w-px h-12 bg-gray-800" />
+                    <div className="text-center">
+                        <div className="text-3xl font-bold text-[#00D4FF]">50K+</div>
+                        <div className="text-sm text-gray-500">Hours Saved</div>
+                    </div>
+                    <div className="w-px h-12 bg-gray-800" />
+                    <div className="text-center">
+                        <div className="text-3xl font-bold text-[#00D4FF]">99.9%</div>
+                        <div className="text-sm text-gray-500">Uptime</div>
+                    </div>
                 </div>
 
                 {/* Scroll Indicator */}
