@@ -19,13 +19,18 @@ export default function PortalLoginPage() {
         setError(null);
 
         try {
+            console.log('Attempting login for:', email);
+
             const { data, error: authError } = await supabase.auth.signInWithPassword({
-                email: email.trim(),
+                email: email.trim().toLowerCase(),
                 password: password,
             });
 
+            console.log('Login response:', { data, authError });
+
             if (authError) {
-                console.error('Auth error:', authError);
+                console.error('Login error:', authError);
+
                 if (authError.message.includes('Invalid login credentials')) {
                     setError('Invalid email or password. Please try again.');
                 } else if (authError.message.includes('Email not confirmed')) {
@@ -33,10 +38,13 @@ export default function PortalLoginPage() {
                 } else {
                     setError(authError.message);
                 }
+                setLoading(false);
                 return;
             }
 
             if (data.user) {
+                console.log('Login successful:', data.user.id);
+
                 // Update last login
                 await supabase
                     .from('profiles')
@@ -44,11 +52,11 @@ export default function PortalLoginPage() {
                     .eq('id', data.user.id);
 
                 // Redirect to dashboard
-                navigate('/portal/dashboard');
+                window.location.href = '/portal/dashboard';
             }
         } catch (err: any) {
-            console.error('Login error:', err);
-            setError('An unexpected error occurred. Please try again.');
+            console.error('Login catch error:', err);
+            setError('Connection error. Please check your internet and try again.');
         } finally {
             setLoading(false);
         }

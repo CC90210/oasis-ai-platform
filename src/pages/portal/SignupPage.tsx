@@ -34,16 +34,18 @@ export default function PortalSignupPage() {
         }
 
         // Validate password strength
-        if (formData.password.length < 8) {
-            setError('Password must be at least 8 characters');
+        if (formData.password.length < 6) {
+            setError('Password must be at least 6 characters');
             setLoading(false);
             return;
         }
 
         try {
+            console.log('Attempting signup for:', formData.email);
+
             // Create auth user
             const { data, error: authError } = await supabase.auth.signUp({
-                email: formData.email.trim(),
+                email: formData.email.trim().toLowerCase(),
                 password: formData.password,
                 options: {
                     data: {
@@ -53,19 +55,29 @@ export default function PortalSignupPage() {
                 },
             });
 
+            console.log('Signup response:', { data, authError });
+
             if (authError) {
-                console.error('Signup error:', authError);
+                console.error('Auth error:', authError);
+
                 if (authError.message.includes('already registered')) {
                     setError('This email is already registered. Please sign in instead.');
+                } else if (authError.message.includes('valid email')) {
+                    setError('Please enter a valid email address.');
+                } else if (authError.message.includes('password')) {
+                    setError('Password must be at least 6 characters.');
                 } else {
                     setError(authError.message);
                 }
+                setLoading(false);
                 return;
             }
 
             if (data.user) {
+                console.log('User created:', data.user.id);
+
                 // Update profile with additional info
-                await supabase
+                const { error: profileError } = await supabase
                     .from('profiles')
                     .update({
                         full_name: formData.fullName,
@@ -73,16 +85,21 @@ export default function PortalSignupPage() {
                     })
                     .eq('id', data.user.id);
 
+                if (profileError) {
+                    console.error('Profile update error:', profileError);
+                    // Don't fail signup for this
+                }
+
                 setSuccess(true);
 
-                // If email confirmation is disabled, redirect to dashboard
-                if (data.session) {
-                    setTimeout(() => navigate('/portal/dashboard'), 2000);
-                }
+                // Redirect to dashboard after short delay
+                setTimeout(() => {
+                    window.location.href = '/portal/dashboard';
+                }, 2000);
             }
         } catch (err: any) {
-            console.error('Signup error:', err);
-            setError('An unexpected error occurred. Please try again.');
+            console.error('Signup catch error:', err);
+            setError('Connection error. Please check your internet and try again.');
         } finally {
             setLoading(false);
         }
