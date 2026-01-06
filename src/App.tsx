@@ -47,7 +47,7 @@ function App() {
     return (
         <ErrorBoundary>
             <StarField paused={showSplash} />
-            <CinematicDNA />
+            <StarField paused={showSplash} />
             {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
 
             {/* Main content is always rendered behind the splash screen for seamless transition */}

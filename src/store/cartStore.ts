@@ -7,13 +7,14 @@ export type ProductType = keyof typeof agents | keyof typeof bundles;
 interface CartItem {
     id: ProductType;
     type: 'agent' | 'bundle';
+    tier?: 'starter' | 'professional' | 'business';
     quantity: number;
 }
 
 interface CartStore {
     items: CartItem[];
     isOpen: boolean;
-    addItem: (id: ProductType, type: 'agent' | 'bundle') => void;
+    addItem: (id: ProductType, type: 'agent' | 'bundle', tier?: 'starter' | 'professional' | 'business') => void;
     removeItem: (id: ProductType) => void;
     updateQuantity: (id: ProductType, delta: number) => void;
     clearCart: () => void;
@@ -29,17 +30,17 @@ export const useCart = create<CartStore>()(
             items: [],
             isOpen: false,
 
-            addItem: (id, type) => set((state) => {
-                const existingItem = state.items.find(item => item.id === id);
+            addItem: (id, type, tier) => set((state) => {
+                const existingItem = state.items.find(item => item.id === id && item.tier === tier);
                 if (existingItem) {
                     return {
                         items: state.items.map(item =>
-                            item.id === id ? { ...item, quantity: item.quantity + 1 } : item
+                            (item.id === id && item.tier === tier) ? { ...item, quantity: item.quantity + 1 } : item
                         ),
                         isOpen: true
                     };
                 }
-                return { items: [...state.items, { id, type, quantity: 1 }], isOpen: true };
+                return { items: [...state.items, { id, type, tier, quantity: 1 }], isOpen: true };
             }),
 
             removeItem: (id) => set((state) => ({

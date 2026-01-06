@@ -15,12 +15,14 @@ interface StripeCheckoutButtonProps {
     customerPhone?: string;
     discountPercent?: number;
     promoCode?: string;
+    items?: Array<{ productId: string; productType: string; tier?: string, quantity?: number }>;
 }
 
 export function StripeCheckoutButton({
     productId,
     productType,
     tier,
+    items,
     currency = 'usd',
     buttonText = 'Get Started',
     className = '',
@@ -44,9 +46,10 @@ export function StripeCheckoutButton({
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    productId,
-                    productType,
-                    tier,
+                    productId, // Legacy: for single item
+                    productType, // Legacy
+                    tier, // Legacy
+                    items: items || [{ productId, productType, tier, quantity: 1 }], // Unified Items Array
                     currency,
                     customerName,
                     businessName,

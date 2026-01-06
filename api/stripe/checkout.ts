@@ -41,6 +41,8 @@ const PRODUCT_NAMES: Record<string, string> = {
     'integration-suite': 'Integration Suite',
 };
 
+const EXCHANGE_RATE_CAD_TO_USD = 0.71;
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Set CORS headers
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -96,112 +98,130 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     try {
         // Parse request body
+        // Parse request body
         const {
-            productId,
-            productType = 'automation',
-            tier = 'professional',
+            items = [], // Array of { productId, productType, tier, quantity }
             currency = 'usd',
             discountPercent = 0,
             promoCode,
+            // Legacy fallbacks
+            productId,
+            productType,
+            tier,
         } = req.body || {};
 
-        // Validate product ID
-        if (!productId) {
-            return res.status(400).json({ error: 'Product ID is required' });
+        // Normalize items array
+        let cartItems = items;
+        if (cartItems.length === 0 && productId) {
+            cartItems = [{ productId, productType, tier, quantity: 1 }];
         }
 
-        const pricing = PRICING[productId];
-        if (!pricing) {
-            return res.status(400).json({ error: `Invalid product: ${productId}` });
+        if (cartItems.length === 0) {
+            return res.status(400).json({ error: 'No products specified' });
         }
 
-        // Get product name
-        const productName = PRODUCT_NAMES[productId] || productId;
+        const stripeLineItems = [];
 
-        // Calculate prices
-        let setupFee: number;
-        let monthlyFee: number;
-        let tierName = '';
+        for (const item of cartItems) {
+            const { productId, productType = 'automation', tier = 'professional', quantity = 1 } = item;
 
-        if (productType === 'bundle' || pricing.monthlyFee !== undefined) {
-            // Bundle pricing
-            setupFee = pricing.setupFee;
-            monthlyFee = pricing.monthlyFee!;
-        } else {
-            // Automation with tiers
-            if (!pricing.tiers || !pricing.tiers[tier]) {
-                return res.status(400).json({ error: `Invalid tier: ${tier}` });
+            const pricing = PRICING[productId];
+            if (!pricing) {
+                // Skip invalid items or return error?
+                // Returning error is safer to prevent partial orders
+                return res.status(400).json({ error: `Invalid product: ${productId}` });
             }
-            setupFee = pricing.setupFee;
-            monthlyFee = pricing.tiers[tier];
-            tierName = ` - ${tier.charAt(0).toUpperCase() + tier.slice(1)}`;
-        }
 
-        // Apply discount if valid
-        let finalSetupFee = setupFee;
-        let finalMonthlyFee = monthlyFee;
+            // Get product name
+            const productName = PRODUCT_NAMES[productId] || productId;
 
-        if (discountPercent > 0 && discountPercent <= 50) {
-            const multiplier = 1 - (discountPercent / 100);
-            finalSetupFee = Math.round(setupFee * multiplier);
-            finalMonthlyFee = Math.round(monthlyFee * multiplier);
+            // Calculate prices
+            let setupFee: number;
+            let monthlyFee: number;
+            let tierName = '';
+
+            if (productType === 'bundle' || pricing.monthlyFee !== undefined) {
+                // Bundle pricing
+                setupFee = pricing.setupFee;
+                monthlyFee = pricing.monthlyFee!;
+            } else {
+                // Automation with tiers
+                if (!pricing.tiers || !pricing.tiers[tier]) {
+                    return res.status(400).json({ error: `Invalid tier: ${tier} for product ${productId}` });
+                }
+                setupFee = pricing.setupFee;
+                monthlyFee = pricing.tiers[tier];
+                tierName = ` - ${tier.charAt(0).toUpperCase() + tier.slice(1)}`;
+            }
+
+            // Apply discount if valid
+            let finalSetupFee = setupFee;
+            let finalMonthlyFee = monthlyFee;
+
+            if (discountPercent > 0 && discountPercent <= 50) {
+                const multiplier = 1 - (discountPercent / 100);
+                finalSetupFee = Math.round(setupFee * multiplier);
+                finalMonthlyFee = Math.round(monthlyFee * multiplier);
+            }
+
+            // Apply Currency Conversion if USD
+            // Base prices are in CAD
+            if (currency === 'usd') {
+                finalSetupFee = Math.round(finalSetupFee * EXCHANGE_RATE_CAD_TO_USD);
+                finalMonthlyFee = Math.round(finalMonthlyFee * EXCHANGE_RATE_CAD_TO_USD);
+            }
+
+            // Add Setup Fee Line Item (One-time)
+            stripeLineItems.push({
+                price_data: {
+                    currency: currency,
+                    product_data: {
+                        name: `${productName}${tierName} - Setup Fee`,
+                        description: promoCode
+                            ? `One-time setup (${discountPercent}% discount with ${promoCode})`
+                            : 'One-time setup, implementation, and onboarding',
+                    },
+                    unit_amount: finalSetupFee * 100, // Convert to cents
+                },
+                quantity: quantity,
+            });
+
+            // Add Monthly Subscription Line Item (Recurring)
+            stripeLineItems.push({
+                price_data: {
+                    currency: currency,
+                    product_data: {
+                        name: `${productName}${tierName} - Monthly`,
+                        description: 'Ongoing maintenance, support, and optimization',
+                    },
+                    unit_amount: finalMonthlyFee * 100,
+                    recurring: {
+                        interval: 'month',
+                    },
+                },
+                quantity: quantity,
+            });
         }
 
         // Create Stripe Checkout Session
         const session = await stripe.checkout.sessions.create({
             mode: 'subscription',
             payment_method_types: ['card'],
-            line_items: [
-                // One-time setup fee
-                {
-                    price_data: {
-                        currency: currency,
-                        product_data: {
-                            name: `${productName}${tierName} - Setup Fee`,
-                            description: promoCode
-                                ? `One-time setup (${discountPercent}% discount with ${promoCode})`
-                                : 'One-time setup, implementation, and onboarding',
-                        },
-                        unit_amount: finalSetupFee * 100, // Convert to cents
-                    },
-                    quantity: 1,
-                },
-                // Monthly subscription
-                {
-                    price_data: {
-                        currency: currency,
-                        product_data: {
-                            name: `${productName}${tierName} - Monthly`,
-                            description: 'Ongoing maintenance, support, and optimization',
-                        },
-                        unit_amount: finalMonthlyFee * 100,
-                        recurring: {
-                            interval: 'month',
-                        },
-                    },
-                    quantity: 1,
-                },
-            ],
+            line_items: stripeLineItems,
             metadata: {
-                productId,
-                productType,
-                tier: tier || '',
-                productName,
+                type: 'cart_checkout',
+                itemCount: cartItems.length.toString(),
                 promoCode: promoCode || '',
-                discountPercent: discountPercent.toString(),
-                originalSetupFee: setupFee.toString(),
-                originalMonthlyFee: monthlyFee.toString(),
+                currency,
             },
             subscription_data: {
                 metadata: {
-                    productId,
-                    productType,
-                    tier: tier || '',
-                    productName,
+                    type: 'cart_subscription',
+                    promoCode: promoCode || '',
                 },
             },
             success_url: `${process.env.NEXT_PUBLIC_APP_URL || 'https://oasisai.work'}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-            cancel_url: `${process.env.NEXT_PUBLIC_APP_URL || 'https://oasisai.work'}/pricing`,
+            cancel_url: `${process.env.NEXT_PUBLIC_APP_URL || 'https://oasisai.work'}/checkout`,
             allow_promotion_codes: true,
             billing_address_collection: 'required',
             phone_number_collection: {

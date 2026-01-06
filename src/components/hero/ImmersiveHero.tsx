@@ -76,8 +76,15 @@ const ImmersiveHero: React.FC = () => {
             {/* Floating Tech Icons */}
             <FloatingIcons />
 
-            {/* Cinematic DNA - small segments that drift, connect, split */}
-            <CinematicDNA />
+            {/* Animated Particles/Circles */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none z-[3]">
+                <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-[#00D4FF] rounded-full animate-ping" style={{ animationDuration: '3s' }} />
+                <div className="absolute bottom-1/3 right-1/4 w-3 h-3 bg-purple-500 rounded-full animate-pulse" style={{ animationDuration: '4s' }} />
+
+                {/* Rotating Rings */}
+                <div className="absolute -left-20 top-1/2 -translate-y-1/2 w-96 h-96 border border-[#00D4FF]/10 rounded-full animate-[spin_20s_linear_infinite]" />
+                <div className="absolute -right-20 bottom-0 w-80 h-80 border border-purple-500/10 rounded-full animate-[spin_15s_linear_infinite_reverse]" />
+            </div>
 
             {/* Content */}
             <div className="relative z-[10] text-center max-w-[900px] px-5 flex flex-col items-center hero-content">

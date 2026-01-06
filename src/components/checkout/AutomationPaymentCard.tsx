@@ -4,6 +4,8 @@ import { TierSelector } from './TierSelector';
 import { CurrencySelector } from './CurrencySelector';
 import { AutomationProduct } from '@/lib/pricing';
 import * as LucideIcons from 'lucide-react';
+import { useCart } from '@/store/cartStore';
+import { ShoppingCart } from 'lucide-react';
 
 interface AutomationPaymentCardProps {
     automation: AutomationProduct;
@@ -16,6 +18,10 @@ export function AutomationPaymentCard({
 }: AutomationPaymentCardProps) {
     const [tier, setTier] = useState<'starter' | 'professional' | 'business'>('professional');
     const [currency, setCurrency] = useState<'usd' | 'cad'>('usd');
+    const { addItem, openCart } = useCart();
+
+    // Exchange Rate
+    const EXCHANGE_RATE_CAD_TO_USD = 0.71;
 
     // Promo Code State
     const [showPromoCode, setShowPromoCode] = useState(false);
@@ -28,12 +34,24 @@ export function AutomationPaymentCard({
     const currencySymbol = currency === 'usd' ? '$' : 'CA$';
 
     // Price Calculation
-    const selectedPrice = automation.tiers[tier].price;
-    const setupFee = automation.setupFee;
+    let selectedPrice = automation.tiers[tier].price;
+    let setupFee = automation.setupFee;
+
+    if (currency === 'usd') {
+        selectedPrice = Math.round(selectedPrice * EXCHANGE_RATE_CAD_TO_USD);
+        setupFee = Math.round(setupFee * EXCHANGE_RATE_CAD_TO_USD);
+    }
 
     const discountedSetup = setupFee * (1 - discountPercent / 100);
     const discountedMonthly = selectedPrice * (1 - discountPercent / 100);
     const totalDueToday = discountedSetup + discountedMonthly;
+
+    const handleAddToCart = () => {
+        // ID mapping must be correct in data/products.ts
+        // 'agent' type for cart
+        addItem(automation.id as any, 'agent', tier);
+        openCart();
+    };
 
     const applyPromoCode = () => {
         const validCodes: Record<string, number> = {
@@ -179,17 +197,27 @@ export function AutomationPaymentCard({
                     </div>
                 </div>
 
-                {/* Payment Method - Stripe Only */}
-                <StripeCheckoutButton
-                    productId={automation.id}
-                    productType="automation"
-                    tier={tier}
-                    currency={currency}
-                    buttonText={`Pay ${currencySymbol}${totalDueToday.toLocaleString(undefined, { maximumFractionDigits: 0 })}`}
-                    variant="primary"
-                    discountPercent={discountPercent}
-                    promoCode={promoApplied ? promoCode : undefined}
-                />
+                <div className="flex flex-col gap-3">
+                    {/* Payment Method - Stripe Only */}
+                    <StripeCheckoutButton
+                        productId={automation.id}
+                        productType="automation"
+                        tier={tier}
+                        currency={currency}
+                        buttonText={`Pay ${currencySymbol}${totalDueToday.toLocaleString(undefined, { maximumFractionDigits: 0 })}`}
+                        variant="primary"
+                        discountPercent={discountPercent}
+                        promoCode={promoApplied ? promoCode : undefined}
+                    />
+
+                    <button
+                        onClick={handleAddToCart}
+                        className="w-full py-3 px-6 rounded-lg font-semibold transition flex items-center justify-center gap-2 bg-gray-800 hover:bg-gray-700 text-white border border-gray-700"
+                    >
+                        <ShoppingCart className="w-4 h-4" />
+                        Add to Cart
+                    </button>
+                </div>
 
                 {/* Trust Badges - Enhanced */}
                 <div className="flex items-center justify-center gap-6 pt-4 border-t border-gray-800">
