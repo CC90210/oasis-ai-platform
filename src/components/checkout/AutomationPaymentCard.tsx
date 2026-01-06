@@ -18,10 +18,42 @@ export function AutomationPaymentCard({
     const [currency, setCurrency] = useState<'usd' | 'cad'>('usd');
     const [paymentMethod, setPaymentMethod] = useState<'stripe' | 'paypal'>('stripe');
 
+    // Promo Code State
+    const [showPromoCode, setShowPromoCode] = useState(false);
+    const [promoCode, setPromoCode] = useState('');
+    const [promoApplied, setPromoApplied] = useState(false);
+    const [promoError, setPromoError] = useState('');
+    const [discountPercent, setDiscountPercent] = useState(0);
+
     const Icon = (LucideIcons as any)[automation.icon] || LucideIcons.Zap;
     const currencySymbol = currency === 'usd' ? '$' : 'CA$';
+
+    // Price Calculation
     const selectedPrice = automation.tiers[tier].price;
-    const totalDueToday = automation.setupFee + selectedPrice;
+    const setupFee = automation.setupFee;
+
+    const discountedSetup = setupFee * (1 - discountPercent / 100);
+    const discountedMonthly = selectedPrice * (1 - discountPercent / 100);
+    const totalDueToday = discountedSetup + discountedMonthly;
+
+    const applyPromoCode = () => {
+        const validCodes: Record<string, number> = {
+            'OASISAI15': 15,
+            'WELCOME10': 10,
+        };
+
+        const upperCode = promoCode.toUpperCase().trim();
+
+        if (validCodes[upperCode]) {
+            setPromoApplied(true);
+            setPromoError('');
+            setDiscountPercent(validCodes[upperCode]);
+        } else {
+            setPromoError('Invalid promo code');
+            setPromoApplied(false);
+            setDiscountPercent(0);
+        }
+    };
 
     return (
         <div className="bg-gray-900/80 backdrop-blur-sm rounded-2xl border border-gray-800 overflow-hidden">
@@ -43,6 +75,15 @@ export function AutomationPaymentCard({
                 </div>
             </div>
 
+
+            {/* Urgency Banner */}
+            <div className="bg-orange-500/10 border-b border-orange-500/20 px-6 py-2">
+                <p className="text-orange-400 text-xs font-medium flex items-center gap-2 justify-center">
+                    <LucideIcons.Clock className="w-3 h-3" />
+                    High demand: Only 3 spots left for implementation this week
+                </p>
+            </div>
+
             {/* Pricing */}
             <div className="p-6 space-y-6">
                 {/* Currency Toggle */}
@@ -56,25 +97,83 @@ export function AutomationPaymentCard({
                     currency={currency}
                 />
 
+                {/* Promo Code Section */}
+                <div className="mb-4">
+                    {!showPromoCode ? (
+                        <button
+                            onClick={() => setShowPromoCode(true)}
+                            className="text-cyan-400 text-xs hover:underline flex items-center gap-1"
+                        >
+                            <LucideIcons.Tag className="w-3 h-3" />
+                            Have a promo code?
+                        </button>
+                    ) : (
+                        <div className="space-y-2">
+                            <div className="flex gap-2">
+                                <input
+                                    type="text"
+                                    value={promoCode}
+                                    onChange={(e) => setPromoCode(e.target.value)}
+                                    placeholder="Enter code"
+                                    className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:border-cyan-500 focus:outline-none placeholder-gray-500"
+                                />
+                                <button
+                                    onClick={applyPromoCode}
+                                    className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition"
+                                >
+                                    Apply
+                                </button>
+                            </div>
+                            {promoApplied && (
+                                <p className="text-green-400 text-xs flex items-center gap-1">
+                                    <LucideIcons.Check className="w-3 h-3" />
+                                    {discountPercent}% discount applied!
+                                </p>
+                            )}
+                            {promoError && (
+                                <p className="text-red-400 text-xs">{promoError}</p>
+                            )}
+                        </div>
+                    )}
+                </div>
+
                 {/* Price Summary */}
                 <div className="bg-gray-800/50 rounded-lg p-4 space-y-2">
                     <div className="flex justify-between text-sm">
                         <span className="text-gray-400">One-time setup fee</span>
-                        <span className="text-white">{currencySymbol}{automation.setupFee.toLocaleString()}</span>
+                        <div className="text-right">
+                            {discountPercent > 0 && (
+                                <span className="text-gray-500 line-through mr-2 text-xs">{currencySymbol}{setupFee.toLocaleString()}</span>
+                            )}
+                            <span className="text-white">{currencySymbol}{discountedSetup.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                        </div>
                     </div>
                     <div className="flex justify-between text-sm">
                         <span className="text-gray-400">{automation.tiers[tier].name} plan (monthly)</span>
-                        <span className="text-white">{currencySymbol}{selectedPrice}/mo</span>
+                        <div className="text-right">
+                            {discountPercent > 0 && (
+                                <span className="text-gray-500 line-through mr-2 text-xs">{currencySymbol}{selectedPrice}</span>
+                            )}
+                            <span className="text-white">{currencySymbol}{discountedMonthly.toLocaleString(undefined, { maximumFractionDigits: 0 })}/mo</span>
+                        </div>
                     </div>
+
+                    {discountPercent > 0 && (
+                        <div className="flex justify-between text-xs text-green-400 pt-1">
+                            <span>Discount ({discountPercent}% off)</span>
+                            <span>-{currencySymbol}{((setupFee + selectedPrice) * discountPercent / 100).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                        </div>
+                    )}
+
                     <div className="border-t border-gray-700 pt-2 mt-2">
                         <div className="flex justify-between">
                             <span className="text-gray-300 font-medium">Due today</span>
                             <span className="text-cyan-400 font-bold text-lg">
-                                {currencySymbol}{totalDueToday.toLocaleString()}
+                                {currencySymbol}{totalDueToday.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                             </span>
                         </div>
                         <p className="text-xs text-gray-500 mt-1">
-                            Then {currencySymbol}{selectedPrice}/mo starting next month
+                            Then {currencySymbol}{discountedMonthly.toLocaleString(undefined, { maximumFractionDigits: 0 })}/mo starting next month
                         </p>
                     </div>
                 </div>
@@ -113,8 +212,10 @@ export function AutomationPaymentCard({
                         productType="automation"
                         tier={tier}
                         currency={currency}
-                        buttonText={`Pay ${currencySymbol}${totalDueToday.toLocaleString()}`}
+                        buttonText={`Pay ${currencySymbol}${totalDueToday.toLocaleString(undefined, { maximumFractionDigits: 0 })}`}
                         variant="primary"
+                        discountPercent={discountPercent}
+                        promoCode={promoApplied ? promoCode : undefined}
                     />
                 ) : (
                     <button
@@ -129,11 +230,20 @@ export function AutomationPaymentCard({
                     </button>
                 )}
 
-                {/* Trust Badges */}
-                <div className="flex items-center justify-center gap-4 pt-2 text-xs text-gray-500">
-                    <span>🔒 256-bit SSL</span>
-                    <span>✓ Secure checkout</span>
-                    <span>💳 Apple Pay ready</span>
+                {/* Trust Badges - Enhanced */}
+                <div className="flex items-center justify-center gap-6 pt-4 border-t border-gray-800">
+                    <div className="flex items-center gap-2 text-gray-400 text-xs">
+                        <LucideIcons.Shield className="w-3 h-3 text-green-400" />
+                        <span>256-bit SSL</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-gray-400 text-xs">
+                        <LucideIcons.CheckCircle className="w-3 h-3 text-green-400" />
+                        <span>Money-back guarantee</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-gray-400 text-xs">
+                        <LucideIcons.CreditCard className="w-3 h-3 text-green-400" />
+                        <span>Secure payment</span>
+                    </div>
                 </div>
 
                 {/* Features */}

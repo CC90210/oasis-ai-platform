@@ -40,8 +40,8 @@ export function TierSelector({
                             key={tierKey}
                             onClick={() => onTierChange(tierKey)}
                             className={`relative p-4 rounded-lg border-2 transition text-left cursor-pointer w-full ${isSelected
-                                    ? 'border-cyan-500 bg-cyan-500/10'
-                                    : 'border-gray-700 bg-gray-800/50 hover:border-gray-600'
+                                ? 'border-cyan-500 bg-cyan-500/10'
+                                : 'border-gray-700 bg-gray-800/50 hover:border-gray-600'
                                 }`}
                         >
                             {isRecommended && (
@@ -62,21 +62,19 @@ export function TierSelector({
                                         ))}
                                     </ul>
                                 </div>
-                                <div className="text-right">
-                                    <span className="text-2xl font-bold text-white">
-                                        {currencySymbol}{tier.price}
-                                    </span>
-                                    <span className="text-gray-400 text-sm">/mo</span>
-                                </div>
-                            </div>
-
-                            {isSelected && (
-                                <div className="absolute top-4 left-4">
-                                    <div className="w-5 h-5 bg-cyan-500 rounded-full flex items-center justify-center">
-                                        <Check className="w-3 h-3 text-black" />
+                                <div className="text-right flex flex-col items-end gap-2">
+                                    <div>
+                                        <span className="text-2xl font-bold text-white">
+                                            {currencySymbol}{tier.price}
+                                        </span>
+                                        <span className="text-gray-400 text-sm">/mo</span>
                                     </div>
+                                    {isSelected && (
+                                        <div className="w-6 h-6 bg-cyan-500 rounded-full flex items-center justify-center">
+                                            <Check className="w-4 h-4 text-black" />
+                                        </div>
+                                    )}
                                 </div>
-                            )}
                         </button>
                     );
                 })}

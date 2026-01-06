@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ShieldCheck, HelpCircle } from 'lucide-react';
+import { ShieldCheck, HelpCircle, Gift } from 'lucide-react';
 import { ALL_AUTOMATIONS, BUNDLES as BUNDLES_OBJ, BundleProduct } from '@/lib/pricing';
 import { SimplePricingCard } from '@/components/pricing/SimplePricingCard';
 import { COMMON_INCLUSIONS } from '@/data/pricingData';
@@ -22,6 +22,34 @@ const PricingPage: React.FC = () => {
                 <p className="text-xl text-gray-400 max-w-2xl mx-auto">
                     Every automation includes monthly ROI documentation and personalized setup consultation.
                 </p>
+            </div>
+
+            {/* First-Time User Banner */}
+            <div className="container mx-auto px-4 mb-16">
+                <div className="max-w-4xl mx-auto bg-gradient-to-r from-cyan-500/20 to-purple-500/20 border border-cyan-500/30 rounded-xl p-4 md:p-6 shadow-lg shadow-cyan-500/10">
+                    <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+                        <div className="flex items-center gap-4">
+                            <div className="bg-cyan-500/20 p-3 rounded-full">
+                                <Gift className="w-8 h-8 text-cyan-400" />
+                            </div>
+                            <div>
+                                <p className="text-white font-bold text-lg">First-time customers update</p>
+                                <p className="text-gray-300">
+                                    Use code <span className="text-cyan-400 font-mono font-bold mx-1">OASISAI15</span> for <span className="text-white font-semibold">15% OFF</span> your first automation!
+                                </p>
+                            </div>
+                        </div>
+                        <button
+                            onClick={() => {
+                                navigator.clipboard.writeText('OASISAI15');
+                                // Could add a toast here
+                            }}
+                            className="bg-cyan-500 hover:bg-cyan-400 text-black px-6 py-2.5 rounded-lg text-sm font-bold transition shadow-lg shadow-cyan-500/20 whitespace-nowrap w-full md:w-auto"
+                        >
+                            Copy Code
+                        </button>
+                    </div>
+                </div>
             </div>
 
             {/* 2. Bundle Packages */}

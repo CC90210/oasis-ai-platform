@@ -13,6 +13,8 @@ interface StripeCheckoutButtonProps {
     businessName?: string;
     customerEmail?: string;
     customerPhone?: string;
+    discountPercent?: number;
+    promoCode?: string;
 }
 
 export function StripeCheckoutButton({
@@ -27,6 +29,8 @@ export function StripeCheckoutButton({
     businessName,
     customerEmail,
     customerPhone,
+    discountPercent,
+    promoCode,
 }: StripeCheckoutButtonProps) {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -48,6 +52,8 @@ export function StripeCheckoutButton({
                     businessName,
                     customerEmail,
                     customerPhone,
+                    discountPercent,
+                    promoCode,
                 }),
             });
 

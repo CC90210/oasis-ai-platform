@@ -36,6 +36,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             customerName,
             customerPhone,
             businessName,
+            promoCode,
         } = req.body;
 
         // Validate inputs
@@ -77,9 +78,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             monthlyFee = tierData.price;
         }
 
-        // Convert to cents
-        const setupFeeCents = Math.round(setupFee * 100);
-        const monthlyFeeCents = Math.round(monthlyFee * 100);
+        // Check for promo code
+        const validCodes: Record<string, number> = {
+            'OASISAI15': 15,
+            'WELCOME10': 10,
+        };
+
+        let serverDiscountPercent = 0;
+        if (promoCode && validCodes[promoCode.toUpperCase()]) {
+            serverDiscountPercent = validCodes[promoCode.toUpperCase()];
+        }
+
+        // Apply discount
+        const discountMultiplier = 1 - serverDiscountPercent / 100;
+
+        // Convert to cents and apply discount
+        const setupFeeCents = Math.round((setupFee * discountMultiplier) * 100);
+        const monthlyFeeCents = Math.round((monthlyFee * discountMultiplier) * 100);
 
         const successUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://oasisai.work'}/checkout/success?session_id={CHECKOUT_SESSION_ID}`;
         const cancelUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://oasisai.work'}/pricing`;
@@ -95,7 +110,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                         currency: currency,
                         product_data: {
                             name: `${productName} - Setup Fee`,
-                            description: 'One-time setup, implementation, and onboarding',
+                            description: promoCode
+                                ? `One-time setup (${serverDiscountPercent}% discount applied)`
+                                : 'One-time setup, implementation, and onboarding',
                         },
                         unit_amount: setupFeeCents,
                     },
@@ -127,6 +144,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 customerPhone: customerPhone || '',
                 businessName: businessName || '',
                 currency,
+                promoCode: promoCode || '',
+                discountPercent: serverDiscountPercent.toString(),
             },
             subscription_data: {
                 metadata: {
