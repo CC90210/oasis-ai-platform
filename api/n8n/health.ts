@@ -1,0 +1,11 @@
+import type { VercelRequest, VercelResponse } from '@vercel/node';
+
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+
+    return res.status(200).json({
+        status: 'ok',
+        service: 'OASIS AI n8n Integration',
+        timestamp: new Date().toISOString()
+    });
+}
