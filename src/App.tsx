@@ -32,6 +32,7 @@ const PortalLoginPage = lazy(() => import('./pages/portal/LoginPage'));
 const PortalSignupPage = lazy(() => import('./pages/portal/SignupPage'));
 const PortalDashboard = lazy(() => import('./pages/portal/DashboardPage'));
 const TestConnection = lazy(() => import('./pages/portal/TestConnection'));
+const ConnectionDebugger = lazy(() => import('./pages/portal/ConnectionDebugger'));
 
 const PrivacyPage = lazy(() => import('./pages/legal/PrivacyPage'));
 const TermsPage = lazy(() => import('./pages/legal/TermsPage'));
@@ -89,6 +90,7 @@ function App() {
                         <Route path="/portal/signup" element={<PortalSignupPage />} />
                         <Route path="/portal/dashboard" element={<PortalDashboard />} />
                         <Route path="/portal/test" element={<TestConnection />} />
+                        <Route path="/portal/debug" element={<ConnectionDebugger />} />
 
                         {/* Convenience Redirects */}
                         <Route path="/login" element={<Navigate to="/portal/login" replace />} />
