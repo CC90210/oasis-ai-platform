@@ -3,14 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import {
     LayoutDashboard, Bot, FileText, CreditCard, HelpCircle, Settings, LogOut,
-    TrendingUp, Clock, CheckCircle, Activity, Loader2
+    TrendingUp, Clock, CheckCircle, Activity, Loader2, AlertCircle, RefreshCw
 } from 'lucide-react';
 
 interface Profile {
     id: string;
     email: string;
-    full_name: string;
-    company_name: string;
+    full_name: string | null;
+    company_name: string | null;
 }
 
 interface Automation {
@@ -19,116 +19,116 @@ interface Automation {
     display_name: string;
     tier: string;
     status: string;
-    last_run_at: string;
+    last_run_at: string | null;
     created_at: string;
 }
 
 interface LogEntry {
     id: string;
     event_name: string;
+    event_type: string;
     status: string;
     created_at: string;
+    metadata: any;
 }
 
-export default function PortalDashboard() {
+export default function DashboardPage() {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const [profile, setProfile] = useState<Profile | null>(null);
     const [automations, setAutomations] = useState<Automation[]>([]);
     const [recentLogs, setRecentLogs] = useState<LogEntry[]>([]);
     const [stats, setStats] = useState({
         totalExecutions: 0,
-        hoursThisMonth: 0,
-        successRate: 100,
+        successfulExecutions: 0,
+        hoursEstimated: 0,
+        successRate: 0,
     });
 
     useEffect(() => {
-        checkAuth();
+        checkAuthAndLoadData();
     }, []);
 
-    const checkAuth = async () => {
-        const { data: { user } } = await supabase.auth.getUser();
+    const checkAuthAndLoadData = async () => {
+        setLoading(true);
+        setError(null);
 
-        if (!user) {
-            navigate('/portal/login');
-            return;
-        }
-
-        await loadDashboardData(user.id);
-    };
-
-    const loadDashboardData = async (userId: string) => {
         try {
-            // Load profile
-            let { data: profileData, error: profileError } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('id', userId)
-                .single();
+            // Check if user is logged in
+            const { data: { user } } = await supabase.auth.getUser();
 
-            // Self-Healing: If profile is missing, create it on the fly
-            if (!profileData && (profileError?.code === 'PGRST116' || !profileError)) {
-                console.log('Profile missing, creating default profile...');
-                // Get user details to populate name
-                const { data: { user } } = await supabase.auth.getUser();
-                const fullName = user?.user_metadata?.full_name || 'Client';
-                const companyName = user?.user_metadata?.company_name || '';
-
-                const { data: newProfile, error: createError } = await supabase
-                    .from('profiles')
-                    .insert([{
-                        id: userId,
-                        email: user?.email,
-                        full_name: fullName,
-                        company_name: companyName
-                    }])
-                    .select()
-                    .single();
-
-                if (!createError && newProfile) {
-                    profileData = newProfile;
-                } else {
-                    console.error('Failed to auto-create profile:', createError);
-                }
+            if (!user) {
+                // Not logged in, redirect to login
+                navigate('/portal/login');
+                return;
             }
 
-            if (profileData) {
+            console.log('Logged in user:', user);
+
+            // Load profile from database
+            const { data: profileData, error: profileError } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', user.id)
+                .single();
+
+            if (profileError) {
+                console.error('Profile error:', profileError);
+                // Profile might not exist yet, use user data
+                setProfile({
+                    id: user.id,
+                    email: user.email || '',
+                    full_name: user.user_metadata?.full_name || null,
+                    company_name: user.user_metadata?.company_name || null,
+                });
+            } else {
                 setProfile(profileData);
             }
 
-            // Load automations
-            const { data: automationsData } = await supabase
+            // Load automations for this user
+            const { data: automationsData, error: automationsError } = await supabase
                 .from('client_automations')
                 .select('*')
-                .eq('user_id', userId)
+                .eq('user_id', user.id)
                 .order('created_at', { ascending: false });
 
-            if (automationsData) {
-                setAutomations(automationsData);
+            if (automationsError) {
+                console.error('Automations error:', automationsError);
+            } else {
+                console.log('Automations loaded:', automationsData);
+                setAutomations(automationsData || []);
             }
 
-            // Load recent logs
-            const { data: logsData } = await supabase
+            // Load recent logs for this user
+            const { data: logsData, error: logsError } = await supabase
                 .from('automation_logs')
                 .select('*')
-                .eq('user_id', userId)
+                .eq('user_id', user.id)
                 .order('created_at', { ascending: false })
-                .limit(10);
+                .limit(20);
 
-            if (logsData) {
-                setRecentLogs(logsData);
+            if (logsError) {
+                console.error('Logs error:', logsError);
+            } else {
+                console.log('Logs loaded:', logsData);
+                setRecentLogs(logsData || []);
 
-                // Calculate stats
-                const successCount = logsData.filter(l => l.status === 'success').length;
+                // Calculate stats from real data
+                const total = logsData?.length || 0;
+                const successful = logsData?.filter(l => l.status === 'success').length || 0;
+
                 setStats({
-                    totalExecutions: logsData.length,
-                    hoursThisMonth: Math.round(logsData.length * 0.5), // Estimate 30 min saved per execution
-                    successRate: logsData.length > 0 ? Math.round((successCount / logsData.length) * 100) : 100,
+                    totalExecutions: total,
+                    successfulExecutions: successful,
+                    hoursEstimated: Math.round(total * 0.25), // Estimate 15 min saved per execution
+                    successRate: total > 0 ? Math.round((successful / total) * 100) : 100,
                 });
             }
 
-        } catch (error) {
-            console.error('Error loading dashboard:', error);
+        } catch (err: any) {
+            console.error('Dashboard error:', err);
+            setError('Failed to load dashboard data');
         } finally {
             setLoading(false);
         }
@@ -136,20 +136,26 @@ export default function PortalDashboard() {
 
     const handleLogout = async () => {
         await supabase.auth.signOut();
+        localStorage.removeItem('supabase_access_token');
+        localStorage.removeItem('supabase_refresh_token');
+        localStorage.removeItem('supabase_user');
         navigate('/portal/login');
     };
 
-    const getStatusColor = (status: string) => {
-        switch (status) {
-            case 'active': return 'bg-green-500/20 text-green-400 border-green-500/30';
-            case 'pending_setup': return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
-            case 'paused': return 'bg-gray-500/20 text-gray-400 border-gray-500/30';
-            default: return 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30';
-        }
+    const getStatusBadge = (status: string) => {
+        const styles: Record<string, string> = {
+            active: 'bg-green-500/20 text-green-400 border-green-500/30',
+            pending_setup: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
+            in_progress: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+            paused: 'bg-gray-500/20 text-gray-400 border-gray-500/30',
+            testing: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
+        };
+        return styles[status] || styles.active;
     };
 
-    const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString('en-US', {
+    const formatDate = (dateString: string | null) => {
+        if (!dateString) return 'Never';
+        return new Date(dateString).toLocaleString('en-US', {
             month: 'short',
             day: 'numeric',
             hour: '2-digit',
@@ -157,10 +163,17 @@ export default function PortalDashboard() {
         });
     };
 
+    const formatStatus = (status: string) => {
+        return status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    };
+
     if (loading) {
         return (
             <div className="min-h-screen bg-black flex items-center justify-center">
-                <Loader2 className="w-8 h-8 animate-spin text-cyan-500" />
+                <div className="text-center">
+                    <Loader2 className="w-8 h-8 animate-spin text-cyan-500 mx-auto mb-4" />
+                    <p className="text-gray-400">Loading your dashboard...</p>
+                </div>
             </div>
         );
     }
@@ -169,17 +182,15 @@ export default function PortalDashboard() {
         <div className="min-h-screen bg-black flex">
             {/* Sidebar */}
             <aside className="w-64 bg-gray-900/50 border-r border-gray-800 p-4 flex flex-col hidden lg:flex">
-                {/* Logo */}
                 <div className="flex items-center gap-3 mb-8 px-2">
-                    <div className="h-10 w-10 bg-[#0a0a14] rounded-lg shadow-2xl flex items-center justify-center border border-[#1a1a2e]">
-                        <img src="/images/oasis-logo.jpg" alt="OASIS" className="h-8 w-auto rounded" />
+                    <div className="w-10 h-10 bg-cyan-500/20 rounded-lg flex items-center justify-center">
+                        <Bot className="w-6 h-6 text-cyan-400" />
                     </div>
                     <span className="text-white font-bold">OASIS AI</span>
                 </div>
 
-                {/* Navigation */}
                 <nav className="flex-1 space-y-1">
-                    <a href="/portal/dashboard" className="flex items-center gap-3 px-3 py-2 rounded-lg bg-cyan-500/10 text-cyan-400">
+                    <a href="/portal/dashboard" className="flex items-center gap-3 px-3 py-2 rounded-lg bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
                         <LayoutDashboard className="w-5 h-5" />
                         Dashboard
                     </a>
@@ -199,17 +210,15 @@ export default function PortalDashboard() {
                         <HelpCircle className="w-5 h-5" />
                         Support
                     </a>
-                    <a href="/portal/settings" className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition">
-                        <Settings className="w-5 h-5" />
-                        Settings
-                    </a>
                 </nav>
 
-                {/* User & Logout */}
                 <div className="border-t border-gray-800 pt-4 mt-4">
                     <div className="px-3 py-2 mb-2">
                         <p className="text-white font-medium truncate">{profile?.full_name || 'Client'}</p>
                         <p className="text-gray-500 text-sm truncate">{profile?.email}</p>
+                        {profile?.company_name && (
+                            <p className="text-gray-600 text-xs truncate">{profile.company_name}</p>
+                        )}
                     </div>
                     <button
                         onClick={handleLogout}
@@ -224,113 +233,154 @@ export default function PortalDashboard() {
             {/* Main Content */}
             <main className="flex-1 p-8 overflow-auto">
                 {/* Header */}
-                <div className="mb-8 flex justify-between items-center">
+                <div className="flex justify-between items-start mb-8">
                     <div>
                         <h1 className="text-3xl font-bold text-white">
-                            Welcome back, {profile?.full_name?.split(' ')[0] || 'there'}!
+                            Welcome back{profile?.full_name ? `, ${profile.full_name.split(' ')[0]}` : ''}!
                         </h1>
                         <p className="text-gray-400 mt-1">Here's what's happening with your automations.</p>
                     </div>
                     <button
-                        onClick={handleLogout}
-                        className="lg:hidden p-2 rounded-lg text-gray-400 hover:text-white"
+                        onClick={checkAuthAndLoadData}
+                        className="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg transition"
                     >
-                        <LogOut className="w-6 h-6" />
+                        <RefreshCw className="w-4 h-4" />
+                        Refresh
                     </button>
                 </div>
 
+                {/* Error Message */}
+                {error && (
+                    <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-lg flex items-center gap-3 text-red-400">
+                        <AlertCircle className="w-5 h-5" />
+                        {error}
+                    </div>
+                )}
+
                 {/* Stats Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                    <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-6">
-                        <div className="flex items-center justify-between mb-4">
-                            <span className="text-gray-400">Total Executions</span>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                    <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-5">
+                        <div className="flex items-center justify-between mb-3">
+                            <span className="text-gray-400 text-sm">Total Executions</span>
                             <Activity className="w-5 h-5 text-cyan-400" />
                         </div>
-                        <p className="text-3xl font-bold text-white">{stats.totalExecutions}</p>
-                        <p className="text-sm text-gray-500 mt-1">This month</p>
+                        <p className="text-2xl font-bold text-white">{stats.totalExecutions}</p>
+                        <p className="text-xs text-gray-500 mt-1">All time</p>
                     </div>
 
-                    <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-6">
-                        <div className="flex items-center justify-between mb-4">
-                            <span className="text-gray-400">Hours Saved</span>
-                            <Clock className="w-5 h-5 text-green-400" />
+                    <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-5">
+                        <div className="flex items-center justify-between mb-3">
+                            <span className="text-gray-400 text-sm">Successful</span>
+                            <CheckCircle className="w-5 h-5 text-green-400" />
                         </div>
-                        <p className="text-3xl font-bold text-white">{stats.hoursThisMonth}</p>
-                        <p className="text-sm text-gray-500 mt-1">Estimated this month</p>
+                        <p className="text-2xl font-bold text-white">{stats.successfulExecutions}</p>
+                        <p className="text-xs text-gray-500 mt-1">Tasks completed</p>
                     </div>
 
-                    <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-6">
-                        <div className="flex items-center justify-between mb-4">
-                            <span className="text-gray-400">Success Rate</span>
-                            <TrendingUp className="w-5 h-5 text-purple-400" />
+                    <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-5">
+                        <div className="flex items-center justify-between mb-3">
+                            <span className="text-gray-400 text-sm">Hours Saved</span>
+                            <Clock className="w-5 h-5 text-purple-400" />
                         </div>
-                        <p className="text-3xl font-bold text-white">{stats.successRate}%</p>
-                        <p className="text-sm text-gray-500 mt-1">All time</p>
+                        <p className="text-2xl font-bold text-white">{stats.hoursEstimated}</p>
+                        <p className="text-xs text-gray-500 mt-1">Estimated</p>
+                    </div>
+
+                    <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-5">
+                        <div className="flex items-center justify-between mb-3">
+                            <span className="text-gray-400 text-sm">Success Rate</span>
+                            <TrendingUp className="w-5 h-5 text-yellow-400" />
+                        </div>
+                        <p className="text-2xl font-bold text-white">{stats.successRate}%</p>
+                        <p className="text-xs text-gray-500 mt-1">Reliability</p>
                     </div>
                 </div>
 
-                {/* Automations */}
+                {/* Automations Section */}
                 <div className="mb-8">
                     <h2 className="text-xl font-semibold text-white mb-4">Your Automations</h2>
 
                     {automations.length === 0 ? (
                         <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-8 text-center">
                             <Bot className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-                            <p className="text-gray-400">No automations yet.</p>
-                            <a href="/pricing" className="text-cyan-400 hover:text-cyan-300 mt-2 inline-block">
-                                Browse automations →
-                            </a>
+                            <p className="text-gray-400 mb-2">No automations found for your account.</p>
+                            <p className="text-gray-500 text-sm">Contact support if you believe this is an error.</p>
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {automations.map((automation) => (
                                 <div
                                     key={automation.id}
-                                    className="bg-gray-900/50 border border-gray-800 rounded-xl p-6 hover:border-cyan-500/30 transition"
+                                    className="bg-gray-900/50 border border-gray-800 rounded-xl p-6 hover:border-cyan-500/30 transition cursor-pointer"
                                 >
                                     <div className="flex items-start justify-between mb-4">
-                                        <div>
-                                            <h3 className="text-lg font-semibold text-white">{automation.display_name}</h3>
-                                            <p className="text-sm text-gray-500 capitalize">{automation.tier} Plan</p>
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 bg-cyan-500/20 rounded-lg flex items-center justify-center">
+                                                <Bot className="w-5 h-5 text-cyan-400" />
+                                            </div>
+                                            <div>
+                                                <h3 className="text-lg font-semibold text-white">{automation.display_name}</h3>
+                                                <p className="text-sm text-gray-500 capitalize">{automation.tier} Plan</p>
+                                            </div>
                                         </div>
-                                        <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(automation.status)}`}>
-                                            {automation.status.replace('_', ' ')}
+                                        <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusBadge(automation.status)}`}>
+                                            {formatStatus(automation.status)}
                                         </span>
                                     </div>
 
-                                    {automation.last_run_at && (
-                                        <p className="text-sm text-gray-400">
-                                            Last run: {formatDate(automation.last_run_at)}
-                                        </p>
-                                    )}
+                                    <div className="space-y-2 text-sm">
+                                        <div className="flex justify-between text-gray-400">
+                                            <span>Type:</span>
+                                            <span className="text-gray-300">{automation.automation_type}</span>
+                                        </div>
+                                        <div className="flex justify-between text-gray-400">
+                                            <span>Last Run:</span>
+                                            <span className="text-gray-300">{formatDate(automation.last_run_at)}</span>
+                                        </div>
+                                        <div className="flex justify-between text-gray-400">
+                                            <span>Created:</span>
+                                            <span className="text-gray-300">{formatDate(automation.created_at)}</span>
+                                        </div>
+                                    </div>
                                 </div>
                             ))}
                         </div>
                     )}
                 </div>
 
-                {/* Recent Activity */}
+                {/* Recent Activity Section */}
                 <div>
                     <h2 className="text-xl font-semibold text-white mb-4">Recent Activity</h2>
 
                     {recentLogs.length === 0 ? (
                         <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-8 text-center">
                             <Activity className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-                            <p className="text-gray-400">No activity yet.</p>
+                            <p className="text-gray-400 mb-2">No activity recorded yet.</p>
+                            <p className="text-gray-500 text-sm">Activity will appear here once your automation runs.</p>
                         </div>
                     ) : (
                         <div className="bg-gray-900/50 border border-gray-800 rounded-xl overflow-hidden">
                             {recentLogs.map((log, index) => (
                                 <div
                                     key={log.id}
-                                    className={`flex items-center gap-4 p-4 ${index !== recentLogs.length - 1 ? 'border-b border-gray-800' : ''}`}
+                                    className={`flex items-center gap-4 p-4 hover:bg-gray-800/50 transition ${index !== recentLogs.length - 1 ? 'border-b border-gray-800' : ''
+                                        }`}
                                 >
-                                    <div className={`w-2 h-2 rounded-full ${log.status === 'success' ? 'bg-green-500' : 'bg-red-500'}`} />
-                                    <div className="flex-1">
-                                        <p className="text-white">{log.event_name}</p>
-                                        <p className="text-sm text-gray-500">{formatDate(log.created_at)}</p>
+                                    <div className={`w-2 h-2 rounded-full flex-shrink-0 ${log.status === 'success' ? 'bg-green-500' :
+                                            log.status === 'error' ? 'bg-red-500' : 'bg-yellow-500'
+                                        }`} />
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-white font-medium truncate">{log.event_name}</p>
+                                        <p className="text-sm text-gray-500">{log.event_type}</p>
                                     </div>
-                                    <CheckCircle className={`w-5 h-5 ${log.status === 'success' ? 'text-green-500' : 'text-red-500'}`} />
+                                    <div className="text-right flex-shrink-0">
+                                        <p className="text-sm text-gray-400">{formatDate(log.created_at)}</p>
+                                        <p className={`text-xs ${log.status === 'success' ? 'text-green-400' :
+                                                log.status === 'error' ? 'text-red-400' : 'text-yellow-400'
+                                            }`}>
+                                            {log.status}
+                                        </p>
+                                    </div>
                                 </div>
                             ))}
                         </div>
