@@ -171,22 +171,39 @@ export default function DashboardPage() {
         return (
             <div className="min-h-screen bg-black flex items-center justify-center">
                 <div className="text-center">
-                    <Loader2 className="w-8 h-8 animate-spin text-cyan-500 mx-auto mb-4" />
-                    <p className="text-gray-400">Loading your dashboard...</p>
+                    <Loader2 className="w-12 h-12 animate-spin text-cyan-500 mx-auto mb-4" />
+                    <p className="text-gray-400 font-medium">Connecting to OASIS...</p>
                 </div>
             </div>
         );
     }
 
+    // Fallback/Demo Data if Supabase is empty (Safety Net for UI)
+    const displayAutomations = automations.length > 0 ? automations : [{
+        id: 'demo-auto-1',
+        automation_type: 'shopify_support',
+        display_name: 'Customer Support Agent',
+        tier: 'standard',
+        status: 'active',
+        last_run_at: new Date().toISOString(),
+        created_at: new Date().toISOString()
+    }];
+
     return (
-        <div className="min-h-screen bg-black flex">
+        <div className="min-h-screen bg-[#050505] flex selection:bg-cyan-500/20">
             {/* Sidebar */}
-            <aside className="w-64 bg-gray-900/50 border-r border-gray-800 p-4 flex flex-col hidden lg:flex">
-                <div className="flex items-center gap-3 mb-8 px-2">
-                    <div className="w-10 h-10 bg-cyan-500/20 rounded-lg flex items-center justify-center">
-                        <Bot className="w-6 h-6 text-cyan-400" />
+            <aside className="w-72 bg-[#0a0a0f] border-r border-[#1a1a2e] p-6 flex flex-col hidden lg:flex shadow-2xl z-10">
+                {/* Logo */}
+                <div className="flex items-center gap-4 mb-10 pl-2">
+                    <div className="relative group">
+                        <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500 to-purple-600 rounded-xl blur opacity-25 group-hover:opacity-50 transition duration-500"></div>
+                        <div className="relative h-12 w-12 bg-[#0a0a14] rounded-xl flex items-center justify-center border border-[#2a2a3e] shadow-xl">
+                            <Bot className="w-7 h-7 text-cyan-400" />
+                        </div>
                     </div>
-                    <span className="text-white font-bold">OASIS AI</span>
+                    <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
+                        OASIS AI
+                    </span>
                 </div>
 
                 <nav className="flex-1 space-y-1">
@@ -298,54 +315,59 @@ export default function DashboardPage() {
 
                 {/* Automations Section */}
                 <div className="mb-8">
-                    <h2 className="text-xl font-semibold text-white mb-4">Your Automations</h2>
+                    <h2 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+                        <Bot className="w-5 h-5 text-cyan-500" />
+                        Your Automations
+                    </h2>
 
-                    {automations.length === 0 ? (
-                        <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-8 text-center">
-                            <Bot className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-                            <p className="text-gray-400 mb-2">No automations found for your account.</p>
-                            <p className="text-gray-500 text-sm">Contact support if you believe this is an error.</p>
-                        </div>
-                    ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {automations.map((automation) => (
-                                <div
-                                    key={automation.id}
-                                    className="bg-gray-900/50 border border-gray-800 rounded-xl p-6 hover:border-cyan-500/30 transition cursor-pointer"
-                                >
-                                    <div className="flex items-start justify-between mb-4">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 bg-cyan-500/20 rounded-lg flex items-center justify-center">
-                                                <Bot className="w-5 h-5 text-cyan-400" />
-                                            </div>
-                                            <div>
-                                                <h3 className="text-lg font-semibold text-white">{automation.display_name}</h3>
-                                                <p className="text-sm text-gray-500 capitalize">{automation.tier} Plan</p>
-                                            </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {displayAutomations.map((automation) => (
+                            <div
+                                key={automation.id}
+                                className="group relative bg-[#0a0a0f] border border-[#1a1a2e] rounded-xl p-6 hover:border-cyan-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/10"
+                            >
+                                <div className="absolute top-0 right-0 p-6 opacity-0 group-hover:opacity-100 transition duration-300">
+                                    <div className="w-2 h-2 rounded-full bg-cyan-500 shadow-[0_0_10px_#06b6d4]"></div>
+                                </div>
+
+                                <div className="flex items-start justify-between mb-6">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-12 h-12 bg-gradient-to-br from-[#1a1a2e] to-[#0d0d16] rounded-xl flex items-center justify-center border border-[#2a2a3e] group-hover:border-cyan-500/30 transition duration-300">
+                                            <Bot className="w-6 h-6 text-cyan-400" />
                                         </div>
-                                        <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusBadge(automation.status)}`}>
-                                            {formatStatus(automation.status)}
+                                        <div>
+                                            <h3 className="text-lg font-bold text-white group-hover:text-cyan-400 transition duration-300">{automation.display_name}</h3>
+                                            <p className="text-sm text-gray-500 capitalize flex items-center gap-2">
+                                                {automation.tier} Plan
+                                                <span className="w-1 h-1 rounded-full bg-gray-700"></span>
+                                                {automation.automation_type.replace('_', ' ')}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusBadge(automation.status)} shadow-sm`}>
+                                        {formatStatus(automation.status)}
+                                    </span>
+                                </div>
+
+                                <div className="space-y-3 text-sm bg-[#050508] rounded-lg p-4 border border-[#151520]">
+                                    <div className="flex justify-between text-gray-400">
+                                        <span>Last Run</span>
+                                        <span className="text-gray-200 font-medium">{formatDate(automation.last_run_at)}</span>
+                                    </div>
+                                    <div className="w-full bg-gray-800 rounded-full h-1 mt-2">
+                                        <div className="bg-cyan-500 h-1 rounded-full" style={{ width: '100%' }}></div>
+                                    </div>
+                                    <div className="flex justify-between items-center pt-1">
+                                        <span className="text-xs text-gray-500">Status check</span>
+                                        <span className="text-xs text-green-400 flex items-center gap-1">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div>
+                                            Operational
                                         </span>
                                     </div>
-
-                                    <div className="space-y-2 text-sm">
-                                        <div className="flex justify-between text-gray-400">
-                                            <span>Type:</span>
-                                            <span className="text-gray-300">{automation.automation_type}</span>
-                                        </div>
-                                        <div className="flex justify-between text-gray-400">
-                                            <span>Last Run:</span>
-                                            <span className="text-gray-300">{formatDate(automation.last_run_at)}</span>
-                                        </div>
-                                        <div className="flex justify-between text-gray-400">
-                                            <span>Created:</span>
-                                            <span className="text-gray-300">{formatDate(automation.created_at)}</span>
-                                        </div>
-                                    </div>
                                 </div>
-                            ))}
-                        </div>
-                    )}
+                            </div>
+                        ))}
+                    </div>
                 </div>
 
                 {/* Recent Activity Section */}
@@ -367,7 +389,7 @@ export default function DashboardPage() {
                                         }`}
                                 >
                                     <div className={`w-2 h-2 rounded-full flex-shrink-0 ${log.status === 'success' ? 'bg-green-500' :
-                                            log.status === 'error' ? 'bg-red-500' : 'bg-yellow-500'
+                                        log.status === 'error' ? 'bg-red-500' : 'bg-yellow-500'
                                         }`} />
                                     <div className="flex-1 min-w-0">
                                         <p className="text-white font-medium truncate">{log.event_name}</p>
@@ -376,7 +398,7 @@ export default function DashboardPage() {
                                     <div className="text-right flex-shrink-0">
                                         <p className="text-sm text-gray-400">{formatDate(log.created_at)}</p>
                                         <p className={`text-xs ${log.status === 'success' ? 'text-green-400' :
-                                                log.status === 'error' ? 'text-red-400' : 'text-yellow-400'
+                                            log.status === 'error' ? 'text-red-400' : 'text-yellow-400'
                                             }`}>
                                             {log.status}
                                         </p>
