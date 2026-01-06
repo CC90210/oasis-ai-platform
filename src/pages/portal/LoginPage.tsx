@@ -58,20 +58,20 @@ const LoginPage = () => {
                 </div>
 
                 {/* Login Form Card */}
-                <div className="glass-card p-8 rounded-3xl space-y-6 border border-white/5 shadow-oasis-strong">
+                <div className="bg-[#12121f] border border-[#2a2a4a] p-8 rounded-3xl space-y-6 shadow-2xl relative overflow-visible">
                     <div className="text-center">
                         <h2 className="text-2xl font-bold text-white">Welcome Back</h2>
-                        <p className="mt-2 text-text-secondary">Sign in to access your dashboard</p>
+                        <p className="mt-2 text-gray-400">Sign in to access your dashboard</p>
                     </div>
 
-                    <form onSubmit={handleSubmit} className="space-y-5">
+                    <form onSubmit={handleSubmit} className="space-y-6">
                         {/* Email Field */}
                         <div className="space-y-2">
-                            <label htmlFor="email" className="text-sm font-medium text-white">
+                            <label htmlFor="email" className="text-sm font-medium text-gray-300">
                                 Email Address
                             </label>
                             <div className="relative">
-                                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-text-tertiary" />
+                                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-500" />
                                 <input
                                     id="email"
                                     name="email"
@@ -80,7 +80,7 @@ const LoginPage = () => {
                                     required
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
-                                    className="w-full pl-11 pr-4 py-3 bg-bg-tertiary border border-white/10 rounded-xl text-white placeholder-text-tertiary focus:outline-none focus:border-oasis-cyan focus:ring-1 focus:ring-oasis-cyan transition-all duration-200"
+                                    className="w-full pl-11 pr-4 py-3 bg-[#1a1a2e] border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#00D4FF] focus:ring-1 focus:ring-[#00D4FF] transition-all"
                                     placeholder="name@company.com"
                                 />
                             </div>
@@ -89,18 +89,18 @@ const LoginPage = () => {
                         {/* Password Field */}
                         <div className="space-y-2">
                             <div className="flex items-center justify-between">
-                                <label htmlFor="password" className="text-sm font-medium text-white">
+                                <label htmlFor="password" className="text-sm font-medium text-gray-300">
                                     Password
                                 </label>
                                 <a
                                     href="#"
-                                    className="text-sm text-oasis-cyan hover:text-white transition-colors"
+                                    className="text-sm text-[#00D4FF] hover:text-white transition-colors"
                                 >
                                     Forgot password?
                                 </a>
                             </div>
                             <div className="relative">
-                                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-text-tertiary" />
+                                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-500" />
                                 <input
                                     id="password"
                                     name="password"
@@ -109,13 +109,13 @@ const LoginPage = () => {
                                     required
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
-                                    className="w-full pl-11 pr-12 py-3 bg-bg-tertiary border border-white/10 rounded-xl text-white placeholder-text-tertiary focus:outline-none focus:border-oasis-cyan focus:ring-1 focus:ring-oasis-cyan transition-all duration-200"
+                                    className="w-full pl-11 pr-12 py-3 bg-[#1a1a2e] border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#00D4FF] focus:ring-1 focus:ring-[#00D4FF] transition-all"
                                     placeholder="Enter your password"
                                 />
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-text-tertiary hover:text-white transition-colors"
+                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-white transition-colors"
                                 >
                                     {showPassword ? (
                                         <EyeOff className="h-5 w-5" />
@@ -134,28 +134,30 @@ const LoginPage = () => {
                                 type="checkbox"
                                 checked={isExistingClient}
                                 onChange={(e) => setIsExistingClient(e.target.checked)}
-                                className="h-4 w-4 rounded border-white/10 bg-bg-tertiary text-oasis-cyan focus:ring-oasis-cyan focus:ring-offset-0"
+                                className="h-4 w-4 rounded border-gray-600 bg-[#1a1a2e] text-[#00D4FF] focus:ring-[#00D4FF] accent-[#00D4FF]"
                             />
-                            <label htmlFor="existing-client" className="ml-2 block text-sm text-text-secondary">
+                            <label htmlFor="existing-client" className="ml-2 block text-sm text-gray-400 cursor-pointer">
                                 I am an existing client with active automations
                             </label>
                         </div>
 
                         {/* Sign In Button */}
-                        <button
-                            type="submit"
-                            className="w-full bg-[#00D4FF] text-black hover:bg-[#00D4FF]/90 py-4 text-lg font-semibold rounded-xl shadow-[0_4px_14px_0_rgba(0,212,255,0.39)] hover:shadow-[0_6px_20px_rgba(0,212,255,0.23)] transition-all duration-300"
-                        >
-                            Sign In
-                        </button>
+                        <div className="pt-2">
+                            <button
+                                type="submit"
+                                className="w-full bg-[#00D4FF] text-black hover:bg-[#00D4FF]/90 py-4 text-lg font-bold rounded-xl shadow-[0_0_15px_rgba(0,212,255,0.5)] hover:shadow-[0_0_25px_rgba(0,212,255,0.7)] transition-all duration-300 transform hover:-translate-y-1 relative z-50"
+                            >
+                                Sign In
+                            </button>
+                        </div>
                     </form>
 
                     {/* Don't have an account */}
-                    <div className="text-center text-sm text-text-secondary pt-4 border-t border-white/5">
+                    <div className="text-center text-sm text-gray-400 pt-4 border-t border-gray-800">
                         Don't have an account?{' '}
                         <Link
                             to="/portal/signup"
-                            className="text-oasis-cyan hover:text-white font-medium transition-colors"
+                            className="text-[#00D4FF] hover:text-white font-medium transition-colors"
                         >
                             Create Account (Get 10% Off)
                         </Link>

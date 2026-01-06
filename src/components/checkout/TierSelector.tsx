@@ -19,6 +19,7 @@ export function TierSelector({
     currency,
 }: TierSelectorProps) {
     const currencySymbol = currency === 'usd' ? '$' : 'CA$';
+    const EXCHANGE_RATE_CAD_TO_USD = 0.71;
 
     const tierFeatures = {
         starter: ['Basic features', 'Email support', 'Monthly updates'],
@@ -34,6 +35,11 @@ export function TierSelector({
                     const tier = tiers[tierKey];
                     const isSelected = selectedTier === tierKey;
                     const isRecommended = tierKey === 'professional';
+
+                    let displayPrice = tier.price;
+                    if (currency === 'usd') {
+                        displayPrice = Math.round(displayPrice * EXCHANGE_RATE_CAD_TO_USD);
+                    }
 
                     return (
                         <button
@@ -65,7 +71,7 @@ export function TierSelector({
                                 <div className="text-right flex flex-col items-end gap-2">
                                     <div>
                                         <span className="text-2xl font-bold text-white">
-                                            {currencySymbol}{tier.price}
+                                            {currencySymbol}{displayPrice}
                                         </span>
                                         <span className="text-gray-400 text-sm">/mo</span>
                                     </div>
