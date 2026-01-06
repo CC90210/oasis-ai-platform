@@ -22,7 +22,7 @@ import { useState } from 'react';
 // Available agents for purchase
 const availableAgents = [
     {
-        id: 'chat-widget',
+        id: 'website-chat',
         name: 'Website Chat Widget',
         description: '24/7 AI customer support that answers questions and captures leads.',
         price: 897,
@@ -30,7 +30,7 @@ const availableAgents = [
         popular: true
     },
     {
-        id: 'lead-capture',
+        id: 'lead-generation',
         name: 'Lead Capture Agent',
         description: 'Qualify and route leads automatically with intelligent follow-up.',
         price: 997,
@@ -46,7 +46,7 @@ const availableAgents = [
         popular: false
     },
     {
-        id: 'email-automation',
+        id: 'email',
         name: 'Email Automation',
         description: 'Personalized email responses and follow-up sequences.',
         price: 897,
@@ -54,7 +54,7 @@ const availableAgents = [
         popular: false
     },
     {
-        id: 'google-reviews',
+        id: 'google-review',
         name: 'Review Management',
         description: 'Monitor and respond to Google reviews automatically.',
         price: 697,
@@ -256,7 +256,7 @@ const WelcomePage = () => {
                                         <span className="text-text-tertiary text-sm"> one-time</span>
                                     </div>
                                     <Link
-                                        to={`/checkout?agent=${agent.id}`}
+                                        to={`/pricing/${agent.id}`}
                                         className="btn-primary py-2 px-4 text-sm"
                                     >
                                         Get Started

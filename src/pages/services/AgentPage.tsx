@@ -3,6 +3,16 @@ import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Check, ArrowRight, MessageSquare, Star, Mail, Calendar, Target, Phone, Database, Layers } from 'lucide-react';
 
+const PRICING_MAP: Record<string, string> = {
+    'chat-widget': 'website-chat',
+    'lead-capture': 'lead-generation',
+    'appointment-booking': 'appointment-booking',
+    'email-automation': 'email',
+    'google-reviews': 'google-review',
+    'voice-ai': 'voice-ai',
+    'rag-knowledge': 'document-processing',
+};
+
 const agents = {
     'chat-widget': {
         title: 'Website Chat Widget Agent',
@@ -154,7 +164,8 @@ const agents = {
 
 const AgentPage = () => {
     const { slug } = useParams<{ slug: string }>();
-    const agent = agents[slug as keyof typeof agents];
+    const safeSlug = slug || '';
+    const agent = agents[safeSlug as keyof typeof agents];
 
     if (!agent) {
         return (
@@ -165,6 +176,8 @@ const AgentPage = () => {
     }
 
     const Icon = agent.icon;
+    const hasConsultation = (agent as any).consultation;
+    const agentRoi = (agent as any).roi;
 
     return (
         <div className="min-h-screen bg-bg-primary font-sans text-text-primary">
@@ -193,17 +206,17 @@ const AgentPage = () => {
                             <div className="flex items-center space-x-4 mb-8">
                                 <div className="text-3xl font-bold text-oasis-cyan">
                                     ${agent.price}
-                                    {!agent.consultation && <span className="text-sm text-text-tertiary font-normal ml-2">one-time setup</span>}
+                                    {!hasConsultation && <span className="text-sm text-text-tertiary font-normal ml-2">one-time setup</span>}
                                 </div>
                             </div>
                             <div className="flex flex-col sm:flex-row gap-4">
-                                {agent.consultation ? (
+                                {hasConsultation ? (
                                     <Link to="/contact" className="btn-primary text-center shadow-oasis">
                                         Book Consultation
                                     </Link>
                                 ) : (
-                                    <Link to={`/checkout?agent=${slug}`} className="btn-primary text-center shadow-oasis">
-                                        Add to Cart
+                                    <Link to={`/pricing/${PRICING_MAP[safeSlug] || safeSlug}`} className="btn-primary text-center shadow-oasis">
+                                        Configure Plan
                                     </Link>
                                 )}
                                 <Link to="/services" className="btn-secondary text-center">
@@ -236,7 +249,7 @@ const AgentPage = () => {
             </section>
 
             {/* ROI Section */}
-            {agent.roi && (
+            {agentRoi && (
                 <section className="bg-bg-secondary py-20 px-4 sm:px-6 lg:px-8">
                     <div className="max-w-7xl mx-auto">
                         <motion.div
@@ -252,7 +265,7 @@ const AgentPage = () => {
                         </motion.div>
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                            {Object.entries(agent.roi).map(([key, value], index) => (
+                            {Object.entries(agentRoi).map(([key, value], index) => (
                                 <motion.div
                                     key={key}
                                     initial={{ opacity: 0, y: 20 }}
@@ -261,7 +274,7 @@ const AgentPage = () => {
                                     viewport={{ once: true }}
                                     className="glass-card p-6 text-center hover:shadow-oasis transition-all"
                                 >
-                                    <div className="text-3xl font-bold text-oasis-cyan mb-2">{value}</div>
+                                    <div className="text-3xl font-bold text-oasis-cyan mb-2">{value as React.ReactNode}</div>
                                     <div className="text-text-tertiary capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</div>
                                 </motion.div>
                             ))}
@@ -283,12 +296,12 @@ const AgentPage = () => {
                     <p className="text-text-secondary mb-8 text-lg">
                         Get your {agent.title} set up and running in just a few days.
                     </p>
-                    {agent.consultation ? (
+                    {hasConsultation ? (
                         <Link to="/contact" className="btn-primary inline-flex items-center shadow-oasis">
                             Book Strategy Call <ArrowRight className="ml-2 w-5 h-5" />
                         </Link>
                     ) : (
-                        <Link to="/checkout" className="btn-primary inline-flex items-center shadow-oasis">
+                        <Link to={`/pricing/${PRICING_MAP[safeSlug] || safeSlug}`} className="btn-primary inline-flex items-center shadow-oasis">
                             Get Started Now <ArrowRight className="ml-2 w-5 h-5" />
                         </Link>
                     )}

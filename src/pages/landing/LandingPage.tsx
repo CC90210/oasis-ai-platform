@@ -189,7 +189,7 @@ const LandingPage = () => {
                                 <li className="flex items-center text-sm text-text-secondary"><CheckCircle className="w-4 h-4 text-oasis-cyan mr-2" /> Website Chat Widget</li>
                                 <li className="flex items-center text-sm text-text-secondary"><CheckCircle className="w-4 h-4 text-oasis-cyan mr-2" /> 30 Days Support</li>
                             </ul>
-                            <Link to="/checkout?agent=launchpad" className="btn-secondary w-full text-center">Get Started</Link>
+                            <Link to="/pricing/launchpad" className="btn-secondary w-full text-center">Get Started</Link>
                         </div>
 
                         {/* Integration Suite */}

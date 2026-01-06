@@ -39,7 +39,7 @@ export const CartDrawer = () => {
 
     const handleCheckout = useCallback(() => {
         closeCart();
-        navigate('/checkout');
+        navigate('/pricing');
     }, [closeCart, navigate]);
 
     const handleBackdropClick = useCallback((e: React.MouseEvent) => {
