@@ -1,10 +1,12 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { supabase } from '@/lib/supabase';
+import { Link } from 'react-router-dom';
 import { Mail, Lock, User, Building, Eye, EyeOff, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
 
-export default function PortalSignupPage() {
-    const navigate = useNavigate();
+// Hardcoded Supabase credentials
+const SUPABASE_URL = 'https://skgrbweyscysyetubemg.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNrZ3Jid2V5c2N5c3lldHViZW1nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzYxNTI0MTcsImV4cCI6MjA1MTcyODQxN30.VawWeg_UCTPutIosfOaVyF8IgVT4iSIiXArhX2XxZn0';
+
+export default function SignupPage() {
     const [formData, setFormData] = useState({
         email: '',
         password: '',
@@ -16,15 +18,18 @@ export default function PortalSignupPage() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
+    const [debugInfo, setDebugInfo] = useState<string>('');
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
+        setError(null);
     };
 
     const handleSignup = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
         setError(null);
+        setDebugInfo('Starting signup...');
 
         // Validate passwords match
         if (formData.password !== formData.confirmPassword) {
@@ -33,73 +38,94 @@ export default function PortalSignupPage() {
             return;
         }
 
-        // Validate password strength
+        // Validate password length
         if (formData.password.length < 6) {
             setError('Password must be at least 6 characters');
             setLoading(false);
             return;
         }
 
-        try {
-            console.log('Attempting signup for:', formData.email);
+        // Validate email
+        if (!formData.email.includes('@')) {
+            setError('Please enter a valid email address');
+            setLoading(false);
+            return;
+        }
 
-            // Create auth user
-            const { data, error: authError } = await supabase.auth.signUp({
-                email: formData.email.trim().toLowerCase(),
-                password: formData.password,
-                options: {
+        try {
+            setDebugInfo('Sending request to Supabase...');
+
+            // Direct fetch to Supabase Auth API
+            const response = await fetch(`${SUPABASE_URL}/auth/v1/signup`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'apikey': SUPABASE_ANON_KEY,
+                    'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                },
+                body: JSON.stringify({
+                    email: formData.email.trim().toLowerCase(),
+                    password: formData.password,
                     data: {
                         full_name: formData.fullName,
                         company_name: formData.companyName,
                     },
-                },
+                }),
             });
 
-            console.log('Signup response:', { data, authError });
+            setDebugInfo(`Response status: ${response.status}`);
 
-            if (authError) {
-                console.error('Auth error:', authError);
+            const data = await response.json();
 
-                if (authError.message.includes('already registered')) {
+            setDebugInfo(`Response data: ${JSON.stringify(data).substring(0, 200)}`);
+
+            if (!response.ok) {
+                // Handle specific error messages
+                const errorMsg = data.error_description || data.msg || data.message || 'Signup failed';
+
+                if (errorMsg.includes('already registered') || errorMsg.includes('already been registered')) {
                     setError('This email is already registered. Please sign in instead.');
-                } else if (authError.message.includes('valid email')) {
+                } else if (errorMsg.includes('valid email')) {
                     setError('Please enter a valid email address.');
-                } else if (authError.message.includes('password')) {
+                } else if (errorMsg.includes('password')) {
                     setError('Password must be at least 6 characters.');
                 } else {
-                    setError(authError.message);
+                    setError(errorMsg);
                 }
                 setLoading(false);
                 return;
             }
 
-            if (data.user) {
-                console.log('User created:', data.user.id);
-
-                // Update profile with additional info
-                const { error: profileError } = await supabase
-                    .from('profiles')
-                    .update({
-                        full_name: formData.fullName,
-                        company_name: formData.companyName,
-                    })
-                    .eq('id', data.user.id);
-
-                if (profileError) {
-                    console.error('Profile update error:', profileError);
-                    // Don't fail signup for this
-                }
-
+            // Success!
+            if (data.user || data.id) {
+                setDebugInfo('User created successfully!');
                 setSuccess(true);
 
-                // Redirect to dashboard after short delay
+                // Store session if provided
+                if (data.access_token) {
+                    localStorage.setItem('supabase_access_token', data.access_token);
+                    localStorage.setItem('supabase_refresh_token', data.refresh_token || '');
+                }
+
+                // Redirect after delay
                 setTimeout(() => {
-                    window.location.href = '/portal/dashboard';
+                    window.location.href = '/portal/login?registered=true';
                 }, 2000);
+            } else {
+                // Check if email confirmation is required
+                if (data.confirmation_sent_at || response.status === 200) {
+                    setSuccess(true);
+                    setDebugInfo('Account created! Check email for confirmation.');
+                    setTimeout(() => {
+                        window.location.href = '/portal/login?registered=true';
+                    }, 2000);
+                }
             }
+
         } catch (err: any) {
-            console.error('Signup catch error:', err);
-            setError('Connection error. Please check your internet and try again.');
+            console.error('Signup error:', err);
+            setDebugInfo(`Error: ${err.message}`);
+            setError('Network error. Please check your connection and try again.');
         } finally {
             setLoading(false);
         }
@@ -107,48 +133,27 @@ export default function PortalSignupPage() {
 
     if (success) {
         return (
-            <div className="min-h-screen bg-[#050508] flex flex-col items-center justify-center p-4">
-                <div className="w-full max-w-md bg-[#12121f] border border-[#2a2a4a] rounded-3xl p-8 text-center shadow-2xl">
+            <div className="min-h-screen bg-black flex flex-col items-center justify-center p-4">
+                <div className="w-full max-w-md bg-gray-900/90 backdrop-blur border border-gray-800 rounded-2xl p-8 text-center">
                     <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
                     <h2 className="text-2xl font-bold text-white mb-2">Account Created!</h2>
                     <p className="text-gray-400 mb-6">
-                        Your account has been created successfully. Redirecting to your dashboard...
+                        Redirecting to login...
                     </p>
-                    <Loader2 className="w-6 h-6 animate-spin text-[#00D4FF] mx-auto" />
+                    <Loader2 className="w-6 h-6 animate-spin text-cyan-500 mx-auto" />
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-[#050508] flex flex-col items-center justify-center p-4 font-sans relative overflow-hidden">
-            {/* Animated background particles effect */}
-            <div className="absolute inset-0 overflow-hidden pointer-events-none z-[1]">
-                {[...Array(30)].map((_, i) => (
-                    <div
-                        key={i}
-                        className="absolute rounded-full bg-white/10 animate-pulse"
-                        style={{
-                            top: `${Math.random() * 100}%`,
-                            left: `${Math.random() * 100}%`,
-                            width: `${Math.random() * 2 + 1}px`,
-                            height: `${Math.random() * 2 + 1}px`,
-                            animationDuration: `${Math.random() * 3 + 2}s`,
-                            animationDelay: `${Math.random() * 2}s`,
-                            opacity: Math.random() * 0.5 + 0.1,
-                        }}
-                    />
-                ))}
-            </div>
-
-            {/* Logo */}
-            <div className="mb-8 text-center relative z-10">
-                <h1 className="text-3xl font-bold text-white mb-2">Create Account</h1>
-                <p className="text-[#00D4FF] mb-8 font-medium">Get 10% off your first automation!</p>
-            </div>
+        <div className="min-h-screen bg-black flex flex-col items-center justify-center p-4">
+            {/* Title */}
+            <h1 className="text-3xl font-bold text-white mb-2">Create Account</h1>
+            <p className="text-cyan-400 mb-8">Get 10% off your first automation!</p>
 
             {/* Signup Card */}
-            <div className="w-full max-w-md bg-[#12121f] border border-[#2a2a4a] rounded-3xl p-8 shadow-2xl relative z-20">
+            <div className="w-full max-w-md bg-gray-900/90 backdrop-blur border border-gray-800 rounded-2xl p-8">
                 {/* Error Message */}
                 {error && (
                     <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg flex items-center gap-2 text-red-400">
@@ -157,10 +162,17 @@ export default function PortalSignupPage() {
                     </div>
                 )}
 
+                {/* Debug Info - Remove in production */}
+                {debugInfo && (
+                    <div className="mb-4 p-2 bg-blue-500/10 border border-blue-500/30 rounded text-blue-400 text-xs font-mono">
+                        {debugInfo}
+                    </div>
+                )}
+
                 <form onSubmit={handleSignup} className="space-y-4">
                     {/* Full Name */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-2">Full Name</label>
+                        <label className="block text-sm text-gray-300 mb-2">Full Name</label>
                         <div className="relative">
                             <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
                             <input
@@ -170,14 +182,14 @@ export default function PortalSignupPage() {
                                 onChange={handleChange}
                                 placeholder="John Smith"
                                 required
-                                className="w-full bg-[#1a1a2e] border border-gray-700 rounded-lg py-3 pl-10 pr-4 text-white placeholder-gray-500 focus:outline-none focus:border-[#00D4FF] focus:ring-1 focus:ring-[#00D4FF] transition"
+                                className="w-full bg-gray-800 border border-gray-700 rounded-lg py-3 pl-10 pr-4 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500 transition"
                             />
                         </div>
                     </div>
 
                     {/* Company Name */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-2">Company Name</label>
+                        <label className="block text-sm text-gray-300 mb-2">Company Name</label>
                         <div className="relative">
                             <Building className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
                             <input
@@ -186,14 +198,14 @@ export default function PortalSignupPage() {
                                 value={formData.companyName}
                                 onChange={handleChange}
                                 placeholder="Acme Inc."
-                                className="w-full bg-[#1a1a2e] border border-gray-700 rounded-lg py-3 pl-10 pr-4 text-white placeholder-gray-500 focus:outline-none focus:border-[#00D4FF] focus:ring-1 focus:ring-[#00D4FF] transition"
+                                className="w-full bg-gray-800 border border-gray-700 rounded-lg py-3 pl-10 pr-4 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500 transition"
                             />
                         </div>
                     </div>
 
                     {/* Email */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-2">Email Address</label>
+                        <label className="block text-sm text-gray-300 mb-2">Email Address</label>
                         <div className="relative">
                             <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
                             <input
@@ -203,14 +215,14 @@ export default function PortalSignupPage() {
                                 onChange={handleChange}
                                 placeholder="you@company.com"
                                 required
-                                className="w-full bg-[#1a1a2e] border border-gray-700 rounded-lg py-3 pl-10 pr-4 text-white placeholder-gray-500 focus:outline-none focus:border-[#00D4FF] focus:ring-1 focus:ring-[#00D4FF] transition"
+                                className="w-full bg-gray-800 border border-gray-700 rounded-lg py-3 pl-10 pr-4 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500 transition"
                             />
                         </div>
                     </div>
 
                     {/* Password */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-2">Password</label>
+                        <label className="block text-sm text-gray-300 mb-2">Password</label>
                         <div className="relative">
                             <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
                             <input
@@ -218,15 +230,15 @@ export default function PortalSignupPage() {
                                 name="password"
                                 value={formData.password}
                                 onChange={handleChange}
-                                placeholder="Minimum 8 characters"
+                                placeholder="Minimum 6 characters"
                                 required
-                                minLength={8}
-                                className="w-full bg-[#1a1a2e] border border-gray-700 rounded-lg py-3 pl-10 pr-12 text-white placeholder-gray-500 focus:outline-none focus:border-[#00D4FF] focus:ring-1 focus:ring-[#00D4FF] transition"
+                                minLength={6}
+                                className="w-full bg-gray-800 border border-gray-700 rounded-lg py-3 pl-10 pr-12 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500 transition"
                             />
                             <button
                                 type="button"
                                 onClick={() => setShowPassword(!showPassword)}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white"
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300"
                             >
                                 {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                             </button>
@@ -235,7 +247,7 @@ export default function PortalSignupPage() {
 
                     {/* Confirm Password */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-2">Confirm Password</label>
+                        <label className="block text-sm text-gray-300 mb-2">Confirm Password</label>
                         <div className="relative">
                             <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
                             <input
@@ -245,41 +257,39 @@ export default function PortalSignupPage() {
                                 onChange={handleChange}
                                 placeholder="Confirm your password"
                                 required
-                                className="w-full bg-[#1a1a2e] border border-gray-700 rounded-lg py-3 pl-10 pr-4 text-white placeholder-gray-500 focus:outline-none focus:border-[#00D4FF] focus:ring-1 focus:ring-[#00D4FF] transition"
+                                className="w-full bg-gray-800 border border-gray-700 rounded-lg py-3 pl-10 pr-4 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500 transition"
                             />
                         </div>
                     </div>
 
                     {/* Submit Button */}
-                    <div className="pt-4">
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className="w-full py-4 bg-[#00D4FF] hover:bg-[#00D4FF]/90 disabled:bg-[#00D4FF]/50 text-black font-bold text-lg rounded-xl shadow-[0_0_15px_rgba(0,212,255,0.5)] hover:shadow-[0_0_25px_rgba(0,212,255,0.7)] transition-all duration-300 transform hover:-translate-y-1 relative z-50 flex items-center justify-center gap-2"
-                        >
-                            {loading ? (
-                                <>
-                                    <Loader2 className="w-5 h-5 animate-spin" />
-                                    Creating account...
-                                </>
-                            ) : (
-                                'Create Account'
-                            )}
-                        </button>
-                    </div>
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="w-full py-3 bg-cyan-500 hover:bg-cyan-400 disabled:bg-cyan-500/50 disabled:cursor-not-allowed text-black font-semibold rounded-lg transition flex items-center justify-center gap-2"
+                    >
+                        {loading ? (
+                            <>
+                                <Loader2 className="w-5 h-5 animate-spin" />
+                                Creating account...
+                            </>
+                        ) : (
+                            'Create Account'
+                        )}
+                    </button>
                 </form>
 
                 {/* Login Link */}
-                <p className="mt-6 text-center text-gray-400 text-sm">
+                <p className="mt-6 text-center text-gray-400">
                     Already have an account?{' '}
-                    <Link to="/portal/login" className="text-[#00D4FF] hover:text-white font-medium transition-colors">
+                    <Link to="/portal/login" className="text-cyan-400 hover:text-cyan-300 font-medium">
                         Sign In
                     </Link>
                 </p>
             </div>
 
             {/* Back Link */}
-            <Link to="/" className="mt-8 text-gray-500 hover:text-white flex items-center gap-2 transition-colors relative z-20">
+            <Link to="/" className="mt-8 text-gray-500 hover:text-gray-300 flex items-center gap-2">
                 ← Back to main website
             </Link>
         </div>
