@@ -71,7 +71,7 @@ create policy "Users can insert own logs" on public.automation_logs for insert w
 -- Metrics
 create policy "Users can view own metrics" on public.automation_metrics for select using (auth.uid() = user_id);
 
--- 4. Advanced Trigger: Auto-Create Profile AND Default Automation
+-- 4. Advanced Trigger: Auto-Create Profile ONLY (No Default Automation)
 create or replace function public.handle_new_user()
 returns trigger as $$
 declare
@@ -84,12 +84,7 @@ begin
     new.email,
     new.raw_user_meta_data->>'full_name',
     new.raw_user_meta_data->>'company_name'
-  )
-  returning id into new_profile_id;
-
-  -- Create Default "Customer Support Agent" Automation
-  insert into public.client_automations (user_id, automation_type, display_name, status, tier)
-  values (new_profile_id, 'support_bot', 'Customer Support Agent', 'active', 'standard');
+  );
 
   return new;
 end;
@@ -115,10 +110,6 @@ begin
             coalesce(r.raw_user_meta_data->>'full_name', 'Client'), 
             coalesce(r.raw_user_meta_data->>'company_name', '')
         );
-        
-        -- Insert Default Automation
-        insert into public.client_automations (user_id, automation_type, display_name, status)
-        values (r.id, 'support_bot', 'Customer Support Agent', 'active');
     end if;
   end loop;
 end;
