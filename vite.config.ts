@@ -14,7 +14,14 @@ export default defineConfig(({ mode }) => {
     define: {
       'window.PAYPAL_CLIENT_ID': JSON.stringify(env.PAYPAL_CLIENT_ID),
       // Robustly define keys - checking both loadEnv result AND direct process.env
-      '__SUPABASE_URL__': JSON.stringify(process.env.NEXT_PUBLIC_SUPABASE_URL || env.NEXT_PUBLIC_SUPABASE_URL || process.env.VITE_SUPABASE_URL || env.VITE_SUPABASE_URL),
+      // CRITICAL: Ensure we get a valid URL string, not undefined
+      '__SUPABASE_URL__': JSON.stringify(
+        process.env.NEXT_PUBLIC_SUPABASE_URL ||
+        env.NEXT_PUBLIC_SUPABASE_URL ||
+        process.env.VITE_SUPABASE_URL ||
+        env.VITE_SUPABASE_URL ||
+        'https://skgrbweyscysyetubemg.supabase.co' // Fallback to hardcoded if all else fails
+      ),
       '__SUPABASE_ANON_KEY__': JSON.stringify(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || env.VITE_SUPABASE_ANON_KEY),
     },
     resolve: {
