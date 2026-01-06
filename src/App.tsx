@@ -10,6 +10,11 @@ import StarField from './components/StarField';
 import CinematicDNA from './components/CinematicDNA';
 
 // Lazy load pages for performance
+import { Navigate } from 'react-router-dom';
+
+// ... other imports ...
+
+// Lazy load pages for performance
 const LandingPage = lazy(() => import('./pages/landing/LandingPage'));
 const ServicesPage = lazy(() => import('./pages/services/ServicesPage'));
 const PricingPage = lazy(() => import('./pages/pricing/PricingPage'));
@@ -21,8 +26,12 @@ const SubscriptionSuccessPage = lazy(() => import('./pages/subscription-success/
 const BlogPage = lazy(() => import('./pages/blog/BlogPage'));
 const BlogPost = lazy(() => import('./pages/blog/BlogPost'));
 const CaseStudiesPage = lazy(() => import('./pages/case-studies/CaseStudiesPage'));
-const LoginPage = lazy(() => import('./pages/login'));
-const ClientDashboard = lazy(() => import('./pages/dashboard/[clientId]'));
+
+// Portal Pages
+const PortalLoginPage = lazy(() => import('./pages/portal/LoginPage'));
+const PortalSignupPage = lazy(() => import('./pages/portal/SignupPage'));
+const PortalDashboard = lazy(() => import('./pages/portal/DashboardPage'));
+
 const PrivacyPage = lazy(() => import('./pages/legal/PrivacyPage'));
 const TermsPage = lazy(() => import('./pages/legal/TermsPage'));
 
@@ -75,11 +84,13 @@ function App() {
                         <Route path="/terms" element={<MainLayout showChat={!showSplash}><TermsPage /></MainLayout>} />
 
                         {/* Portal Routes */}
-                        <Route path="/login" element={<LoginPage />} />
-                        <Route path="/dashboard/:clientId" element={<ClientDashboard />} />
+                        <Route path="/portal/login" element={<PortalLoginPage />} />
+                        <Route path="/portal/signup" element={<PortalSignupPage />} />
+                        <Route path="/portal/dashboard" element={<PortalDashboard />} />
 
-                        {/* Redirect old routes */}
-                        <Route path="/portal/*" element={<LoginPage />} />
+                        {/* Convenience Redirects */}
+                        <Route path="/login" element={<Navigate to="/portal/login" replace />} />
+                        <Route path="/portal" element={<Navigate to="/portal/login" replace />} />
                     </Routes>
                 </Suspense>
                 <Analytics />

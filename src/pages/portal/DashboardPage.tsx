@@ -1,190 +1,316 @@
-import React from 'react';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/lib/supabase';
 import {
-    Activity,
-    Clock,
-    DollarSign,
-    Zap,
-    ArrowUpRight,
-    ArrowDownRight,
-    CheckCircle2,
-    AlertCircle
+    LayoutDashboard, Bot, FileText, CreditCard, HelpCircle, Settings, LogOut,
+    TrendingUp, Clock, CheckCircle, Activity, Loader2
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Link } from 'react-router-dom';
-import {
-    LineChart,
-    Line,
-    XAxis,
-    YAxis,
-    CartesianGrid,
-    Tooltip,
-    ResponsiveContainer,
-    PieChart,
-    Pie,
-    Cell
-} from 'recharts';
 
-const DashboardPage = () => {
-    // Mock Data
-    const performanceData = [
-        { name: 'Mon', executions: 40 },
-        { name: 'Tue', executions: 55 },
-        { name: 'Wed', executions: 85 },
-        { name: 'Thu', executions: 60 },
-        { name: 'Fri', executions: 95 },
-        { name: 'Sat', executions: 30 },
-        { name: 'Sun', executions: 25 },
-    ];
+interface Profile {
+    id: string;
+    email: string;
+    full_name: string;
+    company_name: string;
+}
 
-    const pieData = [
-        { name: 'Success', value: 92, color: '#00D4FF' }, // oasis-cyan
-        { name: 'Error', value: 8, color: '#EF4444' },   // error
-    ];
+interface Automation {
+    id: string;
+    automation_type: string;
+    display_name: string;
+    tier: string;
+    status: string;
+    last_run_at: string;
+    created_at: string;
+}
 
-    const recentActivity = [
-        { id: 1, name: 'Lead Qualification', status: 'success', time: '2 mins ago', duration: '1.2s' },
-        { id: 2, name: 'Email Outreach', status: 'success', time: '15 mins ago', duration: '0.8s' },
-        { id: 3, name: 'CRM Sync', status: 'error', time: '1 hour ago', duration: '2.5s' },
-        { id: 4, name: 'Invoice Generation', status: 'success', time: '2 hours ago', duration: '3.1s' },
-        { id: 5, name: 'Weekly Report', status: 'success', time: '5 hours ago', duration: '5.5s' },
-    ];
+interface LogEntry {
+    id: string;
+    event_name: string;
+    status: string;
+    created_at: string;
+}
+
+export default function PortalDashboard() {
+    const navigate = useNavigate();
+    const [loading, setLoading] = useState(true);
+    const [profile, setProfile] = useState<Profile | null>(null);
+    const [automations, setAutomations] = useState<Automation[]>([]);
+    const [recentLogs, setRecentLogs] = useState<LogEntry[]>([]);
+    const [stats, setStats] = useState({
+        totalExecutions: 0,
+        hoursThisMonth: 0,
+        successRate: 100,
+    });
+
+    useEffect(() => {
+        checkAuth();
+    }, []);
+
+    const checkAuth = async () => {
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (!user) {
+            navigate('/portal/login');
+            return;
+        }
+
+        await loadDashboardData(user.id);
+    };
+
+    const loadDashboardData = async (userId: string) => {
+        try {
+            // Load profile
+            const { data: profileData } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', userId)
+                .single();
+
+            if (profileData) {
+                setProfile(profileData);
+            }
+
+            // Load automations
+            const { data: automationsData } = await supabase
+                .from('client_automations')
+                .select('*')
+                .eq('user_id', userId)
+                .order('created_at', { ascending: false });
+
+            if (automationsData) {
+                setAutomations(automationsData);
+            }
+
+            // Load recent logs
+            const { data: logsData } = await supabase
+                .from('automation_logs')
+                .select('*')
+                .eq('user_id', userId)
+                .order('created_at', { ascending: false })
+                .limit(10);
+
+            if (logsData) {
+                setRecentLogs(logsData);
+
+                // Calculate stats
+                const successCount = logsData.filter(l => l.status === 'success').length;
+                setStats({
+                    totalExecutions: logsData.length,
+                    hoursThisMonth: Math.round(logsData.length * 0.5), // Estimate 30 min saved per execution
+                    successRate: logsData.length > 0 ? Math.round((successCount / logsData.length) * 100) : 100,
+                });
+            }
+
+        } catch (error) {
+            console.error('Error loading dashboard:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleLogout = async () => {
+        await supabase.auth.signOut();
+        navigate('/portal/login');
+    };
+
+    const getStatusColor = (status: string) => {
+        switch (status) {
+            case 'active': return 'bg-green-500/20 text-green-400 border-green-500/30';
+            case 'pending_setup': return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
+            case 'paused': return 'bg-gray-500/20 text-gray-400 border-gray-500/30';
+            default: return 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30';
+        }
+    };
+
+    const formatDate = (dateString: string) => {
+        return new Date(dateString).toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+        });
+    };
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-black flex items-center justify-center">
+                <Loader2 className="w-8 h-8 animate-spin text-cyan-500" />
+            </div>
+        );
+    }
 
     return (
-        <div className="space-y-6">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-2xl font-display font-bold text-white">Dashboard</h1>
-                    <p className="text-text-secondary">Welcome back, CC. Here's what's happening today.</p>
+        <div className="min-h-screen bg-black flex">
+            {/* Sidebar */}
+            <aside className="w-64 bg-gray-900/50 border-r border-gray-800 p-4 flex flex-col hidden lg:flex">
+                {/* Logo */}
+                <div className="flex items-center gap-3 mb-8 px-2">
+                    <div className="h-10 w-10 bg-[#0a0a14] rounded-lg shadow-2xl flex items-center justify-center border border-[#1a1a2e]">
+                        <img src="/images/oasis-logo.jpg" alt="OASIS" className="h-8 w-auto rounded" />
+                    </div>
+                    <span className="text-white font-bold">OASIS AI</span>
                 </div>
-                <div className="flex gap-3">
-                    <Button variant="outline" className="border-white/10 text-text-secondary hover:text-white hover:bg-white/5">
-                        View Reports
-                    </Button>
-                    <Button className="bg-oasis-cyan hover:bg-oasis-cyan/80 text-bg-primary font-bold">
-                        <Zap className="mr-2 h-4 w-4" />
-                        New Automation
-                    </Button>
-                </div>
-            </div>
 
-            {/* Metrics Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {[
-                    { label: 'Active Automations', value: '12', icon: Zap, change: '+2', trend: 'up' },
-                    { label: 'Total Executions', value: '1,248', icon: Activity, change: '+15%', trend: 'up' },
-                    { label: 'Time Saved', value: '156h', icon: Clock, change: '+12h', trend: 'up' },
-                    { label: 'Cost Savings', value: '$4,680', icon: DollarSign, change: '+8%', trend: 'up' },
-                ].map((metric, i) => (
-                    <div key={i} className="bg-bg-secondary p-6 rounded-xl border border-white/10 shadow-sm">
+                {/* Navigation */}
+                <nav className="flex-1 space-y-1">
+                    <a href="/portal/dashboard" className="flex items-center gap-3 px-3 py-2 rounded-lg bg-cyan-500/10 text-cyan-400">
+                        <LayoutDashboard className="w-5 h-5" />
+                        Dashboard
+                    </a>
+                    <a href="/portal/automations" className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition">
+                        <Bot className="w-5 h-5" />
+                        My Automations
+                    </a>
+                    <a href="/portal/reports" className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition">
+                        <FileText className="w-5 h-5" />
+                        Reports
+                    </a>
+                    <a href="/portal/billing" className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition">
+                        <CreditCard className="w-5 h-5" />
+                        Billing
+                    </a>
+                    <a href="/portal/support" className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition">
+                        <HelpCircle className="w-5 h-5" />
+                        Support
+                    </a>
+                    <a href="/portal/settings" className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition">
+                        <Settings className="w-5 h-5" />
+                        Settings
+                    </a>
+                </nav>
+
+                {/* User & Logout */}
+                <div className="border-t border-gray-800 pt-4 mt-4">
+                    <div className="px-3 py-2 mb-2">
+                        <p className="text-white font-medium truncate">{profile?.full_name || 'Client'}</p>
+                        <p className="text-gray-500 text-sm truncate">{profile?.email}</p>
+                    </div>
+                    <button
+                        onClick={handleLogout}
+                        className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 hover:bg-red-500/10 hover:text-red-400 transition"
+                    >
+                        <LogOut className="w-5 h-5" />
+                        Sign Out
+                    </button>
+                </div>
+            </aside>
+
+            {/* Main Content */}
+            <main className="flex-1 p-8 overflow-auto">
+                {/* Header */}
+                <div className="mb-8 flex justify-between items-center">
+                    <div>
+                        <h1 className="text-3xl font-bold text-white">
+                            Welcome back, {profile?.full_name?.split(' ')[0] || 'there'}!
+                        </h1>
+                        <p className="text-gray-400 mt-1">Here's what's happening with your automations.</p>
+                    </div>
+                    <button
+                        onClick={handleLogout}
+                        className="lg:hidden p-2 rounded-lg text-gray-400 hover:text-white"
+                    >
+                        <LogOut className="w-6 h-6" />
+                    </button>
+                </div>
+
+                {/* Stats Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-6">
                         <div className="flex items-center justify-between mb-4">
-                            <div className="h-10 w-10 rounded-lg bg-bg-tertiary flex items-center justify-center text-oasis-cyan">
-                                <metric.icon className="h-5 w-5" />
-                            </div>
-                            <div className={`flex items-center text-xs font-medium ${metric.trend === 'up' ? 'text-success' : 'text-error'}`}>
-                                {metric.trend === 'up' ? <ArrowUpRight className="h-3 w-3 mr-1" /> : <ArrowDownRight className="h-3 w-3 mr-1" />}
-                                {metric.change}
-                            </div>
+                            <span className="text-gray-400">Total Executions</span>
+                            <Activity className="w-5 h-5 text-cyan-400" />
                         </div>
-                        <div className="text-2xl font-bold text-white">{metric.value}</div>
-                        <div className="text-sm text-text-secondary">{metric.label}</div>
+                        <p className="text-3xl font-bold text-white">{stats.totalExecutions}</p>
+                        <p className="text-sm text-gray-500 mt-1">This month</p>
                     </div>
-                ))}
-            </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Main Chart */}
-                <div className="lg:col-span-2 bg-bg-secondary p-6 rounded-xl border border-white/10 shadow-sm">
-                    <h3 className="text-lg font-bold text-white mb-6">Execution Volume</h3>
-                    <div className="h-[300px] w-full">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <LineChart data={performanceData}>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.1)" />
-                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#94A3B8' }} />
-                                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94A3B8' }} />
-                                <Tooltip
-                                    contentStyle={{ borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', backgroundColor: '#1A1F2E', color: '#fff' }}
-                                />
-                                <Line
-                                    type="monotone"
-                                    dataKey="executions"
-                                    stroke="#00D4FF"
-                                    strokeWidth={3}
-                                    dot={{ fill: '#00D4FF', strokeWidth: 2, r: 4, stroke: '#fff' }}
-                                    activeDot={{ r: 6 }}
-                                />
-                            </LineChart>
-                        </ResponsiveContainer>
+                    <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-6">
+                        <div className="flex items-center justify-between mb-4">
+                            <span className="text-gray-400">Hours Saved</span>
+                            <Clock className="w-5 h-5 text-green-400" />
+                        </div>
+                        <p className="text-3xl font-bold text-white">{stats.hoursThisMonth}</p>
+                        <p className="text-sm text-gray-500 mt-1">Estimated this month</p>
+                    </div>
+
+                    <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-6">
+                        <div className="flex items-center justify-between mb-4">
+                            <span className="text-gray-400">Success Rate</span>
+                            <TrendingUp className="w-5 h-5 text-purple-400" />
+                        </div>
+                        <p className="text-3xl font-bold text-white">{stats.successRate}%</p>
+                        <p className="text-sm text-gray-500 mt-1">All time</p>
                     </div>
                 </div>
 
-                {/* Success Rate & System Health */}
-                <div className="space-y-6">
-                    <div className="bg-bg-secondary p-6 rounded-xl border border-white/10 shadow-sm">
-                        <h3 className="text-lg font-bold text-white mb-4">Success Rate</h3>
-                        <div className="h-[200px] w-full flex items-center justify-center">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <PieChart>
-                                    <Pie
-                                        data={pieData}
-                                        cx="50%"
-                                        cy="50%"
-                                        innerRadius={60}
-                                        outerRadius={80}
-                                        paddingAngle={5}
-                                        dataKey="value"
-                                    >
-                                        {pieData.map((entry, index) => (
-                                            <Cell key={`cell-${index}`} fill={entry.color} />
-                                        ))}
-                                    </Pie>
-                                    <Tooltip />
-                                </PieChart>
-                            </ResponsiveContainer>
-                        </div>
-                        <div className="flex justify-center gap-6 mt-2">
-                            <div className="flex items-center gap-2">
-                                <div className="h-3 w-3 rounded-full bg-oasis-cyan"></div>
-                                <span className="text-sm text-text-secondary">Success (92%)</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <div className="h-3 w-3 rounded-full bg-error"></div>
-                                <span className="text-sm text-text-secondary">Error (8%)</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+                {/* Automations */}
+                <div className="mb-8">
+                    <h2 className="text-xl font-semibold text-white mb-4">Your Automations</h2>
 
-            {/* Recent Activity */}
-            <div className="bg-bg-secondary rounded-xl border border-white/10 shadow-sm overflow-hidden">
-                <div className="p-6 border-b border-white/10 flex items-center justify-between">
-                    <h3 className="text-lg font-bold text-white">Recent Activity</h3>
-                    <Link to="/portal/automations" className="text-sm text-oasis-cyan hover:underline">View All</Link>
-                </div>
-                <div className="divide-y divide-white/10">
-                    {recentActivity.map((item) => (
-                        <div key={item.id} className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors">
-                            <div className="flex items-center gap-4">
-                                <div className={`h-2 w-2 rounded-full ${item.status === 'success' ? 'bg-success' : 'bg-error'}`}></div>
-                                <div>
-                                    <div className="font-medium text-white">{item.name}</div>
-                                    <div className="text-xs text-text-secondary">{item.time}</div>
+                    {automations.length === 0 ? (
+                        <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-8 text-center">
+                            <Bot className="w-12 h-12 text-gray-600 mx-auto mb-4" />
+                            <p className="text-gray-400">No automations yet.</p>
+                            <a href="/pricing" className="text-cyan-400 hover:text-cyan-300 mt-2 inline-block">
+                                Browse automations →
+                            </a>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {automations.map((automation) => (
+                                <div
+                                    key={automation.id}
+                                    className="bg-gray-900/50 border border-gray-800 rounded-xl p-6 hover:border-cyan-500/30 transition"
+                                >
+                                    <div className="flex items-start justify-between mb-4">
+                                        <div>
+                                            <h3 className="text-lg font-semibold text-white">{automation.display_name}</h3>
+                                            <p className="text-sm text-gray-500 capitalize">{automation.tier} Plan</p>
+                                        </div>
+                                        <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(automation.status)}`}>
+                                            {automation.status.replace('_', ' ')}
+                                        </span>
+                                    </div>
+
+                                    {automation.last_run_at && (
+                                        <p className="text-sm text-gray-400">
+                                            Last run: {formatDate(automation.last_run_at)}
+                                        </p>
+                                    )}
                                 </div>
-                            </div>
-                            <div className="flex items-center gap-4">
-                                <span className="text-xs font-mono text-text-tertiary">{item.duration}</span>
-                                {item.status === 'success' ? (
-                                    <div className="px-2 py-1 rounded-full bg-success/10 text-success text-xs font-medium">Success</div>
-                                ) : (
-                                    <div className="px-2 py-1 rounded-full bg-error/10 text-error text-xs font-medium">Error</div>
-                                )}
-                            </div>
+                            ))}
                         </div>
-                    ))}
+                    )}
                 </div>
-            </div>
+
+                {/* Recent Activity */}
+                <div>
+                    <h2 className="text-xl font-semibold text-white mb-4">Recent Activity</h2>
+
+                    {recentLogs.length === 0 ? (
+                        <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-8 text-center">
+                            <Activity className="w-12 h-12 text-gray-600 mx-auto mb-4" />
+                            <p className="text-gray-400">No activity yet.</p>
+                        </div>
+                    ) : (
+                        <div className="bg-gray-900/50 border border-gray-800 rounded-xl overflow-hidden">
+                            {recentLogs.map((log, index) => (
+                                <div
+                                    key={log.id}
+                                    className={`flex items-center gap-4 p-4 ${index !== recentLogs.length - 1 ? 'border-b border-gray-800' : ''}`}
+                                >
+                                    <div className={`w-2 h-2 rounded-full ${log.status === 'success' ? 'bg-green-500' : 'bg-red-500'}`} />
+                                    <div className="flex-1">
+                                        <p className="text-white">{log.event_name}</p>
+                                        <p className="text-sm text-gray-500">{formatDate(log.created_at)}</p>
+                                    </div>
+                                    <CheckCircle className={`w-5 h-5 ${log.status === 'success' ? 'text-green-500' : 'text-red-500'}`} />
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            </main>
         </div>
     );
-};
-
-export default DashboardPage;
+}
