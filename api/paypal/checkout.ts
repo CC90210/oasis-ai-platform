@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-const PAYPAL_CLIENT_ID = process.env.VITE_PAYPAL_CLIENT_ID || process.env.PAYPAL_CLIENT_ID;
-const PAYPAL_SECRET = process.env.PAYPAL_SECRET;
+const PAYPAL_CLIENT_ID = process.env.VITE_PAYPAL_CLIENT_ID || process.env.PAYPAL_CLIENT_ID || 'AWj36CkXVGVjHIIO7LHsvtRQoACy6Gbg4KTJu0CD1dJrRBkLqm8G9PYIpr40vCZ8ZZl63o-5eHDfD-8J';
+const PAYPAL_SECRET = process.env.PAYPAL_SECRET || 'ECNgsX5iCs5Xi2xI6gU1pEX6lm00BvCXcskSfTuj8a_v-FwHCiL5LFPjG8PspiH60fz-_JiGiVBcJops';
 const PAYPAL_API = 'https://api-m.paypal.com'; // Use sandbox for testing: https://api-m.sandbox.paypal.com
 
 // Same pricing data as Stripe to match pricing
