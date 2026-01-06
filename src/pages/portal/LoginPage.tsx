@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
 
 // Use global constants defined in vite.config.ts
 // @ts-ignore - Defined in vite.config.ts
@@ -68,16 +69,30 @@ export default function LoginPage() {
                 return;
             }
 
-            // Success - store tokens
+            // Success - store tokens logic
             if (data.access_token) {
+                // 1. Store in LocalStorage (Backup)
                 localStorage.setItem('supabase_access_token', data.access_token);
                 localStorage.setItem('supabase_refresh_token', data.refresh_token || '');
                 localStorage.setItem('supabase_user', JSON.stringify(data.user));
 
+                // 2. CRITICAL: Sync with Supabase Client for Dashboard Access
+                // This fix ensures supabase.auth.getUser() finds the session in the Dashboard
+                const { error: sessionError } = await supabase.auth.setSession({
+                    access_token: data.access_token,
+                    refresh_token: data.refresh_token || '',
+                });
+
+                if (sessionError) {
+                    console.error('Failed to restore session:', sessionError);
+                }
+
                 setDebugInfo('Login successful! Redirecting...');
 
                 // Redirect to dashboard
-                window.location.href = '/portal/dashboard';
+                setTimeout(() => {
+                    window.location.href = '/portal/dashboard';
+                }, 500);
             } else {
                 setError('Login failed. Please try again.');
             }
