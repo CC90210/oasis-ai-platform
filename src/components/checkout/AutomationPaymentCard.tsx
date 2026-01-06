@@ -16,9 +16,6 @@ export function AutomationPaymentCard({
 }: AutomationPaymentCardProps) {
     const [tier, setTier] = useState<'starter' | 'professional' | 'business'>('professional');
     const [currency, setCurrency] = useState<'usd' | 'cad'>('usd');
-    const [paymentMethod, setPaymentMethod] = useState<'stripe' | 'paypal'>('stripe');
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
 
     // Promo Code State
     const [showPromoCode, setShowPromoCode] = useState(false);
@@ -57,41 +54,7 @@ export function AutomationPaymentCard({
         }
     };
 
-    const handlePayPalCheckout = async () => {
-        setLoading(true);
-        setError(null);
 
-        try {
-            const response = await fetch('/api/paypal/checkout', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    productId: automation.id,
-                    productType: 'automation',
-                    tier,
-                    currency,
-                    discountPercent,
-                }),
-            });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.error || 'PayPal checkout failed');
-            }
-
-            // Redirect to PayPal approval URL
-            if (data.approvalUrl) {
-                window.location.href = data.approvalUrl;
-            }
-        } catch (err: any) {
-            console.error('PayPal checkout error:', err);
-            setError(err.message || 'PayPal checkout failed');
-            alert('PayPal checkout failed. Please try again or stick to Card payment.');
-        } finally {
-            setLoading(false);
-        }
-    };
 
     return (
         <div className="bg-gray-900/80 backdrop-blur-sm rounded-2xl border border-gray-800 overflow-hidden">
@@ -216,59 +179,17 @@ export function AutomationPaymentCard({
                     </div>
                 </div>
 
-                {/* Payment Method Toggle */}
-                <div className="flex gap-2 p-1 bg-gray-800 rounded-lg">
-                    <button
-                        onClick={() => setPaymentMethod('stripe')}
-                        className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition flex items-center justify-center gap-2 ${paymentMethod === 'stripe'
-                            ? 'bg-cyan-500 text-black'
-                            : 'text-gray-400 hover:text-white'
-                            }`}
-                    >
-                        💳 Card / Apple Pay
-                        <span className="text-xs bg-green-500/20 text-green-400 px-1.5 py-0.5 rounded">
-                            Preferred
-                        </span>
-                    </button>
-                    {paypalEnabled && (
-                        <button
-                            onClick={() => setPaymentMethod('paypal')}
-                            className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition ${paymentMethod === 'paypal'
-                                ? 'bg-cyan-500 text-black'
-                                : 'text-gray-400 hover:text-white'
-                                }`}
-                        >
-                            PayPal
-                        </button>
-                    )}
-                </div>
-
-                {/* Checkout Button */}
-                {paymentMethod === 'stripe' ? (
-                    <StripeCheckoutButton
-                        productId={automation.id}
-                        productType="automation"
-                        tier={tier}
-                        currency={currency}
-                        buttonText={`Pay ${currencySymbol}${totalDueToday.toLocaleString(undefined, { maximumFractionDigits: 0 })}`}
-                        variant="primary"
-                        discountPercent={discountPercent}
-                        promoCode={promoApplied ? promoCode : undefined}
-                    />
-                ) : (
-                    <>
-                        <button
-                            className="w-full py-3 px-6 rounded-lg font-semibold bg-[#FFC439] hover:bg-[#f0b830] text-black transition disabled:opacity-70 disabled:cursor-not-allowed"
-                            onClick={handlePayPalCheckout}
-                            disabled={loading}
-                        >
-                            {loading ? 'Processing...' : 'Pay with PayPal'}
-                        </button>
-                        {error && (
-                            <p className="text-red-400 text-xs mt-2 text-center">{error}</p>
-                        )}
-                    </>
-                )}
+                {/* Payment Method - Stripe Only */}
+                <StripeCheckoutButton
+                    productId={automation.id}
+                    productType="automation"
+                    tier={tier}
+                    currency={currency}
+                    buttonText={`Pay ${currencySymbol}${totalDueToday.toLocaleString(undefined, { maximumFractionDigits: 0 })}`}
+                    variant="primary"
+                    discountPercent={discountPercent}
+                    promoCode={promoApplied ? promoCode : undefined}
+                />
 
                 {/* Trust Badges - Enhanced */}
                 <div className="flex items-center justify-center gap-6 pt-4 border-t border-gray-800">
