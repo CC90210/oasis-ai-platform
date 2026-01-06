@@ -17,6 +17,8 @@ export function AutomationPaymentCard({
     const [tier, setTier] = useState<'starter' | 'professional' | 'business'>('professional');
     const [currency, setCurrency] = useState<'usd' | 'cad'>('usd');
     const [paymentMethod, setPaymentMethod] = useState<'stripe' | 'paypal'>('stripe');
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     // Promo Code State
     const [showPromoCode, setShowPromoCode] = useState(false);
@@ -52,6 +54,42 @@ export function AutomationPaymentCard({
             setPromoError('Invalid promo code');
             setPromoApplied(false);
             setDiscountPercent(0);
+        }
+    };
+
+    const handlePayPalCheckout = async () => {
+        setLoading(true);
+        setError(null);
+
+        try {
+            const response = await fetch('/api/paypal/checkout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    productId: automation.id,
+                    productType: 'automation',
+                    tier,
+                    currency,
+                    discountPercent,
+                }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'PayPal checkout failed');
+            }
+
+            // Redirect to PayPal approval URL
+            if (data.approvalUrl) {
+                window.location.href = data.approvalUrl;
+            }
+        } catch (err: any) {
+            console.error('PayPal checkout error:', err);
+            setError(err.message || 'PayPal checkout failed');
+            alert('PayPal checkout failed. Please try again or stick to Card payment.');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -194,10 +232,13 @@ export function AutomationPaymentCard({
                     </button>
                     {paypalEnabled && (
                         <button
-                            disabled
-                            className="flex-1 py-2 px-4 rounded-md text-sm font-medium text-gray-500 cursor-not-allowed opacity-50 border border-gray-800"
+                            onClick={() => setPaymentMethod('paypal')}
+                            className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition ${paymentMethod === 'paypal'
+                                ? 'bg-cyan-500 text-black'
+                                : 'text-gray-400 hover:text-white'
+                                }`}
                         >
-                            PayPal (Coming Soon)
+                            PayPal
                         </button>
                     )}
                 </div>
@@ -215,16 +256,18 @@ export function AutomationPaymentCard({
                         promoCode={promoApplied ? promoCode : undefined}
                     />
                 ) : (
-                    <button
-                        className="w-full py-3 px-6 rounded-lg font-semibold bg-[#FFC439] hover:bg-[#f0b830] text-black transition"
-                        onClick={() => {
-                            // Placeholder for PayPal logic
-                            console.log('PayPal checkout for:', automation.id, tier);
-                            alert('Please use Card payment for now, or contact support for PayPal Invoice.');
-                        }}
-                    >
-                        Pay with PayPal
-                    </button>
+                    <>
+                        <button
+                            className="w-full py-3 px-6 rounded-lg font-semibold bg-[#FFC439] hover:bg-[#f0b830] text-black transition disabled:opacity-70 disabled:cursor-not-allowed"
+                            onClick={handlePayPalCheckout}
+                            disabled={loading}
+                        >
+                            {loading ? 'Processing...' : 'Pay with PayPal'}
+                        </button>
+                        {error && (
+                            <p className="text-red-400 text-xs mt-2 text-center">{error}</p>
+                        )}
+                    </>
                 )}
 
                 {/* Trust Badges - Enhanced */}
