@@ -1,35 +1,61 @@
 import { useEffect, useState } from 'react';
 import { supabase, Subscription } from '@/lib/supabase';
-import { CreditCard, CheckCircle, Clock } from 'lucide-react';
+import { CreditCard, FileText, Loader2, AlertCircle, DollarSign, Calendar, CheckCircle } from 'lucide-react';
 import PortalLayout from '@/components/portal/PortalLayout';
 import { formatCurrency, formatDate } from '@/lib/formatters';
 
+interface BillingHistory {
+    id: string;
+    description: string;
+    amount_cents: number;
+    date: string;
+    status: 'paid' | 'pending' | 'failed';
+}
+
 export default function BillingPage() {
     const [loading, setLoading] = useState(true);
-    const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
+    const [subscription, setSubscription] = useState<Subscription | null>(null);
+    const [billingHistory, setBillingHistory] = useState<BillingHistory[]>([]);
 
     useEffect(() => {
-        loadSubscription();
+        loadBillingData();
     }, []);
 
-    const loadSubscription = async () => {
+    const loadBillingData = async () => {
         try {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) return;
 
-            const { data } = await supabase
+            // Load subscription from Supabase
+            const { data: subData } = await supabase
                 .from('subscriptions')
                 .select('*')
                 .eq('user_id', user.id)
-                .order('created_at', { ascending: false });
+                .eq('status', 'active')
+                .single();
 
-            setSubscriptions(data || []);
+            setSubscription(subData || null);
+
+            // For now, billing history would come from a separate table or Stripe
+            // We'll show empty state if no data exists
+            setBillingHistory([]);
+
         } catch (err) {
             console.error('Error loading billing:', err);
         } finally {
             setLoading(false);
         }
     };
+
+    if (loading) {
+        return (
+            <PortalLayout>
+                <div className="flex items-center justify-center h-[60vh]">
+                    <Loader2 className="animate-spin text-cyan-500 w-8 h-8" />
+                </div>
+            </PortalLayout>
+        );
+    }
 
     return (
         <PortalLayout>
@@ -42,97 +68,126 @@ export default function BillingPage() {
                     <p className="text-gray-400 mt-2">Manage your plan, payment methods, and view invoices.</p>
                 </header>
 
-                <div className="space-y-8">
-                    {/* Active Plan */}
-                    <section>
-                        <h2 className="text-xl font-bold text-white mb-4">Current Plan</h2>
-                        {subscriptions.length === 0 && !loading ? (
-                            <div className="bg-[#0a0a0f] border border-[#1a1a2e] p-8 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-6">
-                                <div>
-                                    <h3 className="text-xl font-bold text-white mb-2">No Active Subscription</h3>
-                                    <p className="text-gray-400 max-w-md">
-                                        You are currently not subscribed to any premium automation plans. Upgrade to unlock the full power of OASIS AI.
-                                    </p>
+                <div className="grid lg:grid-cols-2 gap-8">
+                    {/* Current Plan */}
+                    <div className="bg-[#0a0a0f] border border-[#1a1a2e] p-6 rounded-2xl">
+                        <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                            <DollarSign className="w-5 h-5 text-cyan-500" />
+                            Current Plan
+                        </h2>
+
+                        {subscription ? (
+                            <div className="space-y-4">
+                                <div className="flex items-center justify-between p-4 bg-[#151520] rounded-xl border border-[#2a2a3e]">
+                                    <div>
+                                        <h3 className="text-white font-bold text-lg">{subscription.product_name}</h3>
+                                        <p className="text-gray-400 text-sm capitalize">{subscription.tier || 'Professional'} Tier</p>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-2xl font-bold text-cyan-400">{formatCurrency(subscription.amount_cents)}</p>
+                                        <p className="text-gray-500 text-sm">/month</p>
+                                    </div>
                                 </div>
-                                <a href="/pricing" className="px-6 py-3 bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 text-white font-bold rounded-xl shadow-lg shadow-cyan-900/20 transition transform hover:scale-105">
-                                    View Plans
-                                </a>
+                                <div className="flex items-center gap-2 text-green-400 text-sm">
+                                    <CheckCircle className="w-4 h-4" />
+                                    <span>Active Subscription</span>
+                                </div>
+                                {subscription.current_period_end && (
+                                    <p className="text-gray-500 text-sm">
+                                        Next billing: {formatDate(subscription.current_period_end)}
+                                    </p>
+                                )}
                             </div>
                         ) : (
-                            subscriptions.map(sub => (
-                                <div key={sub.id} className="bg-gradient-to-br from-[#0a0a0f] to-[#11111a] border border-[#1a1a2e] p-8 rounded-2xl relative overflow-hidden mb-4">
-                                    <div className="absolute top-0 right-0 p-32 bg-cyan-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
-
-                                    <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-                                        <div>
-                                            <div className="flex items-center gap-3 mb-2">
-                                                <h3 className="text-2xl font-bold text-white">{sub.product_name}</h3>
-                                                <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ${sub.status === 'active' ? 'bg-green-500/10 text-green-400 border-green-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20'
-                                                    }`}>
-                                                    {sub.status}
-                                                </span>
-                                            </div>
-                                            <p className="text-gray-400 flex items-center gap-2">
-                                                <span className="text-3xl font-bold text-white">{formatCurrency(sub.amount_cents, sub.currency)}</span>
-                                                <span className="text-sm">/ month</span>
-                                            </p>
-                                        </div>
-                                        <div className="text-right">
-                                            <p className="text-sm text-gray-500 mb-1">Next Billing Date</p>
-                                            <p className="text-white font-medium flex items-center gap-2 justify-end">
-                                                <Clock className="w-4 h-4 text-cyan-500" />
-                                                {sub.current_period_end ? formatDate(sub.current_period_end) : 'N/A'}
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    <div className="mt-8 pt-8 border-t border-[#1a1a2e] grid md:grid-cols-3 gap-4">
-                                        {['Unlimited Executions', 'Priority Support', 'Advanced Analytics'].map((feature, i) => (
-                                            <div key={i} className="flex items-center gap-3 text-gray-300">
-                                                <CheckCircle className="w-5 h-5 text-cyan-500" />
-                                                {feature}
-                                            </div>
-                                        ))}
-                                    </div>
+                            <div className="text-center py-8">
+                                <div className="w-16 h-16 bg-[#151520] rounded-full flex items-center justify-center mx-auto mb-4 border border-[#2a2a3e]">
+                                    <CreditCard className="w-8 h-8 text-gray-500" />
                                 </div>
-                            ))
+                                <h3 className="text-white font-bold mb-2">No Active Subscription</h3>
+                                <p className="text-gray-500 text-sm mb-4">
+                                    Contact us to set up your billing preferences.
+                                </p>
+                                <a
+                                    href="mailto:oasisaisolutions@gmail.com"
+                                    className="inline-flex items-center gap-2 text-cyan-400 hover:text-cyan-300 font-medium"
+                                >
+                                    Contact Support →
+                                </a>
+                            </div>
                         )}
-                    </section>
+                    </div>
 
-                    {/* Payment Method Stub */}
-                    <section className="grid md:grid-cols-2 gap-8">
-                        <div>
-                            <h2 className="text-xl font-bold text-white mb-4">Payment Method</h2>
-                            <div className="bg-[#0a0a0f] border border-[#1a1a2e] p-6 rounded-xl flex items-center justify-between">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-12 h-8 bg-[#1a1a2e] rounded border border-[#2a2a3e] flex items-center justify-center">
-                                        <div className="w-6 h-4 bg-gray-600 rounded-sm opacity-50"></div>
-                                    </div>
-                                    <div>
-                                        <p className="text-white font-medium">•••• •••• •••• 4242</p>
-                                        <p className="text-xs text-gray-500">Expires 12/28</p>
-                                    </div>
-                                </div>
-                                <button className="text-sm text-cyan-400 hover:text-white transition">Update</button>
-                            </div>
-                        </div>
+                    {/* Billing Summary */}
+                    <div className="bg-[#0a0a0f] border border-[#1a1a2e] p-6 rounded-2xl">
+                        <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                            <Calendar className="w-5 h-5 text-purple-500" />
+                            Billing Summary
+                        </h2>
 
-                        <div>
-                            <h2 className="text-xl font-bold text-white mb-4">Billing History</h2>
-                            <div className="bg-[#0a0a0f] border border-[#1a1a2e] rounded-xl overflow-hidden">
-                                <div className="p-4 border-b border-[#1a1a2e] flex justify-between items-center hover:bg-[#151520] transition cursor-pointer">
-                                    <div>
-                                        <p className="text-white text-sm font-medium">Invoice #INV-2024-001</p>
-                                        <p className="text-gray-500 text-xs">Jan 1, 2026</p>
-                                    </div>
-                                    <span className="text-gray-400 text-sm">$499.00</span>
+                        <div className="space-y-4">
+                            <div className="p-4 bg-[#151520] rounded-xl border border-[#2a2a3e]">
+                                <div className="flex justify-between items-center mb-2">
+                                    <span className="text-gray-400">Monthly Service Fee</span>
+                                    <span className="text-white font-medium">$100.00</span>
                                 </div>
-                                <div className="p-4 flex justify-center">
-                                    <button className="text-xs text-gray-500 hover:text-white transition">View All Invoices</button>
+                                <div className="flex justify-between items-center text-sm">
+                                    <span className="text-gray-500">Customer Support Agent</span>
+                                    <span className="text-gray-500">Professional Tier</span>
                                 </div>
                             </div>
+
+                            <div className="border-t border-[#1a1a2e] pt-4">
+                                <p className="text-gray-500 text-sm">
+                                    Need to update your billing information or have questions about your invoice?
+                                </p>
+                                <a
+                                    href="mailto:oasisaisolutions@gmail.com"
+                                    className="text-cyan-400 hover:text-cyan-300 text-sm mt-2 inline-block"
+                                >
+                                    Contact billing support →
+                                </a>
+                            </div>
                         </div>
-                    </section>
+                    </div>
+                </div>
+
+                {/* Billing History */}
+                <div className="mt-8 bg-[#0a0a0f] border border-[#1a1a2e] p-6 rounded-2xl">
+                    <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                        <FileText className="w-5 h-5 text-green-500" />
+                        Billing History
+                    </h2>
+
+                    {billingHistory.length === 0 ? (
+                        <div className="text-center py-8">
+                            <div className="w-12 h-12 bg-[#151520] rounded-full flex items-center justify-center mx-auto mb-3 border border-[#2a2a3e]">
+                                <FileText className="w-6 h-6 text-gray-500" />
+                            </div>
+                            <p className="text-gray-500 text-sm">
+                                No billing history available yet. Invoices will appear here after your first payment cycle.
+                            </p>
+                        </div>
+                    ) : (
+                        <div className="space-y-3">
+                            {billingHistory.map((item) => (
+                                <div key={item.id} className="flex items-center justify-between p-4 bg-[#151520] rounded-xl border border-[#2a2a3e] hover:border-[#3a3a4e] transition">
+                                    <div>
+                                        <p className="text-white font-medium">{item.description}</p>
+                                        <p className="text-gray-500 text-sm">{formatDate(item.date)}</p>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-white font-medium">{formatCurrency(item.amount_cents)}</p>
+                                        <span className={`text-xs px-2 py-0.5 rounded ${item.status === 'paid' ? 'bg-green-500/20 text-green-400' :
+                                                item.status === 'pending' ? 'bg-yellow-500/20 text-yellow-400' :
+                                                    'bg-red-500/20 text-red-400'
+                                            }`}>
+                                            {item.status}
+                                        </span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </div>
         </PortalLayout>
