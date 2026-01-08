@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { supabase, Profile, Automation, AutomationLog } from '@/lib/supabase';
 import { Link } from 'react-router-dom';
 import {
-    Activity, CheckCircle, Clock, TrendingUp, Bot, AlertCircle, RefreshCw, Bug
+    Activity, CheckCircle, Clock, TrendingUp, Bot, AlertCircle, RefreshCw
 } from 'lucide-react';
 import PortalLayout from '@/components/portal/PortalLayout';
 import { formatRelativeTime } from '@/lib/formatters';
@@ -13,8 +13,7 @@ export default function DashboardPage() {
     const [profile, setProfile] = useState<Profile | null>(null);
     const [automations, setAutomations] = useState<Automation[]>([]);
     const [recentLogs, setRecentLogs] = useState<AutomationLog[]>([]);
-    const [debugInfo, setDebugInfo] = useState<any>(null);
-    const [showDebug, setShowDebug] = useState(false);
+    const loadingTimeout = useRef<NodeJS.Timeout | null>(null);
     const [stats, setStats] = useState({
         totalExecutions: 0,
         successfulExecutions: 0,
@@ -24,50 +23,65 @@ export default function DashboardPage() {
 
     useEffect(() => {
         loadDashboardData();
+
+        // Safety timeout to prevent infinite loading
+        loadingTimeout.current = setTimeout(() => {
+            if (loading) {
+                setLoading(false);
+                setError('Loading took too long. Please refresh the page.');
+            }
+        }, 15000);
+
+        return () => {
+            if (loadingTimeout.current) clearTimeout(loadingTimeout.current);
+        };
     }, []);
 
     const loadDashboardData = async () => {
         setLoading(true);
         setError(null);
-        const debug: any = { timestamp: new Date().toISOString() };
 
         try {
             // Get authenticated user
             const { data: authData, error: authError } = await supabase.auth.getUser();
-            debug.authData = authData;
-            debug.authError = authError;
 
             if (authError || !authData.user) {
-                debug.issue = 'No authenticated user found';
-                setDebugInfo(debug);
                 setError('Authentication error. Please sign out and sign back in.');
                 setLoading(false);
                 return;
             }
 
             const user = authData.user;
-            debug.userId = user.id;
-            debug.userEmail = user.email;
 
-            // 1. Load Profile
-            const { data: profileData, error: profileError } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('id', user.id)
-                .single();
+            // 1. Load Profile (with error handling for RLS issues)
+            try {
+                const { data: profileData } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', user.id)
+                    .single();
 
-            debug.profileData = profileData;
-            debug.profileError = profileError;
-
-            setProfile(profileData || {
-                id: user.id,
-                email: user.email!,
-                full_name: user.user_metadata?.full_name || 'Client',
-                company_name: '',
-                phone: null,
-                avatar_url: null,
-                created_at: ''
-            });
+                setProfile(profileData || {
+                    id: user.id,
+                    email: user.email!,
+                    full_name: user.user_metadata?.full_name || 'Client',
+                    company_name: '',
+                    phone: null,
+                    avatar_url: null,
+                    created_at: ''
+                });
+            } catch {
+                // Fallback if profile query fails
+                setProfile({
+                    id: user.id,
+                    email: user.email!,
+                    full_name: user.user_metadata?.full_name || 'Client',
+                    company_name: '',
+                    phone: null,
+                    avatar_url: null,
+                    created_at: ''
+                });
+            }
 
             // 2. Load Automations
             const { data: automationData, error: automationError } = await supabase
@@ -76,9 +90,9 @@ export default function DashboardPage() {
                 .eq('user_id', user.id)
                 .order('created_at', { ascending: false });
 
-            debug.automationData = automationData;
-            debug.automationError = automationError;
-            debug.automationCount = automationData?.length || 0;
+            if (automationError) {
+                console.error('Automation query error:', automationError);
+            }
 
             setAutomations(automationData || []);
 
@@ -90,9 +104,9 @@ export default function DashboardPage() {
                 .order('created_at', { ascending: false })
                 .limit(20);
 
-            debug.logData = logData;
-            debug.logError = logError;
-            debug.logCount = logData?.length || 0;
+            if (logError) {
+                console.error('Log query error:', logError);
+            }
 
             setRecentLogs(logData || []);
 
@@ -108,14 +122,12 @@ export default function DashboardPage() {
                 successRate: rate
             });
 
-            setDebugInfo(debug);
-
         } catch (err: any) {
-            debug.catchError = err.message;
-            setDebugInfo(debug);
+            console.error('Dashboard error:', err);
             setError('Failed to load dashboard data. Please try refreshing.');
         } finally {
             setLoading(false);
+            if (loadingTimeout.current) clearTimeout(loadingTimeout.current);
         }
     };
 
@@ -149,72 +161,21 @@ export default function DashboardPage() {
                         </h1>
                         <p className="text-gray-400">Here's what's happening with your AI workforce.</p>
                     </div>
-                    <div className="flex gap-2">
-                        <button
-                            onClick={() => setShowDebug(!showDebug)}
-                            className="p-2.5 rounded-lg bg-[#151520] hover:bg-[#252535] text-gray-400 hover:text-yellow-400 border border-[#2a2a3e] transition"
-                            title="Toggle Debug Info"
-                        >
-                            <Bug className="w-5 h-5" />
-                        </button>
-                        <button
-                            onClick={loadDashboardData}
-                            disabled={loading}
-                            className="p-2.5 rounded-lg bg-[#151520] hover:bg-[#252535] text-gray-400 hover:text-white border border-[#2a2a3e] transition disabled:opacity-50"
-                            title="Refresh data"
-                        >
-                            <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
-                        </button>
-                    </div>
+                    <button
+                        onClick={loadDashboardData}
+                        disabled={loading}
+                        className="p-2.5 rounded-lg bg-[#151520] hover:bg-[#252535] text-gray-400 hover:text-white border border-[#2a2a3e] transition disabled:opacity-50"
+                        title="Refresh data"
+                    >
+                        <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
+                    </button>
                 </div>
-
-                {/* Debug Panel */}
-                {showDebug && debugInfo && (
-                    <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-4 mb-8 text-sm">
-                        <h3 className="text-yellow-400 font-bold mb-2 flex items-center gap-2">
-                            <Bug className="w-4 h-4" /> Debug Information
-                        </h3>
-                        <div className="grid md:grid-cols-2 gap-4 text-xs font-mono">
-                            <div>
-                                <p className="text-yellow-300">Auth User ID:</p>
-                                <code className="text-white bg-black/30 p-1 rounded block break-all">{debugInfo.userId || 'N/A'}</code>
-                            </div>
-                            <div>
-                                <p className="text-yellow-300">Email:</p>
-                                <code className="text-white bg-black/30 p-1 rounded block">{debugInfo.userEmail || 'N/A'}</code>
-                            </div>
-                            <div>
-                                <p className="text-yellow-300">Automations Found:</p>
-                                <code className="text-white bg-black/30 p-1 rounded block">{debugInfo.automationCount || 0}</code>
-                            </div>
-                            <div>
-                                <p className="text-yellow-300">Logs Found:</p>
-                                <code className="text-white bg-black/30 p-1 rounded block">{debugInfo.logCount || 0}</code>
-                            </div>
-                            {debugInfo.automationError && (
-                                <div className="md:col-span-2">
-                                    <p className="text-red-400">Automation Query Error:</p>
-                                    <code className="text-red-300 bg-black/30 p-1 rounded block">{JSON.stringify(debugInfo.automationError)}</code>
-                                </div>
-                            )}
-                            {debugInfo.profileError && (
-                                <div className="md:col-span-2">
-                                    <p className="text-red-400">Profile Query Error:</p>
-                                    <code className="text-red-300 bg-black/30 p-1 rounded block">{JSON.stringify(debugInfo.profileError)}</code>
-                                </div>
-                            )}
-                        </div>
-                        <p className="text-gray-500 text-xs mt-3">
-                            Compare Auth User ID above with the user_id in your Supabase client_automations table. They must match exactly.
-                        </p>
-                    </div>
-                )}
 
                 {error && (
                     <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-xl mb-8 flex items-center gap-3">
                         <AlertCircle className="w-5 h-5 flex-shrink-0" />
                         <span>{error}</span>
-                        <button onClick={loadDashboardData} className="ml-auto text-sm underline">Retry</button>
+                        <button onClick={loadDashboardData} className="ml-auto text-sm underline hover:text-red-300">Retry</button>
                     </div>
                 )}
 
@@ -246,16 +207,20 @@ export default function DashboardPage() {
                             Your Automations
                         </h2>
 
-                        {automations.length === 0 ? (
+                        {loading ? (
+                            <div className="bg-[#0a0a0f] border border-[#1a1a2e] rounded-2xl p-10 flex items-center justify-center">
+                                <RefreshCw className="w-8 h-8 animate-spin text-cyan-500" />
+                            </div>
+                        ) : automations.length === 0 ? (
                             <div className="bg-[#0a0a0f] border border-[#1a1a2e] rounded-2xl p-8 md:p-10 text-center border-dashed">
                                 <div className="w-16 h-16 bg-[#151520] rounded-full flex items-center justify-center mx-auto mb-4">
                                     <Bot className="w-8 h-8 text-gray-600" />
                                 </div>
                                 <h3 className="text-lg font-bold text-white mb-2">No Active Automations</h3>
                                 <p className="text-gray-500 mb-6 max-w-sm mx-auto text-sm">
-                                    You haven't purchased or configured any AI agents yet. Browse our catalog to get started.
+                                    Your AI agents will appear here once configured. Contact support if you believe this is an error.
                                 </p>
-                                <Link to="/pricing" className="text-cyan-400 hover:text-cyan-300 font-medium">Browse Catalog →</Link>
+                                <Link to="/portal/support" className="text-cyan-400 hover:text-cyan-300 font-medium">Contact Support →</Link>
                             </div>
                         ) : (
                             <div className="grid gap-4">
@@ -299,7 +264,11 @@ export default function DashboardPage() {
                         </h2>
 
                         <div className="bg-[#0a0a0f] border border-[#1a1a2e] rounded-2xl p-2 min-h-[300px]">
-                            {recentLogs.length === 0 ? (
+                            {loading ? (
+                                <div className="h-full flex items-center justify-center p-8">
+                                    <RefreshCw className="w-6 h-6 animate-spin text-purple-500" />
+                                </div>
+                            ) : recentLogs.length === 0 ? (
                                 <div className="h-full flex flex-col items-center justify-center text-center p-8 text-gray-500">
                                     <Activity className="w-8 h-8 mb-3 opacity-20" />
                                     <p className="text-sm">Activity will appear here once your agents start working.</p>
