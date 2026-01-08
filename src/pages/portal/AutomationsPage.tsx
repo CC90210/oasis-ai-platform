@@ -146,8 +146,8 @@ export default function AutomationsPage() {
             <div className="h-[calc(100vh-80px)] lg:h-screen flex flex-col lg:flex-row overflow-hidden">
 
                 {/* Left Panel: List */}
-                <div className={`w-full lg:w-1/3 border-r border-[#1a1a2e] flex flex-col bg-[#0a0a0f]/90 backdrop-blur-sm ${selectedAuto ? 'hidden lg:flex' : 'flex'}`}>
-                    <div className="p-6 border-b border-[#1a1a2e] bg-[#0a0a0f]/95">
+                <div className={`w-full lg:w-1/3 border-r border-[#1a1a2e] flex flex-col bg-[#0a0a0f] ${selectedAuto ? 'hidden lg:flex' : 'flex'}`}>
+                    <div className="p-6 border-b border-[#1a1a2e] bg-[#0a0a0f]">
                         <h1 className="text-2xl font-bold text-white flex items-center gap-3">
                             <Bot className="w-6 h-6 text-cyan-500" />
                             My Automations
@@ -188,7 +188,7 @@ export default function AutomationsPage() {
                 </div>
 
                 {/* Right Panel: Details */}
-                <div className={`flex-1 flex flex-col bg-[#050508]/90 backdrop-blur-sm ${!selectedAuto ? 'hidden lg:flex items-center justify-center' : 'flex'}`}>
+                <div className={`flex-1 flex flex-col bg-[#050508] ${!selectedAuto ? 'hidden lg:flex items-center justify-center' : 'flex'}`}>
                     {!selectedAuto ? (
                         <div className="text-center text-gray-500">
                             <Bot className="w-16 h-16 mx-auto mb-4 opacity-20" />
