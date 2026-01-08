@@ -168,8 +168,12 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
                 {/* User Info */}
                 <div className="border-t border-[#1a1a2e] pt-6 mt-4">
                     <div className="flex items-center gap-3 mb-4">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-purple-600 flex items-center justify-center text-white font-bold shadow-lg">
-                            {profile?.full_name?.charAt(0) || profile?.email?.charAt(0)?.toUpperCase() || 'C'}
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-purple-600 flex items-center justify-center text-white font-bold shadow-lg overflow-hidden">
+                            {profile?.avatar_url ? (
+                                <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+                            ) : (
+                                profile?.full_name?.charAt(0) || profile?.email?.charAt(0)?.toUpperCase() || 'C'
+                            )}
                         </div>
                         <div className="flex-1 min-w-0">
                             <p className="font-medium text-white truncate">{profile?.full_name || 'Client'}</p>

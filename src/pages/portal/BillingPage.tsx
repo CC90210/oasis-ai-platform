@@ -137,6 +137,12 @@ export default function BillingPage() {
                             </div>
 
                             <div className="border-t border-[#1a1a2e] pt-4">
+                                <div className="flex items-center gap-2 mb-3 text-sm">
+                                    <div className="w-6 h-6 rounded bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center">
+                                        <span className="text-white text-[10px] font-bold">W</span>
+                                    </div>
+                                    <span className="text-gray-400">Payments processed by <span className="text-white font-medium">Wwise</span></span>
+                                </div>
                                 <p className="text-gray-500 text-sm">
                                     Need to update your billing information or have questions about your invoice?
                                 </p>
@@ -178,8 +184,8 @@ export default function BillingPage() {
                                     <div className="text-right">
                                         <p className="text-white font-medium">{formatCurrency(item.amount_cents)}</p>
                                         <span className={`text-xs px-2 py-0.5 rounded ${item.status === 'paid' ? 'bg-green-500/20 text-green-400' :
-                                                item.status === 'pending' ? 'bg-yellow-500/20 text-yellow-400' :
-                                                    'bg-red-500/20 text-red-400'
+                                            item.status === 'pending' ? 'bg-yellow-500/20 text-yellow-400' :
+                                                'bg-red-500/20 text-red-400'
                                             }`}>
                                             {item.status}
                                         </span>

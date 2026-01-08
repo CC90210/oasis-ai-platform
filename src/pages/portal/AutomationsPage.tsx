@@ -1,8 +1,43 @@
 import { useEffect, useState } from 'react';
 import { supabase, Automation, AutomationLog } from '@/lib/supabase';
-import { Bot, Play, Pause, Settings, Activity, AlertCircle, Loader2 } from 'lucide-react';
+import { Bot, Settings, Activity, Loader2, ChevronDown, ChevronUp, Mail, User, Clock, Hash, FileText, Tag } from 'lucide-react';
 import PortalLayout from '@/components/portal/PortalLayout';
-import { formatDate, formatRelativeTime, formatLogMetadata } from '@/lib/formatters';
+import { formatDate, formatRelativeTime } from '@/lib/formatters';
+
+// Pretty field names for metadata
+const FIELD_LABELS: Record<string, { label: string; icon: any }> = {
+    'customer': { label: 'Customer', icon: User },
+    'email': { label: 'Email', icon: Mail },
+    'status': { label: 'Status', icon: Tag },
+    'order': { label: 'Order', icon: Hash },
+    'orders': { label: 'Total Orders', icon: Hash },
+    'total_orders': { label: 'Total Orders', icon: Hash },
+    'message': { label: 'Message', icon: FileText },
+    'subject': { label: 'Subject', icon: FileText },
+    'duration': { label: 'Duration', icon: Clock },
+    'timestamp': { label: 'Timestamp', icon: Clock },
+    'response': { label: 'AI Response', icon: FileText },
+    'source': { label: 'Source', icon: Tag },
+    'type': { label: 'Type', icon: Tag },
+    'priority': { label: 'Priority', icon: Tag },
+    'assignee': { label: 'Assigned To', icon: User },
+    'category': { label: 'Category', icon: Tag },
+};
+
+const formatFieldLabel = (key: string): { label: string; icon: any } => {
+    const normalized = key.toLowerCase().replace(/[_-]/g, '');
+    return FIELD_LABELS[normalized] || {
+        label: key.replace(/[_-]/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+        icon: FileText
+    };
+};
+
+const formatFieldValue = (value: any): string => {
+    if (value === null || value === undefined) return 'N/A';
+    if (typeof value === 'boolean') return value ? 'Yes' : 'No';
+    if (typeof value === 'object') return JSON.stringify(value);
+    return String(value);
+};
 
 export default function AutomationsPage() {
     const [loading, setLoading] = useState(true);
@@ -11,12 +46,12 @@ export default function AutomationsPage() {
     const [logs, setLogs] = useState<AutomationLog[]>([]);
     const [loadingLogs, setLoadingLogs] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [expandedLogs, setExpandedLogs] = useState<Set<string>>(new Set());
 
     useEffect(() => {
         loadAutomations();
     }, []);
 
-    // Load logs when an automation is selected
     useEffect(() => {
         if (selectedAuto) {
             loadLogs(selectedAuto.id);
@@ -39,7 +74,6 @@ export default function AutomationsPage() {
             if (error) throw error;
             setAutomations(data || []);
 
-            // Select the first one by default if available
             if (data && data.length > 0) {
                 setSelectedAuto(data[0]);
             }
@@ -70,12 +104,28 @@ export default function AutomationsPage() {
         }
     };
 
+    const toggleLogExpanded = (logId: string) => {
+        const newExpanded = new Set(expandedLogs);
+        if (newExpanded.has(logId)) {
+            newExpanded.delete(logId);
+        } else {
+            newExpanded.add(logId);
+        }
+        setExpandedLogs(newExpanded);
+    };
+
     const getStatusColor = (status: string) => {
         switch (status) {
             case 'active': return 'bg-green-500/10 text-green-400 border-green-500/20';
             case 'pending_setup': return 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20';
             default: return 'bg-gray-500/10 text-gray-400 border-gray-500/20';
         }
+    };
+
+    const calculateReliability = () => {
+        if (logs.length === 0) return 100;
+        const successful = logs.filter(l => l.status === 'success').length;
+        return Math.round((successful / logs.length) * 100);
     };
 
     if (loading) {
@@ -86,7 +136,7 @@ export default function AutomationsPage() {
         <PortalLayout>
             <div className="h-[calc(100vh-80px)] lg:h-screen flex flex-col lg:flex-row overflow-hidden bg-[#050505]">
 
-                {/* Left Panel: List (Mobile: Full Width, Desktop: 1/3) */}
+                {/* Left Panel: List */}
                 <div className={`w-full lg:w-1/3 border-r border-[#1a1a2e] flex flex-col ${selectedAuto ? 'hidden lg:flex' : 'flex'}`}>
                     <div className="p-6 border-b border-[#1a1a2e] bg-[#0a0a0f]">
                         <h1 className="text-2xl font-bold text-white flex items-center gap-3">
@@ -106,8 +156,8 @@ export default function AutomationsPage() {
                                     key={auto.id}
                                     onClick={() => setSelectedAuto(auto)}
                                     className={`p-4 rounded-xl border cursor-pointer transition-all duration-200 group ${selectedAuto?.id === auto.id
-                                            ? 'bg-cyan-500/10 border-cyan-500/30 shadow-[0_0_15px_rgba(6,182,212,0.1)]'
-                                            : 'bg-[#0a0a0f] border-[#1a1a2e] hover:border-gray-700'
+                                        ? 'bg-cyan-500/10 border-cyan-500/30 shadow-[0_0_15px_rgba(6,182,212,0.1)]'
+                                        : 'bg-[#0a0a0f] border-[#1a1a2e] hover:border-gray-700'
                                         }`}
                                 >
                                     <div className="flex justify-between items-start mb-2">
@@ -128,7 +178,7 @@ export default function AutomationsPage() {
                     </div>
                 </div>
 
-                {/* Right Panel: Details (Mobile: Full Width, Desktop: 2/3) */}
+                {/* Right Panel: Details */}
                 <div className={`flex-1 flex flex-col bg-[#050505] ${!selectedAuto ? 'hidden lg:flex items-center justify-center' : 'flex'}`}>
                     {!selectedAuto ? (
                         <div className="text-center text-gray-500">
@@ -170,7 +220,7 @@ export default function AutomationsPage() {
                             <div className="flex-1 overflow-y-auto p-6 md:p-8">
                                 <div className="max-w-4xl mx-auto space-y-8">
 
-                                    {/* Stats / Info */}
+                                    {/* Stats */}
                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                         <div className="bg-[#0a0a0f] border border-[#1a1a2e] p-4 rounded-xl">
                                             <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Type</p>
@@ -186,7 +236,7 @@ export default function AutomationsPage() {
                                         </div>
                                         <div className="bg-[#0a0a0f] border border-[#1a1a2e] p-4 rounded-xl">
                                             <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Reliability</p>
-                                            <p className="text-green-400 font-medium">100%</p>
+                                            <p className="text-green-400 font-medium">{calculateReliability()}%</p>
                                         </div>
                                     </div>
 
@@ -205,48 +255,66 @@ export default function AutomationsPage() {
                                             </div>
                                         ) : (
                                             <div className="space-y-4">
-                                                {logs.map((log, i) => (
-                                                    <div key={log.id} className="relative pl-6 pb-4 border-l border-[#1a1a2e] last:border-0 last:pb-0 group">
-                                                        <div className={`absolute -left-[5px] top-1.5 w-2.5 h-2.5 rounded-full border-2 border-[#050505] ${log.status === 'success' ? 'bg-green-500' : 'bg-red-500'
-                                                            }`}></div>
+                                                {logs.map((log) => {
+                                                    const isExpanded = expandedLogs.has(log.id);
+                                                    const hasMetadata = log.metadata && Object.keys(log.metadata).length > 0;
 
-                                                        <div className="bg-[#0a0a0f] border border-[#1a1a2e] p-4 rounded-xl group-hover:border-[#2a2a3e] transition">
-                                                            <div className="flex justify-between items-start mb-2">
-                                                                <div>
-                                                                    <h4 className="font-bold text-white">{log.event_name}</h4>
-                                                                    <p className="text-xs text-gray-500">{formatRelativeTime(log.created_at)}</p>
-                                                                </div>
-                                                                <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded border ${log.status === 'success' ? 'bg-green-500/10 text-green-400 border-green-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20'
-                                                                    }`}>
-                                                                    {log.status}
-                                                                </span>
-                                                            </div>
+                                                    return (
+                                                        <div key={log.id} className="relative pl-6 pb-4 border-l border-[#1a1a2e] last:border-0 last:pb-0 group">
+                                                            <div className={`absolute -left-[5px] top-1.5 w-2.5 h-2.5 rounded-full border-2 border-[#050505] ${log.status === 'success' ? 'bg-green-500' : 'bg-red-500'}`}></div>
 
-                                                            {/* Metadata Display */}
-                                                            {log.metadata && Object.keys(log.metadata).length > 0 && (
-                                                                <div className="mt-3 pt-3 border-t border-[#1a1a2e] text-sm">
-                                                                    {JSON.stringify(log.metadata).length < 200 ? (
-                                                                        <div className="grid grid-cols-1 gap-1">
-                                                                            {formatLogMetadata(log.metadata)?.map((meta, i) => (
-                                                                                <div key={i} className="flex gap-2">
-                                                                                    <span className="text-gray-500">{meta.label}:</span>
-                                                                                    <span className="text-gray-300 truncate">{meta.value}</span>
-                                                                                </div>
-                                                                            ))}
+                                                            <div className="bg-[#0a0a0f] border border-[#1a1a2e] rounded-xl group-hover:border-[#2a2a3e] transition overflow-hidden">
+                                                                <div className="p-4">
+                                                                    <div className="flex justify-between items-start mb-2">
+                                                                        <div>
+                                                                            <h4 className="font-bold text-white">{log.event_name}</h4>
+                                                                            <p className="text-xs text-gray-500">{formatRelativeTime(log.created_at)}</p>
                                                                         </div>
-                                                                    ) : (
-                                                                        <details className="cursor-pointer">
-                                                                            <summary className="text-cyan-500 text-xs hover:text-cyan-400 transition mb-2">View Technical Details</summary>
-                                                                            <pre className="bg-[#050505] p-3 rounded-lg overflow-x-auto text-xs text-gray-400 font-mono">
-                                                                                {JSON.stringify(log.metadata, null, 2)}
-                                                                            </pre>
-                                                                        </details>
+                                                                        <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded border ${log.status === 'success' ? 'bg-green-500/10 text-green-400 border-green-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20'}`}>
+                                                                            {log.status}
+                                                                        </span>
+                                                                    </div>
+
+                                                                    {/* Expandable Technical Details */}
+                                                                    {hasMetadata && (
+                                                                        <button
+                                                                            onClick={() => toggleLogExpanded(log.id)}
+                                                                            className="flex items-center gap-1 text-cyan-500 text-xs hover:text-cyan-400 transition mt-2"
+                                                                        >
+                                                                            {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                                                                            {isExpanded ? 'Hide' : 'View'} Execution Details
+                                                                        </button>
                                                                     )}
                                                                 </div>
-                                                            )}
+
+                                                                {/* Expanded Details */}
+                                                                {isExpanded && hasMetadata && (
+                                                                    <div className="border-t border-[#1a1a2e] bg-[#080810] p-4">
+                                                                        <h5 className="text-xs text-gray-500 uppercase tracking-wider mb-3 font-medium">Execution Details</h5>
+                                                                        <div className="grid gap-3">
+                                                                            {Object.entries(log.metadata).map(([key, value]) => {
+                                                                                const { label, icon: Icon } = formatFieldLabel(key);
+                                                                                const displayValue = formatFieldValue(value);
+
+                                                                                return (
+                                                                                    <div key={key} className="flex items-start gap-3 bg-[#0a0a10] p-3 rounded-lg border border-[#151525]">
+                                                                                        <div className="w-8 h-8 rounded-lg bg-[#151520] flex items-center justify-center flex-shrink-0">
+                                                                                            <Icon className="w-4 h-4 text-cyan-400" />
+                                                                                        </div>
+                                                                                        <div className="flex-1 min-w-0">
+                                                                                            <p className="text-xs text-gray-500 uppercase tracking-wide mb-0.5">{label}</p>
+                                                                                            <p className="text-white text-sm break-words">{displayValue}</p>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                );
+                                                                            })}
+                                                                        </div>
+                                                                    </div>
+                                                                )}
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                ))}
+                                                    );
+                                                })}
                                             </div>
                                         )}
                                     </div>
