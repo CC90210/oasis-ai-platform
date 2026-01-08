@@ -9,6 +9,7 @@ export default function ProfilePage() {
     const [submitting, setSubmitting] = useState(false);
     const [uploadingImage, setUploadingImage] = useState(false);
     const [profile, setProfile] = useState<Profile | null>(null);
+    const [userEmail, setUserEmail] = useState<string>('');
     const [formData, setFormData] = useState({
         full_name: '',
         company_name: '',
@@ -47,6 +48,8 @@ export default function ProfilePage() {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) return;
 
+            setUserEmail(user.email || '');
+
             const { data } = await supabase
                 .from('profiles')
                 .select('*')
@@ -69,6 +72,7 @@ export default function ProfilePage() {
                     });
                 }
             } else {
+                // Create a new profile entry
                 setProfile({
                     id: user.id,
                     email: user.email!,
@@ -116,27 +120,48 @@ export default function ProfilePage() {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) throw new Error('Not authenticated');
 
-            // Use base64 for avatar storage
+            // Read file as base64
             const reader = new FileReader();
             reader.onload = async (event) => {
-                const base64 = event.target?.result as string;
-                setAvatarUrl(base64);
+                try {
+                    const base64 = event.target?.result as string;
 
-                await supabase.from('profiles').upsert({
-                    id: user.id,
-                    avatar_url: base64,
-                    updated_at: new Date()
-                });
+                    // Update the avatar immediately in UI
+                    setAvatarUrl(base64);
 
-                setSuccessMsg('Profile picture updated!');
-                setProfile(prev => prev ? ({ ...prev, avatar_url: base64 }) : null);
+                    // Save to Supabase - use proper ISO string for timestamp
+                    const { error } = await supabase.from('profiles').upsert({
+                        id: user.id,
+                        email: user.email,
+                        avatar_url: base64,
+                        updated_at: new Date().toISOString()
+                    }, {
+                        onConflict: 'id'
+                    });
+
+                    if (error) {
+                        console.error('Supabase error:', error);
+                        throw error;
+                    }
+
+                    setSuccessMsg('Profile picture updated!');
+                    setProfile(prev => prev ? ({ ...prev, avatar_url: base64 }) : null);
+                } catch (err: any) {
+                    console.error('Error saving avatar:', err);
+                    setErrorMsg(err.message || 'Failed to save avatar');
+                } finally {
+                    setUploadingImage(false);
+                }
+            };
+            reader.onerror = () => {
+                setErrorMsg('Failed to read image file');
                 setUploadingImage(false);
             };
             reader.readAsDataURL(file);
 
-        } catch (err) {
+        } catch (err: any) {
             console.error('Error uploading avatar:', err);
-            setErrorMsg('Failed to upload image. Please try again.');
+            setErrorMsg(err.message || 'Failed to upload image. Please try again.');
             setUploadingImage(false);
         }
     };
@@ -151,25 +176,45 @@ export default function ProfilePage() {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) throw new Error('Not authenticated');
 
-            const updates = {
+            // Build update object with proper types
+            const updates: Record<string, any> = {
                 id: user.id,
-                ...formData,
-                avatar_url: avatarUrl,
-                updated_at: new Date(),
+                email: user.email,
+                full_name: formData.full_name || null,
+                company_name: formData.company_name || null,
+                phone: formData.phone || null,
+                updated_at: new Date().toISOString()
             };
+
+            // Only include avatar_url if it exists
+            if (avatarUrl) {
+                updates.avatar_url = avatarUrl;
+            }
 
             const { error } = await supabase
                 .from('profiles')
-                .upsert(updates);
+                .upsert(updates, {
+                    onConflict: 'id'
+                });
 
-            if (error) throw error;
+            if (error) {
+                console.error('Supabase error:', error);
+                throw error;
+            }
 
             setSuccessMsg('Profile updated successfully!');
-            setProfile(prev => prev ? ({ ...prev, ...formData, avatar_url: avatarUrl }) : null);
+            setProfile(prev => prev ? ({
+                ...prev,
+                ...formData,
+                avatar_url: avatarUrl
+            }) : null);
 
-        } catch (err) {
+            // Auto-hide success message after 3 seconds
+            setTimeout(() => setSuccessMsg(null), 3000);
+
+        } catch (err: any) {
             console.error('Error updating profile:', err);
-            setErrorMsg('Failed to update profile.');
+            setErrorMsg(err.message || 'Failed to update profile.');
         } finally {
             setSubmitting(false);
         }
@@ -199,6 +244,7 @@ export default function ProfilePage() {
             setSuccessMsg('Password changed successfully!');
             setShowPasswordModal(false);
             setPasswordData({ newPassword: '', confirmPassword: '' });
+            setTimeout(() => setSuccessMsg(null), 3000);
         } catch (err: any) {
             console.error('Error changing password:', err);
             setErrorMsg(err.message || 'Failed to change password');
@@ -217,14 +263,18 @@ export default function ProfilePage() {
 
             const { error } = await supabase.from('profiles').upsert({
                 id: user.id,
+                email: user.email,
                 notification_preferences: notifications,
-                updated_at: new Date()
+                updated_at: new Date().toISOString()
+            }, {
+                onConflict: 'id'
             });
 
             if (error) throw error;
 
             setSuccessMsg('Notification preferences saved!');
             setShowNotificationModal(false);
+            setTimeout(() => setSuccessMsg(null), 3000);
         } catch (err: any) {
             console.error('Error saving notifications:', err);
             setErrorMsg(err.message || 'Failed to save notification preferences');
@@ -241,7 +291,7 @@ export default function ProfilePage() {
         if (formData.full_name) {
             return formData.full_name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
         }
-        return profile?.email?.charAt(0).toUpperCase() || 'C';
+        return userEmail?.charAt(0).toUpperCase() || 'C';
     };
 
     return (
@@ -310,7 +360,7 @@ export default function ProfilePage() {
                         </div>
 
                         <div className="text-center sm:text-left">
-                            <h2 className="text-xl font-bold text-white">{profile?.email}</h2>
+                            <h2 className="text-xl font-bold text-white">{userEmail}</h2>
                             <p className="text-gray-400 text-sm mt-1">Member since {formatDate(profile?.created_at || new Date().toISOString())}</p>
                             <p className="text-cyan-400 text-xs mt-2">Click on your avatar to upload a new photo</p>
                         </div>
@@ -357,7 +407,7 @@ export default function ProfilePage() {
                                 <label className="block text-sm text-gray-400 mb-2">Email Address</label>
                                 <input
                                     type="email"
-                                    value={profile?.email || ''}
+                                    value={userEmail}
                                     disabled
                                     className="w-full bg-[#101015] border border-[#1a1a2e] rounded-xl px-4 py-3 text-gray-500 cursor-not-allowed"
                                 />
