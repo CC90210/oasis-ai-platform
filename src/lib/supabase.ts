@@ -3,9 +3,16 @@ import { createClient } from '@supabase/supabase-js';
 // Access environment variables using Vite's import.meta.env
 // We fallback to the hardcoded values if env vars are missing (development safety net)
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://skgrbweyscysyetubemg.supabase.co';
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNrZ3Jid2V5c2N5c3lldHViZW1nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzYxNTI0MTcsImV4cCI6MjA1MTcyODQxN30.VawWeg_UCTPutIosfOaVyF8IgVT4iSIiXArhX2XxZn0';
+// Guaranteed correct key from vite.config.ts
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNrZ3Jid2V5c2N5c3lldHViZW1nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc2NjY2NzQsImV4cCI6MjA4MzI0MjY3NH0.00kIbn4a4PwfIRzidwRWMigqHIcn_ssk_u1nN8_S2Pc';
 
-export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true
+    }
+});
 
 // Auth helpers
 export const getCurrentUser = async () => {
