@@ -1,14 +1,97 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Hardcode the values for now to ensure it works
-// These are public keys (anon key is safe to expose)
-// Use the global constants defined in vite.config.ts for consistency
-// @ts-ignore
-const supabaseUrl = __SUPABASE_URL__;
-// @ts-ignore
-const supabaseAnonKey = __SUPABASE_ANON_KEY__;
+// Access environment variables using Vite's import.meta.env
+// We fallback to the hardcoded values if env vars are missing (development safety net)
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://skgrbweyscysyetubemg.supabase.co';
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNrZ3Jid2V5c2N5c3lldHViZW1nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzYxNTI0MTcsImV4cCI6MjA1MTcyODQxN30.VawWeg_UCTPutIosfOaVyF8IgVT4iSIiXArhX2XxZn0';
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// Auth helpers
+export const getCurrentUser = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    return user;
+};
+
+export const logout = async () => {
+    await supabase.auth.signOut();
+    localStorage.removeItem('supabase_access_token');
+    localStorage.removeItem('supabase_refresh_token');
+    localStorage.removeItem('supabase_user');
+};
+
+// TypeScript interfaces
+export interface Profile {
+    id: string;
+    email: string;
+    full_name: string | null;
+    company_name: string | null;
+    phone: string | null;
+    avatar_url: string | null;
+    created_at: string;
+}
+
+export interface Automation {
+    id: string;
+    user_id: string;
+    automation_type: string;
+    display_name: string;
+    tier: 'starter' | 'professional' | 'business' | 'standard' | 'enterprise';
+    status: 'pending_setup' | 'in_progress' | 'testing' | 'active' | 'paused' | 'cancelled';
+    config: Record<string, any>;
+    created_at: string;
+    activated_at: string | null;
+    last_run_at: string | null;
+}
+
+export interface AutomationLog {
+    id: string;
+    automation_id: string;
+    user_id: string;
+    event_type: string;
+    event_name: string;
+    status: 'success' | 'error' | 'warning' | 'info';
+    metadata: Record<string, any>;
+    created_at: string;
+}
+
+export interface SupportTicket {
+    id: string;
+    user_id: string;
+    subject: string;
+    description: string | null;
+    priority: 'low' | 'medium' | 'high' | 'urgent';
+    status: 'open' | 'in_progress' | 'waiting_on_client' | 'resolved' | 'closed';
+    created_at: string;
+    updated_at: string;
+}
+
+export interface MonthlyReport {
+    id: string;
+    user_id: string;
+    automation_id: string | null;
+    title: string;
+    report_month: string;
+    file_url: string | null;
+    hours_saved: number | null;
+    tasks_automated: number | null;
+    estimated_value_cents: number | null;
+    roi_percentage: number | null;
+    status: 'draft' | 'published';
+    created_at: string;
+}
+
+export interface Subscription {
+    id: string;
+    user_id: string;
+    product_name: string;
+    tier: string | null;
+    status: 'active' | 'past_due' | 'cancelled' | 'paused';
+    amount_cents: number;
+    currency: string;
+    current_period_end: string | null;
+    created_at: string;
+}
 
 // Also export for components that need direct access
-export { supabaseUrl, supabaseAnonKey };
+export { SUPABASE_URL as supabaseUrl, SUPABASE_ANON_KEY as supabaseAnonKey };

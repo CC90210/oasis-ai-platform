@@ -1,70 +1,245 @@
-import { HelpCircle, Mail, MessageCircle, Phone } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { supabase, SupportTicket, getCurrentUser } from '@/lib/supabase';
+import { HelpCircle, MessageSquare, Mail, Plus, X, Loader2 } from 'lucide-react';
+import PortalLayout from '@/components/portal/PortalLayout';
+import { formatRelativeTime } from '@/lib/formatters';
 
 export default function SupportPage() {
+    const [loading, setLoading] = useState(true);
+    const [tickets, setTickets] = useState<SupportTicket[]>([]);
+    const [showModal, setShowModal] = useState(false);
+    const [newTicket, setNewTicket] = useState({ subject: '', description: '', priority: 'medium' });
+    const [submitting, setSubmitting] = useState(false);
+
+    useEffect(() => {
+        loadTickets();
+    }, []);
+
+    const loadTickets = async () => {
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return;
+
+            const { data } = await supabase
+                .from('support_tickets')
+                .select('*')
+                .eq('user_id', user.id)
+                .order('created_at', { ascending: false });
+
+            setTickets(data || []);
+        } catch (err) {
+            console.error('Error loading tickets:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const createTicket = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setSubmitting(true);
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return;
+
+            const { error } = await supabase
+                .from('support_tickets')
+                .insert({
+                    user_id: user.id,
+                    subject: newTicket.subject,
+                    description: newTicket.description,
+                    priority: newTicket.priority,
+                    status: 'open',
+                });
+
+            if (error) throw error;
+
+            setNewTicket({ subject: '', description: '', priority: 'medium' });
+            setShowModal(false);
+            loadTickets(); // Refresh list
+        } catch (err) {
+            console.error('Error creating ticket:', err);
+            alert('Failed to create ticket.');
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    const getPriorityColor = (priority: string) => {
+        switch (priority) {
+            case 'urgent': return 'text-red-400 bg-red-500/10 border-red-500/20';
+            case 'high': return 'text-orange-400 bg-orange-500/10 border-orange-500/20';
+            default: return 'text-blue-400 bg-blue-500/10 border-blue-500/20';
+        }
+    };
+
+    if (loading) {
+        return <PortalLayout><div className="flex items-center justify-center h-full"><Loader2 className="animate-spin text-cyan-500 w-8 h-8" /></div></PortalLayout>;
+    }
+
     return (
-        <div className="min-h-screen bg-[#050505] p-8 text-white">
-            <div className="max-w-4xl mx-auto">
-                <header className="mb-10">
-                    <h1 className="text-3xl font-bold flex items-center gap-3">
-                        <HelpCircle className="w-8 h-8 text-cyan-500" />
-                        Support Center
-                    </h1>
-                    <p className="text-gray-400 mt-2">Get help with your automations and account.</p>
+        <PortalLayout>
+            <div className="p-8 max-w-5xl mx-auto">
+                <header className="mb-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                    <div>
+                        <h1 className="text-3xl font-bold text-white flex items-center gap-3">
+                            <HelpCircle className="w-8 h-8 text-cyan-500" />
+                            Support Center
+                        </h1>
+                        <p className="text-gray-400 mt-2">Get help with your automations and account.</p>
+                    </div>
+                    <button
+                        onClick={() => setShowModal(true)}
+                        className="bg-cyan-600 hover:bg-cyan-500 text-white font-medium px-6 py-3 rounded-xl flex items-center gap-2 shadow-lg shadow-cyan-900/20 transition hover:scale-105"
+                    >
+                        <Plus className="w-5 h-5" />
+                        Create Ticket
+                    </button>
                 </header>
 
-                <div className="grid md:grid-cols-2 gap-6 mb-12">
-                    <a href="mailto:support@oasisai.work" className="group bg-[#0a0a0f] border border-[#1a1a2e] p-6 rounded-xl hover:border-cyan-500/30 transition">
-                        <Mail className="w-8 h-8 text-cyan-500 mb-4 group-hover:scale-110 transition" />
-                        <h3 className="text-lg font-bold text-white mb-2">Email Support</h3>
-                        <p className="text-gray-500 text-sm mb-4">Get a response within 24 hours.</p>
-                        <span className="text-cyan-400 text-sm font-medium">support@oasisai.work →</span>
-                    </a>
+                <div className="grid lg:grid-cols-3 gap-8">
+                    {/* Left: Contact Info */}
+                    <div className="space-y-6">
+                        <div className="bg-[#0a0a0f] border border-[#1a1a2e] p-6 rounded-2xl">
+                            <h3 className="text-lg font-bold text-white mb-4">Contact Options</h3>
 
-                    <div className="group bg-[#0a0a0f] border border-[#1a1a2e] p-6 rounded-xl hover:border-green-500/30 transition cursor-pointer">
-                        <MessageCircle className="w-8 h-8 text-green-500 mb-4 group-hover:scale-110 transition" />
-                        <h3 className="text-lg font-bold text-white mb-2">Live Chat</h3>
-                        <p className="text-gray-500 text-sm mb-4">Chat with our engineering team.</p>
-                        <span className="text-green-400 text-sm font-medium">Start Chat →</span>
+                            <div className="space-y-4">
+                                <a href="mailto:oasisaisolutions@gmail.com" className="flex items-center gap-4 p-4 rounded-xl bg-[#151520] hover:bg-[#1a1a2e] transition border border-[#2a2a3e] group">
+                                    <div className="w-10 h-10 rounded-lg bg-cyan-500/10 flex items-center justify-center text-cyan-500 group-hover:scale-110 transition">
+                                        <Mail className="w-5 h-5" />
+                                    </div>
+                                    <div>
+                                        <p className="text-white font-medium">Email Support</p>
+                                        <p className="text-xs text-gray-500">Usually 24h response</p>
+                                    </div>
+                                </a>
+
+                                <a href="tel:7054403117" className="flex items-center gap-4 p-4 rounded-xl bg-[#151520] hover:bg-[#1a1a2e] transition border border-[#2a2a3e] group">
+                                    <div className="w-10 h-10 rounded-lg bg-green-500/10 flex items-center justify-center text-green-500 group-hover:scale-110 transition">
+                                        <MessageSquare className="w-5 h-5" />
+                                    </div>
+                                    <div>
+                                        <p className="text-white font-medium">Phone Support</p>
+                                        <p className="text-xs text-gray-500">Mon-Fri, 9am-5pm EST</p>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Right: Ticket List */}
+                    <div className="lg:col-span-2 space-y-4">
+                        <h3 className="text-lg font-bold text-white mb-2">Your Tickets</h3>
+
+                        {tickets.length === 0 ? (
+                            <div className="bg-[#0a0a0f] border border-[#1a1a2e] p-12 rounded-2xl text-center border-dashed">
+                                <div className="w-16 h-16 bg-[#151520] rounded-full flex items-center justify-center mx-auto mb-4 border border-[#2a2a3e]">
+                                    <MessageSquare className="w-8 h-8 text-gray-500" />
+                                </div>
+                                <h3 className="text-xl font-bold text-white mb-2">No Support Tickets</h3>
+                                <p className="text-gray-500">You haven't submitted any support requests yet.</p>
+                            </div>
+                        ) : (
+                            tickets.map(ticket => (
+                                <div key={ticket.id} className="bg-[#0a0a0f] border border-[#1a1a2e] p-6 rounded-xl hover:border-cyan-500/30 transition group">
+                                    <div className="flex justify-between items-start mb-2">
+                                        <h4 className="text-white font-bold text-lg group-hover:text-cyan-400 transition">{ticket.subject}</h4>
+                                        <span className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold border ${getPriorityColor(ticket.priority)}`}>
+                                            {ticket.priority}
+                                        </span>
+                                    </div>
+                                    <p className="text-gray-400 text-sm mb-4 line-clamp-2">{ticket.description}</p>
+                                    <div className="flex items-center justify-between text-xs text-gray-500 border-t border-[#1a1a2e] pt-4">
+                                        <span>ID: {ticket.id.slice(0, 8)}</span>
+                                        <div className="flex items-center gap-4">
+                                            <span>{formatRelativeTime(ticket.created_at)}</span>
+                                            <span className={`capitalize px-2 py-0.5 rounded ${ticket.status === 'open' ? 'bg-blue-500/20 text-blue-400' :
+                                                    ticket.status === 'resolved' ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'
+                                                }`}>
+                                                {ticket.status.replace('_', ' ')}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))
+                        )}
                     </div>
                 </div>
 
-                <div className="bg-[#0a0a0f] border border-[#1a1a2e] rounded-xl p-8">
-                    <h3 className="text-xl font-bold text-white mb-6">Send us a message</h3>
-                    <form className="space-y-6">
-                        <div className="grid md:grid-cols-2 gap-6">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-400 mb-2">Subject</label>
-                                <select className="w-full bg-[#151520] border border-[#2a2a3e] rounded-lg p-3 text-white focus:border-cyan-500 focus:outline-none transition">
-                                    <option>Technical Issue</option>
-                                    <option>Billing Question</option>
-                                    <option>Feature Request</option>
-                                    <option>Other</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-400 mb-2">Priority</label>
-                                <select className="w-full bg-[#151520] border border-[#2a2a3e] rounded-lg p-3 text-white focus:border-cyan-500 focus:outline-none transition">
-                                    <option>Low</option>
-                                    <option>Medium</option>
-                                    <option>High</option>
-                                    <option>Critical</option>
-                                </select>
-                            </div>
+                {/* Create Ticket Modal */}
+                {showModal && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+                        <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setShowModal(false)}></div>
+                        <div className="relative bg-[#0a0a0f] border border-[#2a2a3e] w-full max-w-lg rounded-2xl p-6 shadow-2xl">
+                            <button
+                                onClick={() => setShowModal(false)}
+                                className="absolute top-4 right-4 text-gray-400 hover:text-white"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+
+                            <h2 className="text-2xl font-bold text-white mb-6">Create Support Ticket</h2>
+
+                            <form onSubmit={createTicket} className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-400 mb-1">Subject</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        value={newTicket.subject}
+                                        onChange={(e) => setNewTicket({ ...newTicket, subject: e.target.value })}
+                                        className="w-full bg-[#151520] border border-[#2a2a3e] rounded-lg px-4 py-2 text-white focus:outline-none focus:border-cyan-500"
+                                        placeholder="Brief summary of the issue"
+                                    />
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-400 mb-1">Priority</label>
+                                        <select
+                                            value={newTicket.priority}
+                                            onChange={(e) => setNewTicket({ ...newTicket, priority: e.target.value })}
+                                            className="w-full bg-[#151520] border border-[#2a2a3e] rounded-lg px-4 py-2 text-white focus:outline-none focus:border-cyan-500"
+                                        >
+                                            <option value="low">Low</option>
+                                            <option value="medium">Medium</option>
+                                            <option value="high">High</option>
+                                            <option value="urgent">Urgent</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-400 mb-1">Description</label>
+                                    <textarea
+                                        required
+                                        rows={4}
+                                        value={newTicket.description}
+                                        onChange={(e) => setNewTicket({ ...newTicket, description: e.target.value })}
+                                        className="w-full bg-[#151520] border border-[#2a2a3e] rounded-lg px-4 py-2 text-white focus:outline-none focus:border-cyan-500 resize-none"
+                                        placeholder="Please provide details about your request..."
+                                    ></textarea>
+                                </div>
+
+                                <div className="pt-4 flex justify-end gap-3">
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowModal(false)}
+                                        className="px-4 py-2 rounded-lg text-gray-400 hover:text-white transition"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={submitting}
+                                        className="px-6 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg font-medium transition disabled:opacity-50 flex items-center gap-2"
+                                    >
+                                        {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
+                                        Submit Ticket
+                                    </button>
+                                </div>
+                            </form>
                         </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-400 mb-2">Message</label>
-                            <textarea
-                                rows={6}
-                                className="w-full bg-[#151520] border border-[#2a2a3e] rounded-lg p-4 text-white focus:border-cyan-500 focus:outline-none transition"
-                                placeholder="Describe your issue in detail..."
-                            ></textarea>
-                        </div>
-                        <button className="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3 rounded-lg transition shadow-lg shadow-cyan-900/20">
-                            Submit Ticket
-                        </button>
-                    </form>
-                </div>
+                    </div>
+                )}
             </div>
-        </div>
+        </PortalLayout>
     );
 }

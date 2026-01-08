@@ -1,74 +1,140 @@
-import { CreditCard, Check, AlertTriangle } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { supabase, Subscription } from '@/lib/supabase';
+import { CreditCard, CheckCircle, Clock } from 'lucide-react';
+import PortalLayout from '@/components/portal/PortalLayout';
+import { formatCurrency, formatDate } from '@/lib/formatters';
 
 export default function BillingPage() {
+    const [loading, setLoading] = useState(true);
+    const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
+
+    useEffect(() => {
+        loadSubscription();
+    }, []);
+
+    const loadSubscription = async () => {
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return;
+
+            const { data } = await supabase
+                .from('subscriptions')
+                .select('*')
+                .eq('user_id', user.id)
+                .order('created_at', { ascending: false });
+
+            setSubscriptions(data || []);
+        } catch (err) {
+            console.error('Error loading billing:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
-        <div className="min-h-screen bg-[#050505] p-8 text-white">
-            <div className="max-w-4xl mx-auto">
+        <PortalLayout>
+            <div className="p-8 max-w-5xl mx-auto">
                 <header className="mb-10">
-                    <h1 className="text-3xl font-bold flex items-center gap-3">
-                        <CreditCard className="w-8 h-8 text-green-500" />
+                    <h1 className="text-3xl font-bold text-white flex items-center gap-3">
+                        <CreditCard className="w-8 h-8 text-cyan-500" />
                         Billing & Subscription
                     </h1>
-                    <p className="text-gray-400 mt-2">Manage your subscription and payment methods.</p>
+                    <p className="text-gray-400 mt-2">Manage your plan, payment methods, and view invoices.</p>
                 </header>
 
-                {/* Current Plan Card */}
-                <div className="bg-gradient-to-br from-[#0a0a0f] to-[#12121a] border border-[#1a1a2e] rounded-xl p-8 mb-8 relative overflow-hidden">
-                    <div className="absolute top-0 right-0 p-8 opacity-10">
-                        <CreditCard className="w-64 h-64 text-cyan-500 -rotate-12 transform translate-x-12 -translate-y-12" />
-                    </div>
-
-                    <div className="relative z-10">
-                        <div className="flex justify-between items-start mb-6">
-                            <div>
-                                <h3 className="text-gray-400 text-sm font-medium uppercase tracking-wider mb-2">Current Plan</h3>
-                                <h2 className="text-4xl font-bold text-white">Professional</h2>
-                                <p className="text-cyan-400 mt-1 font-medium">$299/month</p>
-                            </div>
-                            <span className="bg-green-500/10 text-green-400 border border-green-500/20 px-3 py-1 rounded-full text-xs font-bold uppercase">
-                                Active
-                            </span>
-                        </div>
-
-                        <div className="grid md:grid-cols-2 gap-4 mb-8">
-                            {['Unlimited Automations', 'Priority Support', 'Advanced Analytics', 'Custom Integrations'].map((feature) => (
-                                <div key={feature} className="flex items-center gap-2 text-gray-300">
-                                    <div className="w-5 h-5 rounded-full bg-cyan-500/20 flex items-center justify-center">
-                                        <Check className="w-3 h-3 text-cyan-400" />
-                                    </div>
-                                    {feature}
+                <div className="space-y-8">
+                    {/* Active Plan */}
+                    <section>
+                        <h2 className="text-xl font-bold text-white mb-4">Current Plan</h2>
+                        {subscriptions.length === 0 && !loading ? (
+                            <div className="bg-[#0a0a0f] border border-[#1a1a2e] p-8 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-6">
+                                <div>
+                                    <h3 className="text-xl font-bold text-white mb-2">No Active Subscription</h3>
+                                    <p className="text-gray-400 max-w-md">
+                                        You are currently not subscribed to any premium automation plans. Upgrade to unlock the full power of OASIS AI.
+                                    </p>
                                 </div>
-                            ))}
+                                <a href="/pricing" className="px-6 py-3 bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 text-white font-bold rounded-xl shadow-lg shadow-cyan-900/20 transition transform hover:scale-105">
+                                    View Plans
+                                </a>
+                            </div>
+                        ) : (
+                            subscriptions.map(sub => (
+                                <div key={sub.id} className="bg-gradient-to-br from-[#0a0a0f] to-[#11111a] border border-[#1a1a2e] p-8 rounded-2xl relative overflow-hidden mb-4">
+                                    <div className="absolute top-0 right-0 p-32 bg-cyan-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+
+                                    <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                                        <div>
+                                            <div className="flex items-center gap-3 mb-2">
+                                                <h3 className="text-2xl font-bold text-white">{sub.product_name}</h3>
+                                                <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ${sub.status === 'active' ? 'bg-green-500/10 text-green-400 border-green-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20'
+                                                    }`}>
+                                                    {sub.status}
+                                                </span>
+                                            </div>
+                                            <p className="text-gray-400 flex items-center gap-2">
+                                                <span className="text-3xl font-bold text-white">{formatCurrency(sub.amount_cents, sub.currency)}</span>
+                                                <span className="text-sm">/ month</span>
+                                            </p>
+                                        </div>
+                                        <div className="text-right">
+                                            <p className="text-sm text-gray-500 mb-1">Next Billing Date</p>
+                                            <p className="text-white font-medium flex items-center gap-2 justify-end">
+                                                <Clock className="w-4 h-4 text-cyan-500" />
+                                                {sub.current_period_end ? formatDate(sub.current_period_end) : 'N/A'}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div className="mt-8 pt-8 border-t border-[#1a1a2e] grid md:grid-cols-3 gap-4">
+                                        {['Unlimited Executions', 'Priority Support', 'Advanced Analytics'].map((feature, i) => (
+                                            <div key={i} className="flex items-center gap-3 text-gray-300">
+                                                <CheckCircle className="w-5 h-5 text-cyan-500" />
+                                                {feature}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                    </section>
+
+                    {/* Payment Method Stub */}
+                    <section className="grid md:grid-cols-2 gap-8">
+                        <div>
+                            <h2 className="text-xl font-bold text-white mb-4">Payment Method</h2>
+                            <div className="bg-[#0a0a0f] border border-[#1a1a2e] p-6 rounded-xl flex items-center justify-between">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-8 bg-[#1a1a2e] rounded border border-[#2a2a3e] flex items-center justify-center">
+                                        <div className="w-6 h-4 bg-gray-600 rounded-sm opacity-50"></div>
+                                    </div>
+                                    <div>
+                                        <p className="text-white font-medium">•••• •••• •••• 4242</p>
+                                        <p className="text-xs text-gray-500">Expires 12/28</p>
+                                    </div>
+                                </div>
+                                <button className="text-sm text-cyan-400 hover:text-white transition">Update</button>
+                            </div>
                         </div>
 
-                        <div className="flex gap-4">
-                            <button className="bg-white text-black font-bold px-6 py-3 rounded-lg hover:bg-gray-200 transition">
-                                Manage Subscription
-                            </button>
-                            <button className="border border-[#2a2a3e] bg-[#151520] text-gray-300 font-medium px-6 py-3 rounded-lg hover:text-white transition">
-                                View Invoices
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Payment Method */}
-                <div className="bg-[#0a0a0f] border border-[#1a1a2e] rounded-xl p-8">
-                    <h3 className="text-lg font-semibold text-white mb-6">Payment Method</h3>
-                    <div className="flex items-center justify-between p-4 bg-[#151520] rounded-lg border border-[#2a2a3e]">
-                        <div className="flex items-center gap-4">
-                            <div className="bg-[#2a2a3e] p-2 rounded">
-                                <CreditCard className="w-6 h-6 text-white" />
-                            </div>
-                            <div>
-                                <p className="font-medium text-white">•••• •••• •••• 4242</p>
-                                <p className="text-gray-500 text-sm">Expires 12/28</p>
+                        <div>
+                            <h2 className="text-xl font-bold text-white mb-4">Billing History</h2>
+                            <div className="bg-[#0a0a0f] border border-[#1a1a2e] rounded-xl overflow-hidden">
+                                <div className="p-4 border-b border-[#1a1a2e] flex justify-between items-center hover:bg-[#151520] transition cursor-pointer">
+                                    <div>
+                                        <p className="text-white text-sm font-medium">Invoice #INV-2024-001</p>
+                                        <p className="text-gray-500 text-xs">Jan 1, 2026</p>
+                                    </div>
+                                    <span className="text-gray-400 text-sm">$499.00</span>
+                                </div>
+                                <div className="p-4 flex justify-center">
+                                    <button className="text-xs text-gray-500 hover:text-white transition">View All Invoices</button>
+                                </div>
                             </div>
                         </div>
-                        <button className="text-cyan-400 hover:text-cyan-300 text-sm font-medium">Edit</button>
-                    </div>
+                    </section>
                 </div>
             </div>
-        </div>
+        </PortalLayout>
     );
 }

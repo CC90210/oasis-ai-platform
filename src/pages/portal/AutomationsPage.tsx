@@ -1,26 +1,29 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase';
-import { Bot, Play, Pause, Settings, Activity, Loader2, AlertCircle } from 'lucide-react';
-
-interface Automation {
-    id: string;
-    automation_type: string;
-    display_name: string;
-    tier: string;
-    status: string;
-    last_run_at: string | null;
-    created_at: string;
-    webhook_secret?: string;
-}
+import { supabase, Automation, AutomationLog } from '@/lib/supabase';
+import { Bot, Play, Pause, Settings, Activity, AlertCircle, Loader2 } from 'lucide-react';
+import PortalLayout from '@/components/portal/PortalLayout';
+import { formatDate, formatRelativeTime, formatLogMetadata } from '@/lib/formatters';
 
 export default function AutomationsPage() {
     const [loading, setLoading] = useState(true);
     const [automations, setAutomations] = useState<Automation[]>([]);
+    const [selectedAuto, setSelectedAuto] = useState<Automation | null>(null);
+    const [logs, setLogs] = useState<AutomationLog[]>([]);
+    const [loadingLogs, setLoadingLogs] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         loadAutomations();
     }, []);
+
+    // Load logs when an automation is selected
+    useEffect(() => {
+        if (selectedAuto) {
+            loadLogs(selectedAuto.id);
+        } else {
+            setLogs([]);
+        }
+    }, [selectedAuto]);
 
     const loadAutomations = async () => {
         try {
@@ -35,104 +38,224 @@ export default function AutomationsPage() {
 
             if (error) throw error;
             setAutomations(data || []);
+
+            // Select the first one by default if available
+            if (data && data.length > 0) {
+                setSelectedAuto(data[0]);
+            }
         } catch (err: any) {
             console.error('Error loading automations:', err);
-            // Fallback for demo if needed, but trying to be strict production
-            setError('Failed to load automations');
+            setError('Failed to load your automations.');
         } finally {
             setLoading(false);
         }
     };
 
+    const loadLogs = async (automationId: string) => {
+        setLoadingLogs(true);
+        try {
+            const { data, error } = await supabase
+                .from('automation_logs')
+                .select('*')
+                .eq('automation_id', automationId)
+                .order('created_at', { ascending: false })
+                .limit(50);
+
+            if (error) throw error;
+            setLogs(data || []);
+        } catch (err) {
+            console.error('Error loading logs:', err);
+        } finally {
+            setLoadingLogs(false);
+        }
+    };
+
+    const getStatusColor = (status: string) => {
+        switch (status) {
+            case 'active': return 'bg-green-500/10 text-green-400 border-green-500/20';
+            case 'pending_setup': return 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20';
+            default: return 'bg-gray-500/10 text-gray-400 border-gray-500/20';
+        }
+    };
+
     if (loading) {
-        return (
-            <div className="min-h-screen bg-[#050505] flex items-center justify-center">
-                <Loader2 className="w-12 h-12 animate-spin text-cyan-500" />
-            </div>
-        );
+        return <PortalLayout><div className="flex items-center justify-center h-full"><Loader2 className="animate-spin text-cyan-500 w-8 h-8" /></div></PortalLayout>;
     }
 
     return (
-        <div className="min-h-screen bg-[#050505] p-8 text-white">
-            <div className="max-w-6xl mx-auto">
-                <header className="mb-10">
-                    <h1 className="text-3xl font-bold flex items-center gap-3">
-                        <Bot className="w-8 h-8 text-cyan-500" />
-                        My Automations
-                    </h1>
-                    <p className="text-gray-400 mt-2">Manage and configure your active AI agents.</p>
-                </header>
+        <PortalLayout>
+            <div className="h-[calc(100vh-80px)] lg:h-screen flex flex-col lg:flex-row overflow-hidden bg-[#050505]">
 
-                {error && (
-                    <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-xl mb-8 flex items-center gap-3">
-                        <AlertCircle className="w-5 h-5" />
-                        {error}
+                {/* Left Panel: List (Mobile: Full Width, Desktop: 1/3) */}
+                <div className={`w-full lg:w-1/3 border-r border-[#1a1a2e] flex flex-col ${selectedAuto ? 'hidden lg:flex' : 'flex'}`}>
+                    <div className="p-6 border-b border-[#1a1a2e] bg-[#0a0a0f]">
+                        <h1 className="text-2xl font-bold text-white flex items-center gap-3">
+                            <Bot className="w-6 h-6 text-cyan-500" />
+                            My Automations
+                        </h1>
                     </div>
-                )}
 
-                <div className="grid gap-6">
-                    {automations.map((auto) => (
-                        <div key={auto.id} className="bg-[#0a0a0f] border border-[#1a1a2e] rounded-xl p-6 hover:border-cyan-500/30 transition-all duration-300">
-                            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                    <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                        {automations.length === 0 ? (
+                            <div className="text-center py-10">
+                                <p className="text-gray-500">No automations found.</p>
+                            </div>
+                        ) : (
+                            automations.map(auto => (
+                                <div
+                                    key={auto.id}
+                                    onClick={() => setSelectedAuto(auto)}
+                                    className={`p-4 rounded-xl border cursor-pointer transition-all duration-200 group ${selectedAuto?.id === auto.id
+                                            ? 'bg-cyan-500/10 border-cyan-500/30 shadow-[0_0_15px_rgba(6,182,212,0.1)]'
+                                            : 'bg-[#0a0a0f] border-[#1a1a2e] hover:border-gray-700'
+                                        }`}
+                                >
+                                    <div className="flex justify-between items-start mb-2">
+                                        <h3 className={`font-bold ${selectedAuto?.id === auto.id ? 'text-white' : 'text-gray-300 group-hover:text-white'}`}>
+                                            {auto.display_name}
+                                        </h3>
+                                        <span className={`px-2 py-0.5 text-[10px] uppercase font-bold rounded-full border ${getStatusColor(auto.status)}`}>
+                                            {auto.status}
+                                        </span>
+                                    </div>
+                                    <div className="flex justify-between items-center text-xs text-gray-500">
+                                        <span className="capitalize">{auto.tier} Plan</span>
+                                        <span>{formatRelativeTime(auto.last_run_at || new Date().toISOString())}</span>
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                </div>
+
+                {/* Right Panel: Details (Mobile: Full Width, Desktop: 2/3) */}
+                <div className={`flex-1 flex flex-col bg-[#050505] ${!selectedAuto ? 'hidden lg:flex items-center justify-center' : 'flex'}`}>
+                    {!selectedAuto ? (
+                        <div className="text-center text-gray-500">
+                            <Bot className="w-16 h-16 mx-auto mb-4 opacity-20" />
+                            <p>Select an automation to view details</p>
+                        </div>
+                    ) : (
+                        <>
+                            {/* Header */}
+                            <div className="p-6 border-b border-[#1a1a2e] bg-[#0a0a0f] flex items-center justify-between shadow-lg z-10">
                                 <div className="flex items-center gap-4">
-                                    <div className="w-16 h-16 bg-[#151520] rounded-2xl flex items-center justify-center border border-[#2a2a3e]">
-                                        <Bot className="w-8 h-8 text-cyan-400" />
+                                    <button
+                                        onClick={() => setSelectedAuto(null)}
+                                        className="lg:hidden p-2 -ml-2 text-gray-400 hover:text-white"
+                                    >
+                                        ←
+                                    </button>
+                                    <div className="w-12 h-12 rounded-xl bg-[#151520] border border-[#2a2a3e] flex items-center justify-center">
+                                        <Bot className="w-6 h-6 text-cyan-400" />
                                     </div>
                                     <div>
-                                        <h3 className="text-xl font-bold text-white">{auto.display_name}</h3>
-                                        <div className="flex items-center gap-3 mt-1 text-sm text-gray-400">
-                                            <span className="bg-[#1a1a2e] px-2 py-0.5 rounded text-cyan-400 font-mono text-xs border border-cyan-500/20">
-                                                ID: {auto.id}
-                                            </span>
-                                            <span>•</span>
-                                            <span className="capitalize">{auto.tier} Plan</span>
+                                        <h2 className="text-xl font-bold text-white">{selectedAuto.display_name}</h2>
+                                        <div className="flex items-center gap-2 text-sm text-gray-400">
+                                            <span className={`w-2 h-2 rounded-full ${selectedAuto.status === 'active' ? 'bg-green-500 shadow-[0_0_8px_rgb(34,197,94)]' : 'bg-gray-500'}`}></span>
+                                            <span className="capitalize">{selectedAuto.status.replace('_', ' ')}</span>
+                                            <span className="text-gray-600">•</span>
+                                            <span className="capitalize">{selectedAuto.tier} Plan</span>
                                         </div>
                                     </div>
                                 </div>
-
-                                <div className="flex items-center gap-3">
-                                    <button className="flex items-center gap-2 px-4 py-2 bg-[#1a1a2e] hover:bg-[#252535] text-white rounded-lg border border-[#2a2a3e] transition">
-                                        <Settings className="w-4 h-4" />
-                                        Configure
-                                    </button>
-                                    <button className="flex items-center gap-2 px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg shadow-lg shadow-cyan-900/20 transition">
-                                        <Activity className="w-4 h-4" />
-                                        View Logs
+                                <div className="flex gap-2">
+                                    <button className="p-2 rounded-lg bg-[#151520] hover:bg-[#252535] text-gray-400 hover:text-white border border-[#2a2a3e] transition">
+                                        <Settings className="w-5 h-5" />
                                     </button>
                                 </div>
                             </div>
 
-                            <div className="mt-6 pt-6 border-t border-[#1a1a2e] grid grid-cols-1 md:grid-cols-3 gap-6">
-                                <div>
-                                    <p className="text-gray-500 text-xs uppercase font-medium tracking-wider mb-1">Status</p>
-                                    <div className="flex items-center gap-2 text-green-400">
-                                        <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                                        active
+                            {/* Scrollable Content */}
+                            <div className="flex-1 overflow-y-auto p-6 md:p-8">
+                                <div className="max-w-4xl mx-auto space-y-8">
+
+                                    {/* Stats / Info */}
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                        <div className="bg-[#0a0a0f] border border-[#1a1a2e] p-4 rounded-xl">
+                                            <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Type</p>
+                                            <p className="text-white font-medium">{selectedAuto.automation_type}</p>
+                                        </div>
+                                        <div className="bg-[#0a0a0f] border border-[#1a1a2e] p-4 rounded-xl">
+                                            <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Created</p>
+                                            <p className="text-white font-medium">{formatDate(selectedAuto.created_at)}</p>
+                                        </div>
+                                        <div className="bg-[#0a0a0f] border border-[#1a1a2e] p-4 rounded-xl">
+                                            <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Total Runs</p>
+                                            <p className="text-white font-medium">{logs.length}</p>
+                                        </div>
+                                        <div className="bg-[#0a0a0f] border border-[#1a1a2e] p-4 rounded-xl">
+                                            <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Reliability</p>
+                                            <p className="text-green-400 font-medium">100%</p>
+                                        </div>
+                                    </div>
+
+                                    {/* Activity Log */}
+                                    <div>
+                                        <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                                            <Activity className="w-5 h-5 text-purple-500" />
+                                            Activity Log
+                                        </h3>
+
+                                        {loadingLogs ? (
+                                            <div className="py-10 text-center"><Loader2 className="animate-spin w-8 h-8 text-cyan-500 mx-auto" /></div>
+                                        ) : logs.length === 0 ? (
+                                            <div className="bg-[#0a0a0f] border border-[#1a1a2e] rounded-xl p-8 text-center">
+                                                <p className="text-gray-500">No activity recorded for this automation yet.</p>
+                                            </div>
+                                        ) : (
+                                            <div className="space-y-4">
+                                                {logs.map((log, i) => (
+                                                    <div key={log.id} className="relative pl-6 pb-4 border-l border-[#1a1a2e] last:border-0 last:pb-0 group">
+                                                        <div className={`absolute -left-[5px] top-1.5 w-2.5 h-2.5 rounded-full border-2 border-[#050505] ${log.status === 'success' ? 'bg-green-500' : 'bg-red-500'
+                                                            }`}></div>
+
+                                                        <div className="bg-[#0a0a0f] border border-[#1a1a2e] p-4 rounded-xl group-hover:border-[#2a2a3e] transition">
+                                                            <div className="flex justify-between items-start mb-2">
+                                                                <div>
+                                                                    <h4 className="font-bold text-white">{log.event_name}</h4>
+                                                                    <p className="text-xs text-gray-500">{formatRelativeTime(log.created_at)}</p>
+                                                                </div>
+                                                                <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded border ${log.status === 'success' ? 'bg-green-500/10 text-green-400 border-green-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20'
+                                                                    }`}>
+                                                                    {log.status}
+                                                                </span>
+                                                            </div>
+
+                                                            {/* Metadata Display */}
+                                                            {log.metadata && Object.keys(log.metadata).length > 0 && (
+                                                                <div className="mt-3 pt-3 border-t border-[#1a1a2e] text-sm">
+                                                                    {JSON.stringify(log.metadata).length < 200 ? (
+                                                                        <div className="grid grid-cols-1 gap-1">
+                                                                            {formatLogMetadata(log.metadata)?.map((meta, i) => (
+                                                                                <div key={i} className="flex gap-2">
+                                                                                    <span className="text-gray-500">{meta.label}:</span>
+                                                                                    <span className="text-gray-300 truncate">{meta.value}</span>
+                                                                                </div>
+                                                                            ))}
+                                                                        </div>
+                                                                    ) : (
+                                                                        <details className="cursor-pointer">
+                                                                            <summary className="text-cyan-500 text-xs hover:text-cyan-400 transition mb-2">View Technical Details</summary>
+                                                                            <pre className="bg-[#050505] p-3 rounded-lg overflow-x-auto text-xs text-gray-400 font-mono">
+                                                                                {JSON.stringify(log.metadata, null, 2)}
+                                                                            </pre>
+                                                                        </details>
+                                                                    )}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
-                                <div>
-                                    <p className="text-gray-500 text-xs uppercase font-medium tracking-wider mb-1">Last Run</p>
-                                    <p className="text-gray-300">
-                                        {auto.last_run_at ? new Date(auto.last_run_at).toLocaleString() : 'Never'}
-                                    </p>
-                                </div>
-                                <div>
-                                    <p className="text-gray-500 text-xs uppercase font-medium tracking-wider mb-1">Next Scheduled</p>
-                                    <p className="text-gray-300">Automatic (Trigger Based)</p>
-                                </div>
                             </div>
-                        </div>
-                    ))}
-
-                    {automations.length === 0 && !loading && (
-                        <div className="text-center py-20 bg-[#0a0a0f] border border-[#1a1a2e] rounded-xl border-dashed">
-                            <Bot className="w-16 h-16 text-gray-700 mx-auto mb-4" />
-                            <h3 className="text-xl font-bold text-gray-300">No Automations Yet</h3>
-                            <p className="text-gray-500 mt-2">Contact our sales team to deploy your first agent.</p>
-                        </div>
+                        </>
                     )}
                 </div>
             </div>
-        </div>
+        </PortalLayout>
     );
 }
