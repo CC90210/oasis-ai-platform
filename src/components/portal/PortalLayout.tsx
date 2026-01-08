@@ -126,7 +126,26 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
     }
 
     return (
-        <div className="min-h-screen bg-[#050505] flex selection:bg-cyan-500/20 text-white font-sans">
+        <div className="min-h-screen bg-[#050505] flex selection:bg-cyan-500/20 text-white font-sans relative">
+            {/* Subtle starfield background for portal */}
+            <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+                {[...Array(80)].map((_, i) => (
+                    <div
+                        key={i}
+                        className="absolute rounded-full bg-white/30 animate-pulse"
+                        style={{
+                            top: `${Math.random() * 100}%`,
+                            left: `${Math.random() * 100}%`,
+                            width: `${Math.random() * 2 + 1}px`,
+                            height: `${Math.random() * 2 + 1}px`,
+                            animationDuration: `${Math.random() * 3 + 2}s`,
+                            animationDelay: `${Math.random() * 2}s`,
+                            opacity: Math.random() * 0.4 + 0.1,
+                        }}
+                    />
+                ))}
+            </div>
+
             {/* Sidebar (Desktop) */}
             <aside className="w-72 bg-[#0a0a0f] border-r border-[#1a1a2e] p-6 flex flex-col hidden lg:flex shadow-2xl z-20 fixed top-0 left-0 h-screen">
                 {/* Logo */}

@@ -1,18 +1,22 @@
 import React, { useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Cpu, Zap, Bot, Workflow, MessageSquare, Mail, Calendar, Phone } from 'lucide-react';
+import { Cpu, Zap, Bot, Workflow, MessageSquare, Mail, Calendar, Phone, Database, Cloud, Shield, Sparkles } from 'lucide-react';
 
-// Floating icons component
+// Floating icons component - LARGER with NEON GLOW
 const FloatingIcons = () => {
     const icons = [
-        { Icon: Cpu, top: '15%', left: '10%', delay: '0s', size: 'w-8 h-8' },
-        { Icon: Zap, top: '25%', right: '15%', delay: '1s', size: 'w-6 h-6' },
-        { Icon: Bot, top: '60%', left: '8%', delay: '2s', size: 'w-7 h-7' },
-        { Icon: Workflow, top: '70%', right: '12%', delay: '0.5s', size: 'w-8 h-8' },
-        { Icon: MessageSquare, top: '40%', left: '5%', delay: '1.5s', size: 'w-5 h-5' },
-        { Icon: Mail, top: '20%', right: '8%', delay: '2.5s', size: 'w-6 h-6' },
-        { Icon: Calendar, top: '80%', left: '15%', delay: '3s', size: 'w-5 h-5' },
-        { Icon: Phone, top: '50%', right: '5%', delay: '1s', size: 'w-6 h-6' },
+        { Icon: Cpu, top: '12%', left: '8%', delay: '0s', size: 'w-12 h-12', color: 'text-cyan-400', glow: 'shadow-[0_0_30px_rgba(0,212,255,0.6)]' },
+        { Icon: Zap, top: '22%', right: '12%', delay: '1s', size: 'w-10 h-10', color: 'text-yellow-400', glow: 'shadow-[0_0_25px_rgba(250,204,21,0.5)]' },
+        { Icon: Bot, top: '55%', left: '6%', delay: '2s', size: 'w-14 h-14', color: 'text-purple-400', glow: 'shadow-[0_0_35px_rgba(167,139,250,0.6)]' },
+        { Icon: Workflow, top: '65%', right: '10%', delay: '0.5s', size: 'w-12 h-12', color: 'text-green-400', glow: 'shadow-[0_0_30px_rgba(74,222,128,0.5)]' },
+        { Icon: MessageSquare, top: '35%', left: '4%', delay: '1.5s', size: 'w-10 h-10', color: 'text-pink-400', glow: 'shadow-[0_0_25px_rgba(244,114,182,0.5)]' },
+        { Icon: Mail, top: '18%', right: '6%', delay: '2.5s', size: 'w-11 h-11', color: 'text-cyan-300', glow: 'shadow-[0_0_28px_rgba(103,232,249,0.5)]' },
+        { Icon: Calendar, top: '78%', left: '12%', delay: '3s', size: 'w-10 h-10', color: 'text-orange-400', glow: 'shadow-[0_0_25px_rgba(251,146,60,0.5)]' },
+        { Icon: Phone, top: '45%', right: '4%', delay: '1s', size: 'w-11 h-11', color: 'text-emerald-400', glow: 'shadow-[0_0_28px_rgba(52,211,153,0.5)]' },
+        { Icon: Database, top: '82%', right: '15%', delay: '2s', size: 'w-9 h-9', color: 'text-blue-400', glow: 'shadow-[0_0_22px_rgba(96,165,250,0.5)]' },
+        { Icon: Cloud, top: '8%', left: '20%', delay: '0.5s', size: 'w-10 h-10', color: 'text-indigo-400', glow: 'shadow-[0_0_25px_rgba(129,140,248,0.5)]' },
+        { Icon: Shield, top: '72%', left: '25%', delay: '1.5s', size: 'w-9 h-9', color: 'text-teal-400', glow: 'shadow-[0_0_22px_rgba(45,212,191,0.5)]' },
+        { Icon: Sparkles, top: '28%', right: '22%', delay: '2.5s', size: 'w-10 h-10', color: 'text-amber-400', glow: 'shadow-[0_0_25px_rgba(251,191,36,0.5)]' },
     ];
 
     return (
@@ -20,16 +24,16 @@ const FloatingIcons = () => {
             {icons.map((item, i) => (
                 <div
                     key={i}
-                    className="absolute animate-float opacity-20"
+                    className={`absolute animate-float rounded-xl p-2 bg-white/5 backdrop-blur-sm border border-white/10 ${item.glow}`}
                     style={{
                         top: item.top,
                         left: item.left,
                         right: item.right,
                         animationDelay: item.delay,
-                        animationDuration: '6s',
+                        animationDuration: `${5 + Math.random() * 3}s`,
                     }}
                 >
-                    <item.Icon className={`${item.size} text-[#00D4FF]`} />
+                    <item.Icon className={`${item.size} ${item.color} drop-shadow-lg`} />
                 </div>
             ))}
         </div>
@@ -48,14 +52,14 @@ const ImmersiveHero: React.FC = () => {
 
             {/* Content */}
             <div className="relative z-[10] text-center max-w-[900px] px-5 flex flex-col items-center hero-content">
-                <div className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#00D4FF]/10 border border-[#00D4FF]/30 rounded-full text-[#00D4FF] text-sm font-medium mb-7 backdrop-blur-md animate-[badgeFloat_3s_ease-in-out_infinite]">
+                <div className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#00D4FF]/10 border border-[#00D4FF]/30 rounded-full text-[#00D4FF] text-sm font-medium mb-7 backdrop-blur-md animate-[badgeFloat_3s_ease-in-out_infinite] shadow-[0_0_20px_rgba(0,212,255,0.3)]">
                     <span className="text-base">⚡</span>
                     <span>The Future of Automation is Here</span>
                 </div>
 
                 <h1 className="font-display text-5xl md:text-7xl lg:text-[5rem] font-bold leading-[1.1] mb-6 text-white">
                     <span className="block">Scale Your Business</span>
-                    <span className="block bg-gradient-to-br from-[#00D4FF] via-[#00FFD4] to-[#00D4FF] bg-[length:200%_auto] bg-clip-text text-transparent animate-[gradientShift_4s_ease-in-out_infinite]">
+                    <span className="block bg-gradient-to-br from-[#00D4FF] via-[#00FFD4] to-[#00D4FF] bg-[length:200%_auto] bg-clip-text text-transparent animate-[gradientShift_4s_ease-in-out_infinite] drop-shadow-[0_0_30px_rgba(0,212,255,0.4)]">
                         Without Limits
                     </span>
                 </h1>
@@ -78,7 +82,7 @@ const ImmersiveHero: React.FC = () => {
 
                     <Link
                         to="/contact"
-                        className="group inline-flex items-center justify-center gap-2.5 px-7 py-4 rounded-xl font-semibold text-[15px] bg-white/5 text-white border border-white/20 backdrop-blur-md transition-all duration-300 hover:bg-white/10 hover:border-[#00D4FF] hover:text-[#00D4FF] hover:-translate-y-1"
+                        className="group inline-flex items-center justify-center gap-2.5 px-7 py-4 rounded-xl font-semibold text-[15px] bg-white/5 text-white border border-white/20 backdrop-blur-md transition-all duration-300 hover:bg-white/10 hover:border-[#00D4FF] hover:text-[#00D4FF] hover:-translate-y-1 hover:shadow-[0_0_20px_rgba(0,212,255,0.3)]"
                     >
                         <svg className="w-[18px] h-[18px] fill-current" viewBox="0 0 24 24">
                             <path d="M8 5v14l11-7z" />
@@ -90,17 +94,17 @@ const ImmersiveHero: React.FC = () => {
                 {/* Stats Counter (Social Proof) */}
                 <div className="flex items-center justify-center gap-8 mt-12 pt-8 border-t border-gray-800/50 w-full max-w-2xl animate-fade-in-up" style={{ animationDelay: '0.5s' }}>
                     <div className="text-center">
-                        <div className="text-3xl font-bold text-[#00D4FF]">500+</div>
+                        <div className="text-3xl font-bold text-[#00D4FF] drop-shadow-[0_0_10px_rgba(0,212,255,0.5)]">500+</div>
                         <div className="text-sm text-gray-500">Automations Deployed</div>
                     </div>
                     <div className="w-px h-12 bg-gray-800" />
                     <div className="text-center">
-                        <div className="text-3xl font-bold text-[#00D4FF]">50K+</div>
+                        <div className="text-3xl font-bold text-[#00D4FF] drop-shadow-[0_0_10px_rgba(0,212,255,0.5)]">50K+</div>
                         <div className="text-sm text-gray-500">Hours Saved</div>
                     </div>
                     <div className="w-px h-12 bg-gray-800" />
                     <div className="text-center">
-                        <div className="text-3xl font-bold text-[#00D4FF]">99.9%</div>
+                        <div className="text-3xl font-bold text-[#00D4FF] drop-shadow-[0_0_10px_rgba(0,212,255,0.5)]">99.9%</div>
                         <div className="text-sm text-gray-500">Uptime</div>
                     </div>
                 </div>

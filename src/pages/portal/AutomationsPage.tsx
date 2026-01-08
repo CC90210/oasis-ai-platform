@@ -1,42 +1,53 @@
 import { useEffect, useState } from 'react';
 import { supabase, Automation, AutomationLog } from '@/lib/supabase';
-import { Bot, Settings, Activity, Loader2, ChevronDown, ChevronUp, Mail, User, Clock, Hash, FileText, Tag } from 'lucide-react';
+import { Bot, Activity, Loader2, ChevronDown, ChevronUp, Mail, User, FileText, MessageSquare, Sparkles } from 'lucide-react';
 import PortalLayout from '@/components/portal/PortalLayout';
 import { formatDate, formatRelativeTime } from '@/lib/formatters';
 
-// Pretty field names for metadata
-const FIELD_LABELS: Record<string, { label: string; icon: any }> = {
-    'customer': { label: 'Customer', icon: User },
-    'email': { label: 'Email', icon: Mail },
-    'status': { label: 'Status', icon: Tag },
-    'order': { label: 'Order', icon: Hash },
-    'orders': { label: 'Total Orders', icon: Hash },
-    'total_orders': { label: 'Total Orders', icon: Hash },
-    'message': { label: 'Message', icon: FileText },
-    'subject': { label: 'Subject', icon: FileText },
-    'duration': { label: 'Duration', icon: Clock },
-    'timestamp': { label: 'Timestamp', icon: Clock },
-    'response': { label: 'AI Response', icon: FileText },
-    'source': { label: 'Source', icon: Tag },
-    'type': { label: 'Type', icon: Tag },
-    'priority': { label: 'Priority', icon: Tag },
-    'assignee': { label: 'Assigned To', icon: User },
-    'category': { label: 'Category', icon: Tag },
+// AI-friendly labels for metadata fields
+const AI_LABELS: Record<string, { label: string; icon: any; color: string }> = {
+    'agent_summary': { label: 'AI Agent Summary', icon: Sparkles, color: 'text-purple-400' },
+    'gmail_agent_summary': { label: 'Email Agent Summary', icon: Mail, color: 'text-cyan-400' },
+    'agents_output': { label: 'Agent Output', icon: MessageSquare, color: 'text-green-400' },
+    'customer': { label: 'Customer', icon: User, color: 'text-blue-400' },
+    'email': { label: 'Email Address', icon: Mail, color: 'text-cyan-400' },
+    'summary': { label: 'Summary', icon: FileText, color: 'text-yellow-400' },
+    'response': { label: 'AI Response', icon: MessageSquare, color: 'text-green-400' },
+    'output': { label: 'Output', icon: FileText, color: 'text-purple-400' },
 };
 
-const formatFieldLabel = (key: string): { label: string; icon: any } => {
-    const normalized = key.toLowerCase().replace(/[_-]/g, '');
-    return FIELD_LABELS[normalized] || {
+const getFieldConfig = (key: string) => {
+    const normalizedKey = key.toLowerCase().replace(/[_-\s]/g, '_');
+    return AI_LABELS[normalizedKey] || {
         label: key.replace(/[_-]/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
-        icon: FileText
+        icon: FileText,
+        color: 'text-gray-400'
     };
 };
 
-const formatFieldValue = (value: any): string => {
-    if (value === null || value === undefined) return 'N/A';
-    if (typeof value === 'boolean') return value ? 'Yes' : 'No';
-    if (typeof value === 'object') return JSON.stringify(value);
-    return String(value);
+// Parse metadata safely - handles both objects and strings
+const parseMetadata = (metadata: any): Record<string, any> | null => {
+    if (!metadata) return null;
+
+    // If it's already an object, return it
+    if (typeof metadata === 'object' && !Array.isArray(metadata)) {
+        return metadata;
+    }
+
+    // If it's a string, try to parse it as JSON
+    if (typeof metadata === 'string') {
+        try {
+            const parsed = JSON.parse(metadata);
+            if (typeof parsed === 'object' && !Array.isArray(parsed)) {
+                return parsed;
+            }
+        } catch {
+            // If parsing fails, return it as a single "data" field
+            return { data: metadata };
+        }
+    }
+
+    return null;
 };
 
 export default function AutomationsPage() {
@@ -45,7 +56,6 @@ export default function AutomationsPage() {
     const [selectedAuto, setSelectedAuto] = useState<Automation | null>(null);
     const [logs, setLogs] = useState<AutomationLog[]>([]);
     const [loadingLogs, setLoadingLogs] = useState(false);
-    const [error, setError] = useState<string | null>(null);
     const [expandedLogs, setExpandedLogs] = useState<Set<string>>(new Set());
 
     useEffect(() => {
@@ -79,7 +89,6 @@ export default function AutomationsPage() {
             }
         } catch (err: any) {
             console.error('Error loading automations:', err);
-            setError('Failed to load your automations.');
         } finally {
             setLoading(false);
         }
@@ -134,10 +143,10 @@ export default function AutomationsPage() {
 
     return (
         <PortalLayout>
-            <div className="h-[calc(100vh-80px)] lg:h-screen flex flex-col lg:flex-row overflow-hidden bg-[#050505]">
+            <div className="h-[calc(100vh-80px)] lg:h-screen flex flex-col lg:flex-row overflow-hidden">
 
                 {/* Left Panel: List */}
-                <div className={`w-full lg:w-1/3 border-r border-[#1a1a2e] flex flex-col ${selectedAuto ? 'hidden lg:flex' : 'flex'}`}>
+                <div className={`w-full lg:w-1/3 border-r border-[#1a1a2e] flex flex-col bg-[#0a0a0f]/80 backdrop-blur-sm ${selectedAuto ? 'hidden lg:flex' : 'flex'}`}>
                     <div className="p-6 border-b border-[#1a1a2e] bg-[#0a0a0f]">
                         <h1 className="text-2xl font-bold text-white flex items-center gap-3">
                             <Bot className="w-6 h-6 text-cyan-500" />
@@ -179,7 +188,7 @@ export default function AutomationsPage() {
                 </div>
 
                 {/* Right Panel: Details */}
-                <div className={`flex-1 flex flex-col bg-[#050505] ${!selectedAuto ? 'hidden lg:flex items-center justify-center' : 'flex'}`}>
+                <div className={`flex-1 flex flex-col bg-[#050508]/90 backdrop-blur-sm ${!selectedAuto ? 'hidden lg:flex items-center justify-center' : 'flex'}`}>
                     {!selectedAuto ? (
                         <div className="text-center text-gray-500">
                             <Bot className="w-16 h-16 mx-auto mb-4 opacity-20" />
@@ -187,7 +196,7 @@ export default function AutomationsPage() {
                         </div>
                     ) : (
                         <>
-                            {/* Header */}
+                            {/* Header - Removed settings button */}
                             <div className="p-6 border-b border-[#1a1a2e] bg-[#0a0a0f] flex items-center justify-between shadow-lg z-10">
                                 <div className="flex items-center gap-4">
                                     <button
@@ -208,11 +217,6 @@ export default function AutomationsPage() {
                                             <span className="capitalize">{selectedAuto.tier} Plan</span>
                                         </div>
                                     </div>
-                                </div>
-                                <div className="flex gap-2">
-                                    <button className="p-2 rounded-lg bg-[#151520] hover:bg-[#252535] text-gray-400 hover:text-white border border-[#2a2a3e] transition">
-                                        <Settings className="w-5 h-5" />
-                                    </button>
                                 </div>
                             </div>
 
@@ -257,7 +261,8 @@ export default function AutomationsPage() {
                                             <div className="space-y-4">
                                                 {logs.map((log) => {
                                                     const isExpanded = expandedLogs.has(log.id);
-                                                    const hasMetadata = log.metadata && Object.keys(log.metadata).length > 0;
+                                                    const parsedMetadata = parseMetadata(log.metadata);
+                                                    const hasMetadata = parsedMetadata && Object.keys(parsedMetadata).length > 0;
 
                                                     return (
                                                         <div key={log.id} className="relative pl-6 pb-4 border-l border-[#1a1a2e] last:border-0 last:pb-0 group">
@@ -287,23 +292,31 @@ export default function AutomationsPage() {
                                                                     )}
                                                                 </div>
 
-                                                                {/* Expanded Details */}
+                                                                {/* Expanded Details - Properly formatted */}
                                                                 {isExpanded && hasMetadata && (
                                                                     <div className="border-t border-[#1a1a2e] bg-[#080810] p-4">
-                                                                        <h5 className="text-xs text-gray-500 uppercase tracking-wider mb-3 font-medium">Execution Details</h5>
-                                                                        <div className="grid gap-3">
-                                                                            {Object.entries(log.metadata).map(([key, value]) => {
-                                                                                const { label, icon: Icon } = formatFieldLabel(key);
-                                                                                const displayValue = formatFieldValue(value);
+                                                                        <h5 className="text-xs text-gray-500 uppercase tracking-wider mb-4 font-medium flex items-center gap-2">
+                                                                            <Sparkles className="w-3 h-3 text-purple-400" />
+                                                                            Execution Details
+                                                                        </h5>
+                                                                        <div className="space-y-4">
+                                                                            {Object.entries(parsedMetadata!).map(([key, value]) => {
+                                                                                const config = getFieldConfig(key);
+                                                                                const Icon = config.icon;
+                                                                                const displayValue = typeof value === 'object' ? JSON.stringify(value, null, 2) : String(value);
 
                                                                                 return (
-                                                                                    <div key={key} className="flex items-start gap-3 bg-[#0a0a10] p-3 rounded-lg border border-[#151525]">
-                                                                                        <div className="w-8 h-8 rounded-lg bg-[#151520] flex items-center justify-center flex-shrink-0">
-                                                                                            <Icon className="w-4 h-4 text-cyan-400" />
+                                                                                    <div key={key} className="bg-[#0a0a10] rounded-xl border border-[#151525] overflow-hidden">
+                                                                                        <div className="flex items-center gap-3 p-3 border-b border-[#151525] bg-[#0c0c12]">
+                                                                                            <div className={`w-8 h-8 rounded-lg bg-[#151520] flex items-center justify-center`}>
+                                                                                                <Icon className={`w-4 h-4 ${config.color}`} />
+                                                                                            </div>
+                                                                                            <span className={`text-sm font-medium ${config.color}`}>{config.label}</span>
                                                                                         </div>
-                                                                                        <div className="flex-1 min-w-0">
-                                                                                            <p className="text-xs text-gray-500 uppercase tracking-wide mb-0.5">{label}</p>
-                                                                                            <p className="text-white text-sm break-words">{displayValue}</p>
+                                                                                        <div className="p-4">
+                                                                                            <p className="text-gray-300 text-sm leading-relaxed whitespace-pre-wrap break-words">
+                                                                                                {displayValue}
+                                                                                            </p>
                                                                                         </div>
                                                                                     </div>
                                                                                 );
