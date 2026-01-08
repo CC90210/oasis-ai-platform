@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Cpu, Zap, Bot, Workflow, MessageSquare, Mail, Calendar, Phone, Database, Cloud, Shield, Sparkles } from 'lucide-react';
 
 // Floating icons component - LARGER with NEON GLOW
+// Hidden on mobile to prevent overlap/clutter
 const FloatingIcons = () => {
     const icons = [
         { Icon: Cpu, top: '12%', left: '8%', delay: '0s', size: 'w-12 h-12', color: 'text-cyan-400', glow: 'shadow-[0_0_30px_rgba(0,212,255,0.6)]' },
@@ -19,24 +20,51 @@ const FloatingIcons = () => {
         { Icon: Sparkles, top: '28%', right: '22%', delay: '2.5s', size: 'w-10 h-10', color: 'text-amber-400', glow: 'shadow-[0_0_25px_rgba(251,191,36,0.5)]' },
     ];
 
+    // Reduced set for tablet
+    const tabletIcons = icons.slice(0, 4);
+
     return (
-        <div className="absolute inset-0 overflow-hidden pointer-events-none z-[5]">
-            {icons.map((item, i) => (
-                <div
-                    key={i}
-                    className={`absolute animate-float rounded-xl p-2 bg-white/5 backdrop-blur-sm border border-white/10 ${item.glow}`}
-                    style={{
-                        top: item.top,
-                        left: item.left,
-                        right: item.right,
-                        animationDelay: item.delay,
-                        animationDuration: `${5 + Math.random() * 3}s`,
-                    }}
-                >
-                    <item.Icon className={`${item.size} ${item.color} drop-shadow-lg`} />
-                </div>
-            ))}
-        </div>
+        <>
+            {/* Full icons - desktop only (lg+) */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none z-[5] hidden lg:block">
+                {icons.map((item, i) => (
+                    <div
+                        key={i}
+                        className={`absolute animate-float rounded-xl p-2 bg-white/5 backdrop-blur-sm border border-white/10 ${item.glow}`}
+                        style={{
+                            top: item.top,
+                            left: item.left,
+                            right: item.right,
+                            animationDelay: item.delay,
+                            animationDuration: `${5 + Math.random() * 3}s`,
+                        }}
+                    >
+                        <item.Icon className={`${item.size} ${item.color} drop-shadow-lg`} />
+                    </div>
+                ))}
+            </div>
+
+            {/* Reduced icons - tablet only (md to lg) */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none z-[5] hidden md:block lg:hidden">
+                {tabletIcons.map((item, i) => (
+                    <div
+                        key={i}
+                        className={`absolute animate-float rounded-xl p-2 bg-white/5 backdrop-blur-sm border border-white/10 ${item.glow}`}
+                        style={{
+                            top: item.top,
+                            left: item.left,
+                            right: item.right,
+                            animationDelay: item.delay,
+                            animationDuration: `${5 + Math.random() * 3}s`,
+                        }}
+                    >
+                        <item.Icon className={`w-8 h-8 ${item.color} drop-shadow-lg`} />
+                    </div>
+                ))}
+            </div>
+
+            {/* Mobile: No floating icons - clean interface */}
+        </>
     );
 };
 
@@ -91,21 +119,21 @@ const ImmersiveHero: React.FC = () => {
                     </Link>
                 </div>
 
-                {/* Stats Counter (Social Proof) */}
-                <div className="flex items-center justify-center gap-8 mt-12 pt-8 border-t border-gray-800/50 w-full max-w-2xl animate-fade-in-up" style={{ animationDelay: '0.5s' }}>
+                {/* Stats Counter (Social Proof) - Mobile responsive */}
+                <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-8 mt-12 pt-8 border-t border-gray-800/50 w-full max-w-2xl animate-fade-in-up" style={{ animationDelay: '0.5s' }}>
                     <div className="text-center">
-                        <div className="text-3xl font-bold text-[#00D4FF] drop-shadow-[0_0_10px_rgba(0,212,255,0.5)]">500+</div>
-                        <div className="text-sm text-gray-500">Automations Deployed</div>
+                        <div className="text-2xl sm:text-3xl font-bold text-[#00D4FF] drop-shadow-[0_0_10px_rgba(0,212,255,0.5)]">500+</div>
+                        <div className="text-xs sm:text-sm text-gray-500">Automations Deployed</div>
                     </div>
-                    <div className="w-px h-12 bg-gray-800" />
+                    <div className="hidden sm:block w-px h-12 bg-gray-800" />
                     <div className="text-center">
-                        <div className="text-3xl font-bold text-[#00D4FF] drop-shadow-[0_0_10px_rgba(0,212,255,0.5)]">50K+</div>
-                        <div className="text-sm text-gray-500">Hours Saved</div>
+                        <div className="text-2xl sm:text-3xl font-bold text-[#00D4FF] drop-shadow-[0_0_10px_rgba(0,212,255,0.5)]">50K+</div>
+                        <div className="text-xs sm:text-sm text-gray-500">Hours Saved</div>
                     </div>
-                    <div className="w-px h-12 bg-gray-800" />
+                    <div className="hidden sm:block w-px h-12 bg-gray-800" />
                     <div className="text-center">
-                        <div className="text-3xl font-bold text-[#00D4FF] drop-shadow-[0_0_10px_rgba(0,212,255,0.5)]">99.9%</div>
-                        <div className="text-sm text-gray-500">Uptime</div>
+                        <div className="text-2xl sm:text-3xl font-bold text-[#00D4FF] drop-shadow-[0_0_10px_rgba(0,212,255,0.5)]">99.9%</div>
+                        <div className="text-xs sm:text-sm text-gray-500">Uptime</div>
                     </div>
                 </div>
 

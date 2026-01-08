@@ -237,21 +237,21 @@ export default function DashboardPage() {
                                     return (
                                         <Link key={auto.id} to="/portal/automations" className="bg-[#0a0a0f] border border-[#1a1a2e] p-4 md:p-5 rounded-xl hover:border-cyan-500/30 transition-all group relative overflow-hidden block">
                                             <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 opacity-0 group-hover:opacity-100 transition duration-500"></div>
-                                            <div className="flex items-center justify-between relative z-10">
-                                                <div className="flex items-center gap-4">
-                                                    <div className="w-12 h-12 bg-[#151520] rounded-xl flex items-center justify-center border border-[#2a2a3e] group-hover:border-cyan-500/30 transition">
-                                                        <Bot className="w-6 h-6 text-cyan-400" />
+                                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 relative z-10">
+                                                <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
+                                                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[#151520] rounded-xl flex items-center justify-center border border-[#2a2a3e] group-hover:border-cyan-500/30 transition flex-shrink-0">
+                                                        <Bot className="w-5 h-5 sm:w-6 sm:h-6 text-cyan-400" />
                                                     </div>
-                                                    <div>
-                                                        <h3 className="font-bold text-white text-lg group-hover:text-cyan-400 transition">{auto.display_name}</h3>
-                                                        <div className="flex items-center gap-2 text-sm text-gray-500">
+                                                    <div className="min-w-0 flex-1">
+                                                        <h3 className="font-bold text-white text-base sm:text-lg group-hover:text-cyan-400 transition truncate sm:whitespace-normal">{auto.display_name}</h3>
+                                                        <div className="flex flex-wrap items-center gap-1 sm:gap-2 text-xs sm:text-sm text-gray-500">
                                                             <span className="capitalize">{auto.tier} Plan</span>
-                                                            <span>•</span>
+                                                            <span className="hidden sm:inline">•</span>
                                                             <span className="text-emerald-500">${config.hourlyRate}/hr saved</span>
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <div className={`px-3 py-1 rounded-full text-xs font-bold uppercase border ${getStatusColor(auto.status)}`}>
+                                                <div className={`px-2 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold uppercase border flex-shrink-0 self-start sm:self-center ${getStatusColor(auto.status)}`}>
                                                     {auto.status.replace('_', ' ')}
                                                 </div>
                                             </div>

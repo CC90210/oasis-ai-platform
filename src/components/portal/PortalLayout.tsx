@@ -127,7 +127,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
     }
 
     return (
-        <div className="min-h-screen bg-[#050505] flex selection:bg-cyan-500/20 text-white font-sans relative">
+        <div className="min-h-screen bg-[#050505] flex selection:bg-cyan-500/20 text-white font-sans relative overflow-x-hidden max-w-full">
             {/* Real StarField background - same as main site */}
             <StarField />
 
@@ -172,7 +172,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
                 {/* User Info */}
                 <div className="border-t border-[#1a1a2e] pt-6 mt-4">
                     <div className="flex items-center gap-3 mb-4">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-purple-600 flex items-center justify-center text-white font-bold shadow-lg overflow-hidden">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-purple-600 flex items-center justify-center text-white font-bold shadow-lg overflow-hidden flex-shrink-0">
                             {profile?.avatar_url ? (
                                 <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
                             ) : (
@@ -195,17 +195,18 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
             </aside>
 
             {/* Mobile Header */}
-            <div className="lg:hidden fixed top-0 left-0 right-0 z-30 bg-[#0a0a0f] border-b border-[#1a1a2e] px-4 py-3">
+            <div className="lg:hidden fixed top-0 left-0 right-0 z-30 bg-[#0a0a0f] border-b border-[#1a1a2e] px-4 py-3 max-w-full">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 bg-[#0a0a14] rounded-xl flex items-center justify-center border border-[#2a2a3e]">
+                        <div className="h-10 w-10 bg-[#0a0a14] rounded-xl flex items-center justify-center border border-[#2a2a3e] flex-shrink-0">
                             <Bot className="w-5 h-5 text-cyan-400" />
                         </div>
                         <span className="font-bold text-white">OASIS AI</span>
                     </div>
                     <button
                         onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                        className="p-2 text-gray-400 hover:text-white"
+                        className="p-2 text-gray-400 hover:text-white min-h-[44px] min-w-[44px] flex items-center justify-center"
+                        aria-label="Toggle menu"
                     >
                         {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
                     </button>
@@ -215,13 +216,22 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
             {/* Mobile Menu Overlay */}
             {mobileMenuOpen && (
                 <div className="lg:hidden fixed inset-0 z-40">
-                    <div className="absolute inset-0 bg-black/80" onClick={() => setMobileMenuOpen(false)}></div>
-                    <div className="absolute top-0 left-0 bottom-0 w-72 bg-[#0a0a0f] p-6 flex flex-col">
-                        <div className="flex items-center gap-3 mb-8">
-                            <div className="h-10 w-10 bg-[#0a0a14] rounded-xl flex items-center justify-center border border-[#2a2a3e]">
-                                <Bot className="w-5 h-5 text-cyan-400" />
+                    <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setMobileMenuOpen(false)}></div>
+                    <div className="absolute top-0 left-0 bottom-0 w-72 max-w-[80vw] bg-[#0a0a0f] p-6 flex flex-col overflow-y-auto">
+                        <div className="flex items-center justify-between mb-8">
+                            <div className="flex items-center gap-3">
+                                <div className="h-10 w-10 bg-[#0a0a14] rounded-xl flex items-center justify-center border border-[#2a2a3e]">
+                                    <Bot className="w-5 h-5 text-cyan-400" />
+                                </div>
+                                <span className="font-bold text-white">OASIS AI</span>
                             </div>
-                            <span className="font-bold text-white">OASIS AI</span>
+                            <button
+                                onClick={() => setMobileMenuOpen(false)}
+                                className="p-2 text-gray-400 hover:text-white"
+                                aria-label="Close menu"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
                         </div>
 
                         <nav className="flex-1 space-y-2">
@@ -231,22 +241,35 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
                                     <Link
                                         key={item.path}
                                         to={item.path}
-                                        className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${isActive
+                                        className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all min-h-[48px] ${isActive
                                             ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20'
                                             : 'text-gray-400 hover:bg-[#151520] hover:text-white'
                                             }`}
                                     >
-                                        <item.icon className="w-5 h-5" />
+                                        <item.icon className="w-5 h-5 flex-shrink-0" />
                                         <span className="font-medium">{item.label}</span>
                                     </Link>
                                 );
                             })}
                         </nav>
 
-                        <div className="border-t border-[#1a1a2e] pt-4">
+                        <div className="border-t border-[#1a1a2e] pt-4 mt-4">
+                            <div className="flex items-center gap-3 mb-4 px-2">
+                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-purple-600 flex items-center justify-center text-white font-bold shadow-lg overflow-hidden flex-shrink-0">
+                                    {profile?.avatar_url ? (
+                                        <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+                                    ) : (
+                                        profile?.full_name?.charAt(0) || profile?.email?.charAt(0)?.toUpperCase() || 'C'
+                                    )}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <p className="font-medium text-white truncate text-sm">{profile?.full_name || 'Client'}</p>
+                                    <p className="text-xs text-gray-500 truncate">{profile?.email}</p>
+                                </div>
+                            </div>
                             <button
                                 onClick={handleLogout}
-                                className="flex items-center gap-2 w-full px-4 py-2.5 text-gray-400 hover:text-red-400 rounded-lg transition"
+                                className="flex items-center gap-2 w-full px-4 py-3 text-gray-400 hover:text-red-400 rounded-lg transition min-h-[48px]"
                             >
                                 <LogOut className="w-4 h-4" />
                                 Sign Out
@@ -256,9 +279,11 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
                 </div>
             )}
 
-            {/* Main Content */}
-            <main className="flex-1 lg:ml-72 pt-16 lg:pt-0 min-h-screen">
-                {children}
+            {/* Main Content - prevent horizontal scroll */}
+            <main className="flex-1 lg:ml-72 pt-16 lg:pt-0 min-h-screen overflow-x-hidden max-w-full">
+                <div className="overflow-hidden max-w-full">
+                    {children}
+                </div>
             </main>
         </div>
     );
