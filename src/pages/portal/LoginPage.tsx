@@ -1,106 +1,70 @@
 import { useState, useEffect } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
-// Use global constants defined in vite.config.ts
-// @ts-ignore - Defined in vite.config.ts
-const SUPABASE_URL = __SUPABASE_URL__;
-// @ts-ignore - Defined in vite.config.ts
-const SUPABASE_ANON_KEY = __SUPABASE_ANON_KEY__;
-
 export default function LoginPage() {
     const [searchParams] = useSearchParams();
+    const navigate = useNavigate();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
-    const [debugInfo, setDebugInfo] = useState<string>('');
 
     useEffect(() => {
         if (searchParams.get('registered') === 'true') {
             setSuccessMessage('Account created successfully! Please sign in.');
         }
+
+        // Check if already logged in
+        checkSession();
     }, [searchParams]);
+
+    const checkSession = async () => {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+            navigate('/portal/dashboard');
+        }
+    };
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
         setError(null);
         setSuccessMessage(null);
-        setDebugInfo('Starting login...');
 
         try {
-            setDebugInfo('Sending request to Supabase...');
-
-            // Direct fetch to Supabase Auth API
-            const response = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'apikey': SUPABASE_ANON_KEY,
-                    'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-                },
-                body: JSON.stringify({
-                    email: email.trim().toLowerCase(),
-                    password: password,
-                }),
+            // Use standard Supabase SDK method which handles session persistence automatically
+            // This prevents the redirect loop bug by correctly saving tokens to localStorage
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email: email.trim(),
+                password: password,
             });
 
-            setDebugInfo(`Response status: ${response.status}`);
-
-            const data = await response.json();
-
-            setDebugInfo(`Response: ${JSON.stringify(data).substring(0, 100)}`);
-
-            if (!response.ok) {
-                const errorMsg = data.error_description || data.msg || data.message || 'Login failed';
-
-                if (errorMsg.includes('Invalid login credentials') || errorMsg.includes('invalid')) {
-                    setError('Invalid email or password. Please try again.');
-                } else if (errorMsg.includes('Email not confirmed')) {
-                    setError('Please check your email to confirm your account before logging in.');
-                } else {
-                    setError(errorMsg);
+            if (error) {
+                if (error.message.includes('Invalid login credentials')) {
+                    throw new Error('Invalid email or password. Please try again.');
+                } else if (error.message.includes('Email not confirmed')) {
+                    throw new Error('Please check your email to confirm your account before logging in.');
                 }
-                setLoading(false);
-                return;
+                throw error;
             }
 
-            // Success - store tokens logic
-            if (data.access_token) {
-                // 1. Store in LocalStorage (Backup)
-                localStorage.setItem('supabase_access_token', data.access_token);
-                localStorage.setItem('supabase_refresh_token', data.refresh_token || '');
-                localStorage.setItem('supabase_user', JSON.stringify(data.user));
+            if (data.session) {
+                // Successful login
+                setSuccessMessage('Login successful! Redirecting...');
 
-                // 2. CRITICAL: Sync with Supabase Client for Dashboard Access
-                // This fix ensures supabase.auth.getUser() finds the session in the Dashboard
-                const { error: sessionError } = await supabase.auth.setSession({
-                    access_token: data.access_token,
-                    refresh_token: data.refresh_token || '',
-                });
-
-                if (sessionError) {
-                    console.error('Failed to restore session:', sessionError);
-                }
-
-                setDebugInfo('Login successful! Redirecting...');
-
-                // Redirect to dashboard
+                // Short delay to show success message before redirect
                 setTimeout(() => {
-                    window.location.href = '/portal/dashboard';
+                    // Use standard navigation first
+                    navigate('/portal/dashboard');
                 }, 500);
-            } else {
-                setError('Login failed. Please try again.');
             }
-
         } catch (err: any) {
             console.error('Login error:', err);
-            setDebugInfo(`Error: ${err.message}`);
-            setError('Network error. Please check your connection and try again.');
+            setError(err.message || 'An unexpected error occurred.');
         } finally {
             setLoading(false);
         }
@@ -118,13 +82,13 @@ export default function LoginPage() {
             <p className="text-cyan-400 mb-8">Work on your business, not in your business.</p>
 
             {/* Login Card */}
-            <div className="w-full max-w-md bg-gray-900/90 backdrop-blur border border-gray-800 rounded-2xl p-8">
+            <div className="w-full max-w-md bg-gray-900/90 backdrop-blur border border-gray-800 rounded-2xl p-8 shadow-2xl">
                 <h2 className="text-xl font-semibold text-white mb-2 text-center">Welcome Back</h2>
                 <p className="text-gray-400 text-sm text-center mb-6">Sign in to access your dashboard</p>
 
                 {/* Success Message */}
                 {successMessage && (
-                    <div className="mb-4 p-3 bg-green-500/10 border border-green-500/30 rounded-lg flex items-center gap-2 text-green-400">
+                    <div className="mb-4 p-3 bg-green-500/10 border border-green-500/30 rounded-lg flex items-center gap-2 text-green-400 animate-pulse">
                         <CheckCircle className="w-5 h-5 flex-shrink-0" />
                         <span className="text-sm">{successMessage}</span>
                     </div>
@@ -135,13 +99,6 @@ export default function LoginPage() {
                     <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg flex items-center gap-2 text-red-400">
                         <AlertCircle className="w-5 h-5 flex-shrink-0" />
                         <span className="text-sm">{error}</span>
-                    </div>
-                )}
-
-                {/* Debug Info */}
-                {debugInfo && (
-                    <div className="mb-4 p-2 bg-blue-500/10 border border-blue-500/30 rounded text-blue-400 text-xs font-mono">
-                        {debugInfo}
                     </div>
                 )}
 
@@ -194,7 +151,7 @@ export default function LoginPage() {
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full py-3 bg-cyan-500 hover:bg-cyan-400 disabled:bg-cyan-500/50 disabled:cursor-not-allowed text-black font-semibold rounded-lg transition flex items-center justify-center gap-2"
+                        className="w-full py-3 bg-cyan-500 hover:bg-cyan-400 disabled:bg-cyan-500/50 disabled:cursor-not-allowed text-black font-semibold rounded-lg transition flex items-center justify-center gap-2 transform hover:scale-[1.02] active:scale-[0.98]"
                     >
                         {loading ? (
                             <>

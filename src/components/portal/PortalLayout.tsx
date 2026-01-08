@@ -6,9 +6,6 @@ import {
 import { supabase, logout, Profile } from '@/lib/supabase';
 import { useEffect, useState } from 'react';
 
-// Reuse the StatusBadge logic here if you want it globally, 
-// or simply keep this layout focused on navigation.
-
 export default function PortalLayout({ children }: { children: React.ReactNode }) {
     const navigate = useNavigate();
     const location = useLocation();
@@ -16,16 +13,56 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        loadProfile();
+        let mounted = true;
+
+        const initAuth = async () => {
+            // 1. Check for existing session first (from localStorage)
+            const { data: { session } } = await supabase.auth.getSession();
+
+            if (!session) {
+                if (mounted) {
+                    setLoading(false);
+                    navigate('/portal/login');
+                }
+                return;
+            }
+
+            // 2. Validate session with server (optional but good for security)
+            const { data: { user }, error } = await supabase.auth.getUser();
+
+            if (error || !user) {
+                if (mounted) {
+                    setLoading(false);
+                    navigate('/portal/login');
+                }
+                return;
+            }
+
+            // 3. User is valid, load profile
+            if (mounted) {
+                await loadProfile(user);
+            }
+        };
+
+        initAuth();
+
+        // 4. Set up listener for future changes (e.g. token expiry or logout)
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+            if (event === 'SIGNED_OUT') {
+                if (mounted) navigate('/portal/login');
+            } else if (session?.user && mounted) {
+                // Refresh profile if needed, or ensuring we have data
+                if (!profile) await loadProfile(session.user);
+            }
+        });
+
+        return () => {
+            mounted = false;
+            subscription.unsubscribe();
+        };
     }, []);
 
-    const loadProfile = async () => {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
-            navigate('/portal/login');
-            return;
-        }
-
+    const loadProfile = async (user: any) => {
         const { data } = await supabase
             .from('profiles')
             .select('*')
@@ -44,8 +81,13 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
     };
 
     const handleLogout = async () => {
-        await logout();
-        navigate('/portal/login');
+        try {
+            await logout();
+        } catch (e) {
+            console.error('Logout error', e);
+        } finally {
+            navigate('/portal/login');
+        }
     };
 
     const navItems = [
@@ -68,7 +110,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
     return (
         <div className="min-h-screen bg-[#050505] flex selection:bg-cyan-500/20 text-white font-sans">
             {/* Sidebar (Desktop) */}
-            <aside className="w-72 bg-[#0a0a0f] border-r border-[#1a1a2e] p-6 flex flex-col hidden lg:flex shadow-2xl z-20">
+            <aside className="w-72 bg-[#0a0a0f] border-r border-[#1a1a2e] p-6 flex flex-col hidden lg:flex shadow-2xl z-20 sticky top-0 h-screen">
                 {/* Logo */}
                 <div className="flex items-center gap-4 mb-10 pl-2">
                     <div className="relative group">
@@ -91,8 +133,8 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
                                 key={item.path}
                                 href={item.path}
                                 className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group relative overflow-hidden ${isActive
-                                        ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 shadow-[0_0_20px_rgba(6,182,212,0.15)]'
-                                        : 'text-gray-400 hover:bg-[#151520] hover:text-white border border-transparent'
+                                    ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 shadow-[0_0_20px_rgba(6,182,212,0.15)]'
+                                    : 'text-gray-400 hover:bg-[#151520] hover:text-white border border-transparent'
                                     }`}
                             >
                                 {isActive && (
