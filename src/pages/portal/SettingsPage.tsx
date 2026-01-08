@@ -1,70 +1,78 @@
-import React from 'react';
-import { Button } from '@/components/ui/button';
+import { User, Lock, Bell, Moon } from 'lucide-react';
 
-const SettingsPage = () => {
+export default function SettingsPage() {
     return (
-        <div className="max-w-4xl space-y-8">
-            <div>
-                <h1 className="text-2xl font-display font-bold text-white">Settings</h1>
-                <p className="text-text-secondary">Manage your account preferences and security.</p>
-            </div>
+        <div className="min-h-screen bg-[#050505] p-8 text-white">
+            <div className="max-w-4xl mx-auto">
+                <header className="mb-10">
+                    <h1 className="text-3xl font-bold flex items-center gap-3">
+                        <User className="w-8 h-8 text-gray-400" />
+                        Account Settings
+                    </h1>
+                    <p className="text-gray-400 mt-2">Manage your profile and preferences.</p>
+                </header>
 
-            <div className="bg-bg-secondary p-8 rounded-xl border border-white/10 shadow-sm space-y-8">
-                {/* Profile */}
-                <section className="space-y-4">
-                    <h3 className="text-lg font-bold text-white border-b border-white/10 pb-2">Profile</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium text-white">Full Name</label>
-                            <input type="text" defaultValue="CC Admin" className="w-full px-3 py-2 border border-white/10 bg-bg-tertiary text-white rounded-md focus:outline-none focus:ring-2 focus:ring-oasis-cyan/50" />
-                        </div>
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium text-white">Email Address</label>
-                            <input type="email" defaultValue="cc@oasis-ai.com" className="w-full px-3 py-2 border border-white/10 bg-bg-tertiary text-white rounded-md focus:outline-none focus:ring-2 focus:ring-oasis-cyan/50" />
-                        </div>
-                    </div>
-                </section>
-
-                {/* Notifications */}
-                <section className="space-y-4">
-                    <h3 className="text-lg font-bold text-white border-b border-white/10 pb-2">Notifications</h3>
-                    <div className="space-y-3">
-                        {[
-                            "Email me when an automation fails",
-                            "Email me weekly performance reports",
-                            "Email me about product updates",
-                            "Email me when billing invoice is ready"
-                        ].map((item, i) => (
-                            <label key={i} className="flex items-center gap-3 cursor-pointer">
-                                <input type="checkbox" defaultChecked className="h-4 w-4 text-oasis-cyan rounded border-white/30 focus:ring-oasis-cyan bg-bg-tertiary" />
-                                <span className="text-sm text-text-secondary">{item}</span>
-                            </label>
-                        ))}
-                    </div>
-                </section>
-
-                {/* Security */}
-                <section className="space-y-4">
-                    <h3 className="text-lg font-bold text-white border-b border-white/10 pb-2">Security</h3>
-                    <div className="space-y-4">
-                        <Button variant="outline" className="border-white/10 text-text-secondary hover:text-white hover:bg-white/5">Change Password</Button>
-                        <div className="flex items-center justify-between p-4 bg-bg-tertiary rounded-lg border border-white/10">
+                <div className="space-y-6">
+                    {/* Profile Section */}
+                    <div className="bg-[#0a0a0f] border border-[#1a1a2e] rounded-xl p-8">
+                        <h3 className="text-lg font-semibold text-white mb-6 flex items-center gap-2">
+                            <User className="w-5 h-5 text-cyan-500" />
+                            Profile Information
+                        </h3>
+                        <div className="grid md:grid-cols-2 gap-6">
                             <div>
-                                <div className="font-medium text-white">Two-Factor Authentication</div>
-                                <div className="text-xs text-text-secondary">Add an extra layer of security to your account.</div>
+                                <label className="block text-sm font-medium text-gray-400 mb-2">Full Name</label>
+                                <input type="text" className="w-full bg-[#151520] border border-[#2a2a3e] rounded-lg p-3 text-white" defaultValue="Client User" />
                             </div>
-                            <Button variant="outline" className="text-oasis-cyan border-oasis-cyan/20 hover:bg-oasis-cyan/5 hover:text-oasis-cyan">Enable 2FA</Button>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-400 mb-2">Email Address</label>
+                                <input type="email" className="w-full bg-[#151520] border border-[#2a2a3e] rounded-lg p-3 text-white opacity-50 cursor-not-allowed" defaultValue="client@example.com" disabled />
+                            </div>
                         </div>
                     </div>
-                </section>
 
-                <div className="pt-4 border-t border-white/10 flex justify-end gap-4">
-                    <Button variant="ghost" className="text-text-secondary hover:text-white hover:bg-white/5">Cancel</Button>
-                    <Button className="bg-oasis-cyan hover:bg-oasis-cyan/80 text-bg-primary font-bold">Save Changes</Button>
+                    {/* Security Section */}
+                    <div className="bg-[#0a0a0f] border border-[#1a1a2e] rounded-xl p-8">
+                        <h3 className="text-lg font-semibold text-white mb-6 flex items-center gap-2">
+                            <Lock className="w-5 h-5 text-purple-500" />
+                            Security
+                        </h3>
+                        <div className="flex justify-between items-center mb-6 pb-6 border-b border-[#1a1a2e]">
+                            <div>
+                                <p className="text-white font-medium">Password</p>
+                                <p className="text-gray-500 text-sm">Last changed 3 months ago</p>
+                            </div>
+                            <button className="text-cyan-400 hover:text-cyan-300 font-medium">Changed Password</button>
+                        </div>
+                        <div className="flex justify-between items-center">
+                            <div>
+                                <p className="text-white font-medium">Two-Factor Authentication</p>
+                                <p className="text-gray-500 text-sm">Add an extra layer of security</p>
+                            </div>
+                            <div className="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
+                                <input type="checkbox" name="toggle" id="toggle" className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer" />
+                                <label htmlFor="toggle" className="toggle-label block overflow-hidden h-6 rounded-full bg-gray-700 cursor-pointer"></label>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Preferences */}
+                    <div className="bg-[#0a0a0f] border border-[#1a1a2e] rounded-xl p-8">
+                        <h3 className="text-lg font-semibold text-white mb-6 flex items-center gap-2">
+                            <Bell className="w-5 h-5 text-yellow-500" />
+                            Notifications
+                        </h3>
+                        <div className="space-y-4">
+                            {['Email notifications for failed runs', 'Weekly summary reports', 'Marketing updates'].map((item) => (
+                                <div key={item} className="flex items-center gap-3">
+                                    <input type="checkbox" defaultChecked className="w-4 h-4 rounded bg-[#151520] border-[#2a2a3e] text-cyan-500 focus:ring-cyan-500" />
+                                    <span className="text-gray-300">{item}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     );
-};
-
-export default SettingsPage;
+}

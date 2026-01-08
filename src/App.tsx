@@ -31,6 +31,11 @@ const CaseStudiesPage = lazy(() => import('./pages/case-studies/CaseStudiesPage'
 const PortalLoginPage = lazy(() => import('./pages/portal/LoginPage'));
 const PortalSignupPage = lazy(() => import('./pages/portal/SignupPage'));
 const PortalDashboard = lazy(() => import('./pages/portal/DashboardPage'));
+const PortalAutomationsPage = lazy(() => import('./pages/portal/AutomationsPage'));
+const PortalReportsPage = lazy(() => import('./pages/portal/ReportsPage'));
+const PortalBillingPage = lazy(() => import('./pages/portal/BillingPage'));
+const PortalSupportPage = lazy(() => import('./pages/portal/SupportPage'));
+const PortalSettingsPage = lazy(() => import('./pages/portal/SettingsPage'));
 const TestConnection = lazy(() => import('./pages/portal/TestConnection'));
 const ConnectionDebugger = lazy(() => import('./pages/portal/ConnectionDebugger'));
 
@@ -89,6 +94,11 @@ function App() {
                         <Route path="/portal/login" element={<PortalLoginPage />} />
                         <Route path="/portal/signup" element={<PortalSignupPage />} />
                         <Route path="/portal/dashboard" element={<PortalDashboard />} />
+                        <Route path="/portal/automations" element={<PortalAutomationsPage />} />
+                        <Route path="/portal/reports" element={<PortalReportsPage />} />
+                        <Route path="/portal/billing" element={<PortalBillingPage />} />
+                        <Route path="/portal/support" element={<PortalSupportPage />} />
+                        <Route path="/portal/settings" element={<PortalSettingsPage />} />
                         <Route path="/portal/test" element={<TestConnection />} />
                         <Route path="/portal/debug" element={<ConnectionDebugger />} />
 
