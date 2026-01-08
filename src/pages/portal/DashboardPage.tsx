@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import { supabase, Profile, Automation, AutomationLog } from '@/lib/supabase';
+import { Link } from 'react-router-dom';
 import {
-    Activity, CheckCircle, Clock, TrendingUp, Bot, AlertCircle, RefreshCw
+    Activity, CheckCircle, Clock, TrendingUp, Bot, AlertCircle, RefreshCw, Info
 } from 'lucide-react';
 import PortalLayout from '@/components/portal/PortalLayout';
-import { formatDate, formatRelativeTime, formatCurrency } from '@/lib/formatters';
+import { formatRelativeTime } from '@/lib/formatters';
 
 export default function DashboardPage() {
     const [loading, setLoading] = useState(true);
@@ -12,6 +13,7 @@ export default function DashboardPage() {
     const [profile, setProfile] = useState<Profile | null>(null);
     const [automations, setAutomations] = useState<Automation[]>([]);
     const [recentLogs, setRecentLogs] = useState<AutomationLog[]>([]);
+    const [debugInfo, setDebugInfo] = useState<{ authUserId: string | null, email: string | null }>({ authUserId: null, email: null });
     const [stats, setStats] = useState({
         totalExecutions: 0,
         successfulExecutions: 0,
@@ -28,16 +30,26 @@ export default function DashboardPage() {
         setError(null);
         try {
             const { data: { user } } = await supabase.auth.getUser();
-            if (!user) return; // Layout handles redirect
+            if (!user) return;
+
+            // Store debug info
+            setDebugInfo({
+                authUserId: user.id,
+                email: user.email || null
+            });
+
+            console.log('🔍 Dashboard Debug - Auth User ID:', user.id);
+            console.log('🔍 Dashboard Debug - Auth User Email:', user.email);
 
             // 1. Load Profile
-            const { data: profileData } = await supabase
+            const { data: profileData, error: profileError } = await supabase
                 .from('profiles')
                 .select('*')
                 .eq('id', user.id)
                 .single();
 
-            // Set profile (or basic user fallback)
+            console.log('🔍 Profile Query Result:', profileData, profileError);
+
             setProfile(profileData || {
                 id: user.id,
                 email: user.email!,
@@ -48,22 +60,40 @@ export default function DashboardPage() {
                 created_at: ''
             });
 
-            // 2. Load Automations
-            const { data: authData } = await supabase
+            // 2. Load Automations - this is where the issue likely is
+            const { data: automationData, error: automationError } = await supabase
                 .from('client_automations')
                 .select('*')
                 .eq('user_id', user.id)
                 .order('created_at', { ascending: false });
 
-            setAutomations(authData || []);
+            console.log('🔍 Automations Query (user_id =', user.id, '):', automationData, automationError);
 
-            // 3. Load Logs (Real Activity)
-            const { data: logData } = await supabase
+            // If no automations found with auth user ID, let's also check if the user has any by email
+            if (!automationData || automationData.length === 0) {
+                console.log('⚠️ No automations found for user_id. Checking profiles table for matching email...');
+
+                // Try to find profile by email to see if there's a different user_id
+                const { data: profileByEmail } = await supabase
+                    .from('profiles')
+                    .select('id, email')
+                    .eq('email', user.email)
+                    .single();
+
+                console.log('🔍 Profile by email lookup:', profileByEmail);
+            }
+
+            setAutomations(automationData || []);
+
+            // 3. Load Logs
+            const { data: logData, error: logError } = await supabase
                 .from('automation_logs')
                 .select('*')
                 .eq('user_id', user.id)
                 .order('created_at', { ascending: false })
                 .limit(20);
+
+            console.log('🔍 Logs Query Result:', logData, logError);
 
             setRecentLogs(logData || []);
 
@@ -115,6 +145,23 @@ export default function DashboardPage() {
                     </button>
                 </div>
 
+                {/* Debug Info Banner - Only shows if no automations found */}
+                {automations.length === 0 && debugInfo.authUserId && (
+                    <div className="bg-blue-500/10 border border-blue-500/20 text-blue-400 p-4 rounded-xl mb-8">
+                        <div className="flex items-start gap-3">
+                            <Info className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                            <div className="text-sm">
+                                <p className="font-bold mb-1">Debug Information</p>
+                                <p className="text-blue-300">Your Auth User ID: <code className="bg-blue-900/30 px-1.5 py-0.5 rounded text-xs">{debugInfo.authUserId}</code></p>
+                                <p className="text-blue-300 mt-1">Email: <code className="bg-blue-900/30 px-1.5 py-0.5 rounded text-xs">{debugInfo.email}</code></p>
+                                <p className="text-gray-400 mt-2 text-xs">
+                                    If you have automations in Supabase but they're not showing, the <code>user_id</code> in your <code>client_automations</code> table may not match this Auth User ID.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {error && (
                     <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-xl mb-8 flex items-center gap-3">
                         <AlertCircle className="w-5 h-5" />
@@ -143,7 +190,7 @@ export default function DashboardPage() {
 
                 {/* Main Content Grid */}
                 <div className="grid lg:grid-cols-3 gap-8">
-                    {/* Automations Column (2/3 width) */}
+                    {/* Automations Column */}
                     <div className="lg:col-span-2 space-y-6">
                         <h2 className="text-xl font-bold text-white flex items-center gap-2">
                             <Bot className="w-5 h-5 text-cyan-500" />
@@ -159,12 +206,16 @@ export default function DashboardPage() {
                                 <p className="text-gray-500 mb-6 max-w-sm mx-auto">
                                     You haven't purchased or configured any AI agents yet. Browse our catalog to get started.
                                 </p>
-                                <a href="/pricing" className="text-cyan-400 hover:text-cyan-300 font-medium">Browse Catalog →</a>
+                                <Link to="/pricing" className="text-cyan-400 hover:text-cyan-300 font-medium">Browse Catalog →</Link>
                             </div>
                         ) : (
                             <div className="grid gap-4">
                                 {automations.map(auto => (
-                                    <div key={auto.id} className="bg-[#0a0a0f] border border-[#1a1a2e] p-5 rounded-xl hover:border-cyan-500/30 transition-all group cursor-pointer relative overflow-hidden">
+                                    <Link
+                                        key={auto.id}
+                                        to="/portal/automations"
+                                        className="bg-[#0a0a0f] border border-[#1a1a2e] p-5 rounded-xl hover:border-cyan-500/30 transition-all group cursor-pointer relative overflow-hidden block"
+                                    >
                                         <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 opacity-0 group-hover:opacity-100 transition duration-500"></div>
 
                                         <div className="flex items-center justify-between relative z-10">
@@ -177,7 +228,7 @@ export default function DashboardPage() {
                                                     <div className="flex items-center gap-2 text-sm text-gray-500">
                                                         <span className="capitalize">{auto.tier} Plan</span>
                                                         <span>•</span>
-                                                        <span>{formatRelativeTime(auto.last_run_at || new Date().toISOString())}</span>
+                                                        <span>{auto.last_run_at ? formatRelativeTime(auto.last_run_at) : 'Never run'}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -185,13 +236,13 @@ export default function DashboardPage() {
                                                 {auto.status.replace('_', ' ')}
                                             </div>
                                         </div>
-                                    </div>
+                                    </Link>
                                 ))}
                             </div>
                         )}
                     </div>
 
-                    {/* Recent Activity Column (1/3 width) */}
+                    {/* Recent Activity Column */}
                     <div className="space-y-6">
                         <h2 className="text-xl font-bold text-white flex items-center gap-2">
                             <Activity className="w-5 h-5 text-purple-500" />
@@ -206,11 +257,11 @@ export default function DashboardPage() {
                                 </div>
                             ) : (
                                 <div className="space-y-1">
-                                    {recentLogs.map((log, i) => (
+                                    {recentLogs.map((log) => (
                                         <div key={log.id} className="p-3 hover:bg-[#151520] rounded-lg transition group">
                                             <div className="flex items-start gap-3">
                                                 <div className={`mt-1.5 w-2 h-2 rounded-full flex-shrink-0 ${log.status === 'success' ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.4)]' :
-                                                        log.status === 'error' ? 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.4)]' : 'bg-gray-500'
+                                                    log.status === 'error' ? 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.4)]' : 'bg-gray-500'
                                                     }`} />
                                                 <div className="min-w-0 flex-1">
                                                     <p className="text-white text-sm font-medium truncate group-hover:text-cyan-400 transition">{log.event_name}</p>

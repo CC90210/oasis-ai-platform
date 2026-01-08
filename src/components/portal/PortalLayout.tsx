@@ -1,7 +1,7 @@
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import {
     LayoutDashboard, Bot, FileText, CreditCard, HelpCircle,
-    User, LogOut, Loader2
+    User, LogOut, Loader2, Menu, X
 } from 'lucide-react';
 import { supabase, logout, Profile } from '@/lib/supabase';
 import { useEffect, useState } from 'react';
@@ -11,6 +11,8 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
     const location = useLocation();
     const [profile, setProfile] = useState<Profile | null>(null);
     const [loading, setLoading] = useState(true);
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [authUserId, setAuthUserId] = useState<string | null>(null);
 
     useEffect(() => {
         let mounted = true;
@@ -27,7 +29,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
                 return;
             }
 
-            // 2. Validate session with server (optional but good for security)
+            // 2. Validate session with server
             const { data: { user }, error } = await supabase.auth.getUser();
 
             if (error || !user) {
@@ -38,20 +40,20 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
                 return;
             }
 
-            // 3. User is valid, load profile
+            // Store auth user ID for debugging
             if (mounted) {
+                setAuthUserId(user.id);
                 await loadProfile(user);
             }
         };
 
         initAuth();
 
-        // 4. Set up listener for future changes (e.g. token expiry or logout)
+        // Set up listener for future changes
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
             if (event === 'SIGNED_OUT') {
                 if (mounted) navigate('/portal/login');
             } else if (session?.user && mounted) {
-                // Refresh profile if needed, or ensuring we have data
                 if (!profile) await loadProfile(session.user);
             }
         });
@@ -75,6 +77,8 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
             email: user.email!,
             full_name: user.user_metadata?.full_name || 'Client',
             company_name: user.user_metadata?.company_name || '',
+            phone: null,
+            avatar_url: null,
             created_at: new Date().toISOString()
         });
         setLoading(false);
@@ -110,7 +114,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
     return (
         <div className="min-h-screen bg-[#050505] flex selection:bg-cyan-500/20 text-white font-sans">
             {/* Sidebar (Desktop) */}
-            <aside className="w-72 bg-[#0a0a0f] border-r border-[#1a1a2e] p-6 flex flex-col hidden lg:flex shadow-2xl z-20 sticky top-0 h-screen">
+            <aside className="w-72 bg-[#0a0a0f] border-r border-[#1a1a2e] p-6 flex flex-col hidden lg:flex shadow-2xl z-20 fixed top-0 left-0 h-screen">
                 {/* Logo */}
                 <div className="flex items-center gap-4 mb-10 pl-2">
                     <div className="relative group">
@@ -124,14 +128,14 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
                     </span>
                 </div>
 
-                {/* Navigation */}
+                {/* Navigation - Using React Router Link for SPA navigation */}
                 <nav className="flex-1 space-y-2">
                     {navItems.map((item) => {
                         const isActive = location.pathname === item.path;
                         return (
-                            <a
+                            <Link
                                 key={item.path}
-                                href={item.path}
+                                to={item.path}
                                 className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group relative overflow-hidden ${isActive
                                     ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 shadow-[0_0_20px_rgba(6,182,212,0.15)]'
                                     : 'text-gray-400 hover:bg-[#151520] hover:text-white border border-transparent'
@@ -142,7 +146,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
                                 )}
                                 <item.icon className={`w-5 h-5 ${isActive ? 'text-cyan-400' : 'text-gray-500 group-hover:text-cyan-400 transition-colors'}`} />
                                 <span className="font-medium">{item.label}</span>
-                            </a>
+                            </Link>
                         );
                     })}
                 </nav>
@@ -168,17 +172,56 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
                 </div>
             </aside>
 
-            {/* Mobile Header (Visible only on small screens) */}
+            {/* Mobile Header */}
             <div className="lg:hidden fixed top-0 left-0 right-0 bg-[#0a0a0f] border-b border-[#1a1a2e] p-4 flex items-center justify-between z-50">
                 <div className="flex items-center gap-3">
                     <Bot className="w-6 h-6 text-cyan-400" />
                     <span className="font-bold text-white">OASIS AI</span>
                 </div>
-                {/* Mobile menu toggle would go here */}
+                <button
+                    onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                    className="p-2 rounded-lg hover:bg-[#151520] transition"
+                >
+                    {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                </button>
             </div>
 
-            {/* Main Page Content */}
-            <main className="flex-1 overflow-auto pt-20 lg:pt-0 relative">
+            {/* Mobile Menu Overlay */}
+            {mobileMenuOpen && (
+                <div className="lg:hidden fixed inset-0 z-40 bg-black/80 backdrop-blur-sm" onClick={() => setMobileMenuOpen(false)}>
+                    <div className="absolute top-16 left-0 right-0 bg-[#0a0a0f] border-b border-[#1a1a2e] p-4" onClick={e => e.stopPropagation()}>
+                        <nav className="space-y-2">
+                            {navItems.map((item) => {
+                                const isActive = location.pathname === item.path;
+                                return (
+                                    <Link
+                                        key={item.path}
+                                        to={item.path}
+                                        onClick={() => setMobileMenuOpen(false)}
+                                        className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${isActive
+                                            ? 'bg-cyan-500/10 text-cyan-400'
+                                            : 'text-gray-400 hover:bg-[#151520] hover:text-white'
+                                            }`}
+                                    >
+                                        <item.icon className="w-5 h-5" />
+                                        <span className="font-medium">{item.label}</span>
+                                    </Link>
+                                );
+                            })}
+                        </nav>
+                        <button
+                            onClick={handleLogout}
+                            className="w-full mt-4 flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-[#151520] text-red-400 border border-[#2a2a3e]"
+                        >
+                            <LogOut className="w-4 h-4" />
+                            Sign Out
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* Main Page Content - offset for fixed sidebar */}
+            <main className="flex-1 overflow-auto pt-20 lg:pt-0 lg:ml-72 relative min-h-screen">
                 {/* Cinematic Background Elements */}
                 <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-cyan-900/5 to-transparent pointer-events-none"></div>
                 <div className="relative z-10 w-full h-full">
