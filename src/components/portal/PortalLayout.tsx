@@ -241,6 +241,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
                                     <Link
                                         key={item.path}
                                         to={item.path}
+                                        onClick={() => setMobileMenuOpen(false)}
                                         className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all min-h-[48px] ${isActive
                                             ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20'
                                             : 'text-gray-400 hover:bg-[#151520] hover:text-white'
