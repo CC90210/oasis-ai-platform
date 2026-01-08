@@ -43,7 +43,7 @@ const LandingPage = () => {
 
 
     return (
-        <div className="min-h-screen overflow-x-hidden text-white font-sans">
+        <div className="min-h-screen overflow-x-hidden text-white font-sans bg-transparent">
             <ImmersiveHero />
             {/* Section 2: Pain Points */}
             <section className="py-24 relative">
