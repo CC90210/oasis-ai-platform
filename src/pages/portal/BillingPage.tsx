@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase, Subscription } from '@/lib/supabase';
-import { CreditCard, FileText, Loader2, AlertCircle, DollarSign, Calendar, CheckCircle } from 'lucide-react';
+import { CreditCard, FileText, Loader2, DollarSign, Calendar, CheckCircle } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import PortalLayout from '@/components/portal/PortalLayout';
 import { formatCurrency, formatDate } from '@/lib/formatters';
 
@@ -107,12 +108,12 @@ export default function BillingPage() {
                                 <p className="text-gray-500 text-sm mb-4">
                                     Contact us to set up your billing preferences.
                                 </p>
-                                <a
-                                    href="mailto:oasisaisolutions@gmail.com"
+                                <Link
+                                    to="/contact"
                                     className="inline-flex items-center gap-2 text-cyan-400 hover:text-cyan-300 font-medium"
                                 >
                                     Contact Support →
-                                </a>
+                                </Link>
                             </div>
                         )}
                     </div>
@@ -146,12 +147,12 @@ export default function BillingPage() {
                                 <p className="text-gray-500 text-sm">
                                     Need to update your billing information or have questions about your invoice?
                                 </p>
-                                <a
-                                    href="mailto:oasisaisolutions@gmail.com"
+                                <Link
+                                    to="/contact"
                                     className="text-cyan-400 hover:text-cyan-300 text-sm mt-2 inline-block"
                                 >
                                     Contact billing support →
-                                </a>
+                                </Link>
                             </div>
                         </div>
                     </div>
