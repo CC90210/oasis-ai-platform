@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
-import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, NavLink, useLocation } from 'react-router-dom';
 import { Menu, X, ShoppingCart } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '@/store/cartStore';
@@ -8,7 +8,6 @@ export const Header = () => {
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const location = useLocation();
-    const navigate = useNavigate();
     const { items, toggleCart } = useCart();
 
     useEffect(() => {
@@ -19,9 +18,10 @@ export const Header = () => {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
-    // Close mobile menu on route change (backup)
+    // Close mobile menu whenever the route changes
     useEffect(() => {
         setIsMobileMenuOpen(false);
+        window.scrollTo(0, 0);
     }, [location.pathname]);
 
     const navLinks = [
@@ -32,25 +32,10 @@ export const Header = () => {
         { name: 'Contact', path: '/contact' },
     ];
 
-    // Handle nav click - close menu immediately and navigate
-    const handleNavClick = useCallback((e: React.MouseEvent<HTMLAnchorElement>, path: string) => {
-        e.preventDefault(); // Prevent default link behavior
-        setIsMobileMenuOpen(false); // Close menu immediately
-
-        // Navigate immediately - don't wait for animation
-        navigate(path);
-        window.scrollTo(0, 0);
-    }, [navigate]);
-
-    // Handle logo click
-    const handleLogoClick = useCallback((e: React.MouseEvent<HTMLAnchorElement>) => {
-        if (isMobileMenuOpen) {
-            e.preventDefault();
-            setIsMobileMenuOpen(false);
-            navigate('/');
-            window.scrollTo(0, 0);
-        }
-    }, [isMobileMenuOpen, navigate]);
+    // Simple close menu function
+    const closeMenu = () => {
+        setIsMobileMenuOpen(false);
+    };
 
     return (
         <header
@@ -58,7 +43,7 @@ export const Header = () => {
                 }`}
         >
             <div className="section-container flex items-center justify-between">
-                <Link to="/" className="flex items-center gap-2 group" onClick={handleLogoClick}>
+                <Link to="/" className="flex items-center gap-2 group" onClick={closeMenu}>
                     <img
                         src="/images/oasis-logo.jpg"
                         alt="OASIS AI"
@@ -69,7 +54,7 @@ export const Header = () => {
                     </span>
                 </Link>
 
-                {/* Desktop Nav - these work fine, no changes needed */}
+                {/* Desktop Nav */}
                 <nav className="hidden md:flex items-center gap-8">
                     {navLinks.map((link) => (
                         <NavLink
@@ -98,11 +83,11 @@ export const Header = () => {
                     <NavLink to="/portal/login" className={({ isActive }) => `text-sm font-medium transition-colors hover:text-oasis-cyan ${isActive ? 'text-oasis-cyan' : 'text-white'}`}>
                         Client Portal
                     </NavLink>
-                    <NavLink to="/contact">
+                    <Link to="/contact">
                         <button className="btn-primary py-2 px-4 text-sm">
                             Get Started
                         </button>
-                    </NavLink>
+                    </Link>
                 </div>
 
                 {/* Mobile Menu Button */}
@@ -128,46 +113,49 @@ export const Header = () => {
                 </div>
             </div>
 
-            {/* Mobile Menu */}
-            <AnimatePresence mode="wait">
-                {isMobileMenuOpen && (
-                    <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: '100vh' }}
-                        exit={{ opacity: 0, height: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="md:hidden bg-[#050508] fixed inset-0 top-[72px] z-30 overflow-y-auto"
-                    >
-                        <div className="section-container py-8 flex flex-col gap-6">
-                            {navLinks.map((link) => (
-                                <a
-                                    key={link.name}
-                                    href={link.path}
-                                    onClick={(e) => handleNavClick(e, link.path)}
-                                    className={`text-2xl font-display font-bold transition-colors min-h-[48px] flex items-center ${location.pathname === link.path ? 'text-oasis-cyan' : 'text-white/80 hover:text-white'}`}
-                                >
-                                    {link.name}
-                                </a>
-                            ))}
-                            <hr className="border-white/10 my-2" />
-                            <a
-                                href="/portal/login"
-                                onClick={(e) => handleNavClick(e, '/portal/login')}
-                                className={`text-xl font-medium min-h-[48px] flex items-center ${location.pathname === '/portal/login' ? 'text-oasis-cyan' : 'text-white/80 hover:text-white'}`}
+            {/* Mobile Menu - Using simple conditional render instead of AnimatePresence */}
+            {isMobileMenuOpen && (
+                <div
+                    className="md:hidden bg-[#050508] fixed inset-0 top-[72px] z-30 overflow-y-auto"
+                    style={{ animation: 'fadeIn 0.15s ease-out' }}
+                >
+                    <div className="section-container py-8 flex flex-col gap-6">
+                        {navLinks.map((link) => (
+                            <Link
+                                key={link.name}
+                                to={link.path}
+                                onClick={closeMenu}
+                                className={`text-2xl font-display font-bold transition-colors min-h-[48px] flex items-center ${location.pathname === link.path ? 'text-oasis-cyan' : 'text-white/80 hover:text-white active:text-oasis-cyan'}`}
                             >
-                                Client Portal
-                            </a>
-                            <a
-                                href="/contact"
-                                onClick={(e) => handleNavClick(e, '/contact')}
-                                className="btn-primary text-center py-4 text-lg mt-4"
-                            >
-                                Get Started
-                            </a>
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+                                {link.name}
+                            </Link>
+                        ))}
+                        <hr className="border-white/10 my-2" />
+                        <Link
+                            to="/portal/login"
+                            onClick={closeMenu}
+                            className={`text-xl font-medium min-h-[48px] flex items-center ${location.pathname === '/portal/login' ? 'text-oasis-cyan' : 'text-white/80 hover:text-white'}`}
+                        >
+                            Client Portal
+                        </Link>
+                        <Link
+                            to="/contact"
+                            onClick={closeMenu}
+                            className="btn-primary text-center py-4 text-lg mt-4"
+                        >
+                            Get Started
+                        </Link>
+                    </div>
+                </div>
+            )}
+
+            {/* CSS for fade animation */}
+            <style>{`
+                @keyframes fadeIn {
+                    from { opacity: 0; }
+                    to { opacity: 1; }
+                }
+            `}</style>
         </header>
     );
 };
