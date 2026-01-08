@@ -109,7 +109,7 @@ export default function BillingPage() {
                                     Contact us to set up your billing preferences.
                                 </p>
                                 <Link
-                                    to="/contact"
+                                    to="/portal/support"
                                     className="inline-flex items-center gap-2 text-cyan-400 hover:text-cyan-300 font-medium"
                                 >
                                     Contact Support →
@@ -148,7 +148,7 @@ export default function BillingPage() {
                                     Need to update your billing information or have questions about your invoice?
                                 </p>
                                 <Link
-                                    to="/contact"
+                                    to="/portal/support"
                                     className="text-cyan-400 hover:text-cyan-300 text-sm mt-2 inline-block"
                                 >
                                     Contact billing support →
