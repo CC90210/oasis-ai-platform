@@ -1,10 +1,10 @@
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import {
     LayoutDashboard, Bot, FileText, CreditCard, HelpCircle,
-    User, LogOut, Loader2, Menu, X
+    User, LogOut, Menu, X
 } from 'lucide-react';
 import { supabase, logout, Profile } from '@/lib/supabase';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
 export default function PortalLayout({ children }: { children: React.ReactNode }) {
     const navigate = useNavigate();
@@ -12,77 +12,86 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
     const [profile, setProfile] = useState<Profile | null>(null);
     const [loading, setLoading] = useState(true);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-    const [authUserId, setAuthUserId] = useState<string | null>(null);
+    const authCheckComplete = useRef(false);
 
     useEffect(() => {
-        let mounted = true;
+        // Only run auth check once
+        if (authCheckComplete.current) return;
 
-        const initAuth = async () => {
-            // 1. Check for existing session first (from localStorage)
-            const { data: { session } } = await supabase.auth.getSession();
+        const checkAuth = async () => {
+            try {
+                // Quick session check
+                const { data: { session } } = await supabase.auth.getSession();
 
-            if (!session) {
-                if (mounted) {
-                    setLoading(false);
+                if (!session) {
                     navigate('/portal/login');
+                    return;
                 }
-                return;
-            }
 
-            // 2. Validate session with server
-            const { data: { user }, error } = await supabase.auth.getUser();
+                // Get user
+                const { data: { user }, error } = await supabase.auth.getUser();
 
-            if (error || !user) {
-                if (mounted) {
-                    setLoading(false);
+                if (error || !user) {
                     navigate('/portal/login');
+                    return;
                 }
-                return;
-            }
 
-            // Store auth user ID for debugging
-            if (mounted) {
-                setAuthUserId(user.id);
-                await loadProfile(user);
+                // Load profile (with graceful fallback)
+                try {
+                    const { data: profileData } = await supabase
+                        .from('profiles')
+                        .select('*')
+                        .eq('id', user.id)
+                        .single();
+
+                    setProfile(profileData || {
+                        id: user.id,
+                        email: user.email!,
+                        full_name: user.user_metadata?.full_name || 'Client',
+                        company_name: '',
+                        phone: null,
+                        avatar_url: null,
+                        created_at: new Date().toISOString()
+                    });
+                } catch {
+                    // Profile query failed, use fallback
+                    setProfile({
+                        id: user.id,
+                        email: user.email!,
+                        full_name: user.user_metadata?.full_name || 'Client',
+                        company_name: '',
+                        phone: null,
+                        avatar_url: null,
+                        created_at: new Date().toISOString()
+                    });
+                }
+
+                authCheckComplete.current = true;
+            } catch (err) {
+                console.error('Auth check error:', err);
+                navigate('/portal/login');
+            } finally {
+                setLoading(false);
             }
         };
 
-        initAuth();
-
-        // Set up listener for future changes
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-            if (event === 'SIGNED_OUT') {
-                if (mounted) navigate('/portal/login');
-            } else if (session?.user && mounted) {
-                if (!profile) await loadProfile(session.user);
+        // Set a timeout to prevent infinite loading
+        const timeout = setTimeout(() => {
+            if (loading) {
+                setLoading(false);
+                // If still loading after 8 seconds, show content anyway
             }
-        });
+        }, 8000);
 
-        return () => {
-            mounted = false;
-            subscription.unsubscribe();
-        };
+        checkAuth();
+
+        return () => clearTimeout(timeout);
     }, []);
 
-    const loadProfile = async (user: any) => {
-        const { data } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', user.id)
-            .single();
-
-        // Even if profile is missing, we use user data as fallback display
-        setProfile((data as Profile) || {
-            id: user.id,
-            email: user.email!,
-            full_name: user.user_metadata?.full_name || 'Client',
-            company_name: user.user_metadata?.company_name || '',
-            phone: null,
-            avatar_url: null,
-            created_at: new Date().toISOString()
-        });
-        setLoading(false);
-    };
+    // Close mobile menu on navigation
+    useEffect(() => {
+        setMobileMenuOpen(false);
+    }, [location.pathname]);
 
     const handleLogout = async () => {
         try {
@@ -90,6 +99,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
         } catch (e) {
             console.error('Logout error', e);
         } finally {
+            authCheckComplete.current = false;
             navigate('/portal/login');
         }
     };
@@ -103,10 +113,14 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
         { path: '/portal/settings', icon: User, label: 'Settings' },
     ];
 
-    if (loading) {
+    // Show minimal loading only on initial load
+    if (loading && !profile) {
         return (
             <div className="min-h-screen bg-[#050505] flex items-center justify-center">
-                <Loader2 className="w-12 h-12 animate-spin text-cyan-500" />
+                <div className="text-center">
+                    <div className="w-12 h-12 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                    <p className="text-gray-500 text-sm">Loading portal...</p>
+                </div>
             </div>
         );
     }
@@ -128,7 +142,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
                     </span>
                 </div>
 
-                {/* Navigation - Using React Router Link for SPA navigation */}
+                {/* Navigation */}
                 <nav className="flex-1 space-y-2">
                     {navItems.map((item) => {
                         const isActive = location.pathname === item.path;
@@ -151,20 +165,20 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
                     })}
                 </nav>
 
-                {/* Profile Footer */}
-                <div className="border-t border-[#1a1a2e] pt-6 mt-6">
-                    <div className="flex items-center gap-3 px-2 mb-4">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-900 to-purple-900 flex items-center justify-center border border-[#2a2a3e] text-white font-bold shadow-lg">
-                            {profile?.full_name?.charAt(0) || 'C'}
+                {/* User Info */}
+                <div className="border-t border-[#1a1a2e] pt-6 mt-4">
+                    <div className="flex items-center gap-3 mb-4">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-purple-600 flex items-center justify-center text-white font-bold shadow-lg">
+                            {profile?.full_name?.charAt(0) || profile?.email?.charAt(0)?.toUpperCase() || 'C'}
                         </div>
                         <div className="flex-1 min-w-0">
-                            <p className="text-white font-medium truncate text-sm">{profile?.full_name || 'Client'}</p>
-                            <p className="text-gray-500 text-xs truncate">{profile?.email}</p>
+                            <p className="font-medium text-white truncate">{profile?.full_name || 'Client'}</p>
+                            <p className="text-xs text-gray-500 truncate">{profile?.email}</p>
                         </div>
                     </div>
                     <button
                         onClick={handleLogout}
-                        className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-[#151520] hover:bg-red-500/10 text-gray-400 hover:text-red-400 border border-[#2a2a3e] hover:border-red-500/20 transition-all duration-200 text-sm font-medium"
+                        className="flex items-center gap-2 w-full px-4 py-2.5 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition text-sm font-medium border border-transparent hover:border-red-500/20"
                     >
                         <LogOut className="w-4 h-4" />
                         Sign Out
@@ -173,33 +187,44 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
             </aside>
 
             {/* Mobile Header */}
-            <div className="lg:hidden fixed top-0 left-0 right-0 bg-[#0a0a0f] border-b border-[#1a1a2e] p-4 flex items-center justify-between z-50">
-                <div className="flex items-center gap-3">
-                    <Bot className="w-6 h-6 text-cyan-400" />
-                    <span className="font-bold text-white">OASIS AI</span>
+            <div className="lg:hidden fixed top-0 left-0 right-0 z-30 bg-[#0a0a0f] border-b border-[#1a1a2e] px-4 py-3">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 bg-[#0a0a14] rounded-xl flex items-center justify-center border border-[#2a2a3e]">
+                            <Bot className="w-5 h-5 text-cyan-400" />
+                        </div>
+                        <span className="font-bold text-white">OASIS AI</span>
+                    </div>
+                    <button
+                        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                        className="p-2 text-gray-400 hover:text-white"
+                    >
+                        {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                    </button>
                 </div>
-                <button
-                    onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                    className="p-2 rounded-lg hover:bg-[#151520] transition"
-                >
-                    {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-                </button>
             </div>
 
             {/* Mobile Menu Overlay */}
             {mobileMenuOpen && (
-                <div className="lg:hidden fixed inset-0 z-40 bg-black/80 backdrop-blur-sm" onClick={() => setMobileMenuOpen(false)}>
-                    <div className="absolute top-16 left-0 right-0 bg-[#0a0a0f] border-b border-[#1a1a2e] p-4" onClick={e => e.stopPropagation()}>
-                        <nav className="space-y-2">
+                <div className="lg:hidden fixed inset-0 z-40">
+                    <div className="absolute inset-0 bg-black/80" onClick={() => setMobileMenuOpen(false)}></div>
+                    <div className="absolute top-0 left-0 bottom-0 w-72 bg-[#0a0a0f] p-6 flex flex-col">
+                        <div className="flex items-center gap-3 mb-8">
+                            <div className="h-10 w-10 bg-[#0a0a14] rounded-xl flex items-center justify-center border border-[#2a2a3e]">
+                                <Bot className="w-5 h-5 text-cyan-400" />
+                            </div>
+                            <span className="font-bold text-white">OASIS AI</span>
+                        </div>
+
+                        <nav className="flex-1 space-y-2">
                             {navItems.map((item) => {
                                 const isActive = location.pathname === item.path;
                                 return (
                                     <Link
                                         key={item.path}
                                         to={item.path}
-                                        onClick={() => setMobileMenuOpen(false)}
                                         className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${isActive
-                                            ? 'bg-cyan-500/10 text-cyan-400'
+                                            ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20'
                                             : 'text-gray-400 hover:bg-[#151520] hover:text-white'
                                             }`}
                                     >
@@ -209,24 +234,23 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
                                 );
                             })}
                         </nav>
-                        <button
-                            onClick={handleLogout}
-                            className="w-full mt-4 flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-[#151520] text-red-400 border border-[#2a2a3e]"
-                        >
-                            <LogOut className="w-4 h-4" />
-                            Sign Out
-                        </button>
+
+                        <div className="border-t border-[#1a1a2e] pt-4">
+                            <button
+                                onClick={handleLogout}
+                                className="flex items-center gap-2 w-full px-4 py-2.5 text-gray-400 hover:text-red-400 rounded-lg transition"
+                            >
+                                <LogOut className="w-4 h-4" />
+                                Sign Out
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
 
-            {/* Main Page Content - offset for fixed sidebar */}
-            <main className="flex-1 overflow-auto pt-20 lg:pt-0 lg:ml-72 relative min-h-screen">
-                {/* Cinematic Background Elements */}
-                <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-cyan-900/5 to-transparent pointer-events-none"></div>
-                <div className="relative z-10 w-full h-full">
-                    {children}
-                </div>
+            {/* Main Content */}
+            <main className="flex-1 lg:ml-72 pt-16 lg:pt-0 min-h-screen">
+                {children}
             </main>
         </div>
     );
