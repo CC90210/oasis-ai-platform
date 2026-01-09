@@ -104,7 +104,7 @@ const PricingPage: React.FC = () => {
             </div>
 
             {/* 6. Enterprise CTA */}
-            <div className="container mx-auto px-4 mb-24">
+            <div className="container mx-auto px-4 mb-16">
                 <div className="max-w-4xl mx-auto bg-gradient-to-r from-gray-900 to-[#1A1A2E] border border-gray-800 rounded-2xl p-8 md:p-12 relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
 
@@ -126,7 +126,46 @@ const PricingPage: React.FC = () => {
                 </div>
             </div>
 
-            {/* 7. FAQ Section */}
+            {/* 7. Custom Agreement CTA */}
+            <div className="container mx-auto px-4 mb-24">
+                <div className="max-w-4xl mx-auto bg-gradient-to-r from-cyan-500/10 to-purple-500/10 border border-cyan-500/30 rounded-2xl p-8 relative overflow-hidden">
+                    <div className="absolute top-0 left-0 w-48 h-48 bg-cyan-500/10 rounded-full blur-3xl -translate-y-1/2 -translate-x-1/2" />
+
+                    <div className="relative z-10 flex flex-col md:flex-row items-center gap-6">
+                        {/* Icon */}
+                        <div className="w-16 h-16 bg-cyan-500/20 rounded-full flex items-center justify-center flex-shrink-0">
+                            <span className="text-3xl">🤝</span>
+                        </div>
+
+                        {/* Content */}
+                        <div className="flex-1 text-center md:text-left">
+                            <h3 className="text-2xl font-bold text-white mb-2">Have a Custom Agreement?</h3>
+                            <p className="text-gray-400">
+                                Already discussed pricing with our team? Complete your custom deal online with secure payment.
+                            </p>
+                        </div>
+
+                        {/* Buttons */}
+                        <div className="flex flex-col sm:flex-row gap-3">
+                            <button
+                                onClick={() => navigate('/custom-agreement')}
+                                className="px-6 py-3 bg-cyan-500 hover:bg-cyan-400 text-black font-semibold rounded-lg transition flex items-center justify-center gap-2 whitespace-nowrap"
+                            >
+                                Complete Custom Deal
+                                <span className="text-lg">→</span>
+                            </button>
+                            <button
+                                onClick={() => navigate('/contact')}
+                                className="px-6 py-3 bg-transparent border border-gray-600 hover:border-gray-500 text-white font-semibold rounded-lg transition whitespace-nowrap"
+                            >
+                                Contact for Enterprise
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* 8. FAQ Section */}
             <div className="container mx-auto px-4 mb-12">
                 <div className="max-w-3xl mx-auto text-center mb-12">
                     <h2 className="text-3xl font-bold text-white mb-4">Frequently Asked Questions</h2>

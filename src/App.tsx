@@ -42,6 +42,10 @@ const ConnectionDebugger = lazy(() => import('./pages/portal/ConnectionDebugger'
 const PrivacyPage = lazy(() => import('./pages/legal/PrivacyPage'));
 const TermsPage = lazy(() => import('./pages/legal/TermsPage'));
 
+// Custom Agreement Pages
+const CustomAgreementPage = lazy(() => import('./pages/custom-agreement/CustomAgreementPage'));
+const CustomAgreementSuccessPage = lazy(() => import('./pages/custom-agreement/CustomAgreementSuccessPage'));
+
 function App() {
     // Initialize state based on session storage to prevent flash of content
     const [showSplash, setShowSplash] = useState(() => {
@@ -85,6 +89,10 @@ function App() {
                         <Route path="/checkout" element={<MainLayout showChat={!showSplash}><CheckoutPage /></MainLayout>} />
                         <Route path="/checkout/success" element={<CheckoutSuccessPage />} />
                         <Route path="/subscription-success" element={<MainLayout showChat={!showSplash}><SubscriptionSuccessPage /></MainLayout>} />
+
+                        {/* Custom Agreement Pages */}
+                        <Route path="/custom-agreement" element={<MainLayout showChat={!showSplash}><CustomAgreementPage /></MainLayout>} />
+                        <Route path="/custom-agreement/success" element={<CustomAgreementSuccessPage />} />
 
                         {/* Legal Pages */}
                         <Route path="/privacy" element={<MainLayout showChat={!showSplash}><PrivacyPage /></MainLayout>} />
