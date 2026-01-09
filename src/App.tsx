@@ -78,7 +78,7 @@ function App() {
                 <Suspense fallback={<PageLoader />}>
                     <Routes>
                         {/* Public Routes */}
-                        <Route path="/" element={<MainLayout showChat={!showSplash}><LandingPage /></MainLayout>} />
+                        <Route path="/" element={<MainLayout showChat={!showSplash} showNav={!showSplash}><LandingPage /></MainLayout>} />
                         <Route path="/services" element={<MainLayout showChat={!showSplash}><ServicesPage /></MainLayout>} />
                         <Route path="/pricing" element={<MainLayout showChat={!showSplash}><PricingPage /></MainLayout>} />
                         <Route path="/pricing/:productId" element={<MainLayout showChat={!showSplash}><ProductConfigPage /></MainLayout>} />

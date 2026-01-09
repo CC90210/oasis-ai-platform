@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS public.custom_agreements (
     -- Pricing (stored in cents for precision)
     upfront_cost_cents INTEGER NOT NULL DEFAULT 0,
     monthly_cost_cents INTEGER NOT NULL DEFAULT 0,
+    currency TEXT DEFAULT 'usd' CHECK (currency IN ('usd', 'cad')),
     
     -- NDA Information
     nda_signed BOOLEAN DEFAULT FALSE,

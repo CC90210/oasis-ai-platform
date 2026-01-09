@@ -59,7 +59,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             automationType,
             upfrontCostCents,
             monthlyCostCents,
+            currency = 'usd',
         } = req.body || {};
+
+        // Normalize currency to lowercase
+        const normalizedCurrency = (currency || 'usd').toLowerCase();
 
         // Validate required fields
         if (!clientEmail) {
@@ -87,7 +91,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         if (hasUpfront) {
             lineItems.push({
                 price_data: {
-                    currency: 'usd',
+                    currency: normalizedCurrency,
                     product_data: {
                         name: `${automationType} - Setup Fee`,
                         description: companyName
@@ -104,7 +108,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         if (hasMonthlyRecurring) {
             lineItems.push({
                 price_data: {
-                    currency: 'usd',
+                    currency: normalizedCurrency,
                     product_data: {
                         name: `${automationType} - Monthly Service`,
                         description: 'Ongoing automation service, maintenance, and support',
@@ -134,6 +138,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 automationType,
                 clientName: clientName || '',
                 companyName: companyName || '',
+                currency: normalizedCurrency,
             },
         };
 

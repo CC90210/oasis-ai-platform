@@ -26,22 +26,27 @@ interface FormData {
     email: string;
     companyName: string;
     phone: string;
-    automationType: string;
+    serviceType: string;
     agreementReference: string;
     upfrontCost: string;
     monthlyCost: string;
+    currency: 'USD' | 'CAD';
     ndaSignature: string;
     ndaAgreed: boolean;
 }
 
-const AUTOMATION_TYPES = [
-    'Customer Support Agent',
-    'Lead Generation',
-    'Appointment Booking',
-    'Review Management',
-    'Social Media Manager',
-    'Voice AI Agent',
-    'Custom Solution'
+// Updated service types with descriptions
+const SERVICE_TYPES = [
+    { id: 'customer-support', name: 'Customer Support Agent', description: 'AI-powered customer service automation' },
+    { id: 'lead-generation', name: 'Lead Generation', description: 'Automated lead finding & enrichment' },
+    { id: 'appointment-booking', name: 'Appointment Booking', description: 'Smart scheduling automation' },
+    { id: 'review-management', name: 'Review Management', description: 'Google review automation' },
+    { id: 'social-media', name: 'Social Media Manager', description: 'Content creation & posting automation' },
+    { id: 'voice-ai', name: 'Voice AI Agent', description: 'Phone call automation' },
+    { id: 'website-build', name: 'Website Development', description: 'Custom website design & build' },
+    { id: 'workflow-automation', name: 'Workflow Automation', description: 'Business process automation' },
+    { id: 'integration', name: 'System Integration', description: 'Connect your tools & platforms' },
+    { id: 'custom', name: 'Custom Solution', description: 'Tailored to your specific needs' },
 ];
 
 const NDA_TEXT = `NON-DISCLOSURE AGREEMENT
@@ -99,10 +104,11 @@ export default function CustomAgreementPage() {
         email: '',
         companyName: '',
         phone: '',
-        automationType: '',
+        serviceType: '',
         agreementReference: '',
         upfrontCost: '',
         monthlyCost: '',
+        currency: 'USD',
         ndaSignature: '',
         ndaAgreed: false
     });
@@ -130,8 +136,8 @@ export default function CustomAgreementPage() {
             setError('Valid email is required');
             return false;
         }
-        if (!formData.automationType) {
-            setError('Please select an automation type');
+        if (!formData.serviceType) {
+            setError('Please select a service type');
             return false;
         }
         const upfront = parseFloat(formData.upfrontCost) || 0;
@@ -176,25 +182,36 @@ export default function CustomAgreementPage() {
             const upfrontCostCents = Math.round(parseFloat(formData.upfrontCost || '0') * 100);
             const monthlyCostCents = Math.round(parseFloat(formData.monthlyCost || '0') * 100);
 
-            // 1. Save to Supabase
-            const { error: supabaseError } = await supabase.from('custom_agreements').insert({
+            // Get service name from ID
+            const serviceInfo = SERVICE_TYPES.find(s => s.id === formData.serviceType);
+            const serviceName = serviceInfo?.name || formData.serviceType;
+
+            // Prepare data for Supabase
+            const agreementData = {
                 client_name: formData.fullName,
                 client_email: formData.email,
                 company_name: formData.companyName || null,
                 phone: formData.phone || null,
-                automation_type: formData.automationType,
+                automation_type: serviceName,
                 agreement_reference: formData.agreementReference || null,
                 upfront_cost_cents: upfrontCostCents,
                 monthly_cost_cents: monthlyCostCents,
+                currency: formData.currency.toLowerCase(),
                 nda_signed: true,
                 nda_signed_at: new Date().toISOString(),
                 nda_signature_name: formData.ndaSignature,
                 status: 'nda_signed',
-            });
+            };
+
+            // 1. Save to Supabase with logging
+            console.log('Saving to Supabase:', agreementData);
+            const { data: supabaseData, error: supabaseError } = await supabase.from('custom_agreements').insert(agreementData);
 
             if (supabaseError) {
                 console.error('Supabase error:', supabaseError);
                 // Continue anyway - we want the payment to proceed
+            } else {
+                console.log('Saved successfully:', supabaseData);
             }
 
             // 2. Create Stripe Checkout Session
@@ -207,9 +224,10 @@ export default function CustomAgreementPage() {
                     clientName: formData.fullName,
                     clientEmail: formData.email,
                     companyName: formData.companyName,
-                    automationType: formData.automationType,
+                    automationType: serviceName,
                     upfrontCostCents,
                     monthlyCostCents,
+                    currency: formData.currency.toLowerCase(),
                 }),
             });
 
@@ -249,6 +267,8 @@ export default function CustomAgreementPage() {
 
     const upfrontAmount = parseFloat(formData.upfrontCost) || 0;
     const monthlyAmount = parseFloat(formData.monthlyCost) || 0;
+    const currencySymbol = formData.currency === 'USD' ? 'US$' : 'CA$';
+    const currencyLabel = formData.currency === 'USD' ? 'USD' : 'CAD';
 
     return (
         <div className="min-h-screen pt-20 pb-16 relative overflow-hidden">
@@ -412,16 +432,18 @@ export default function CustomAgreementPage() {
 
                                 <div>
                                     <label className="block text-sm font-medium text-gray-300 mb-2">
-                                        Automation Type <span className="text-red-400">*</span>
+                                        Service Type <span className="text-red-400">*</span>
                                     </label>
                                     <select
-                                        value={formData.automationType}
-                                        onChange={(e) => handleInputChange('automationType', e.target.value)}
+                                        value={formData.serviceType}
+                                        onChange={(e) => handleInputChange('serviceType', e.target.value)}
                                         className="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 text-white focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition appearance-none cursor-pointer"
                                     >
-                                        <option value="" className="bg-gray-800">Select automation type...</option>
-                                        {AUTOMATION_TYPES.map((type) => (
-                                            <option key={type} value={type} className="bg-gray-800">{type}</option>
+                                        <option value="" className="bg-gray-800">Select the service we discussed...</option>
+                                        {SERVICE_TYPES.map((service) => (
+                                            <option key={service.id} value={service.id} className="bg-gray-800">
+                                                {service.name}
+                                            </option>
                                         ))}
                                     </select>
                                 </div>
@@ -444,24 +466,56 @@ export default function CustomAgreementPage() {
                                 </div>
 
                                 <div className="pt-4 border-t border-gray-700">
-                                    <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                                        <DollarSign className="w-5 h-5 text-cyan-400" />
-                                        Custom Pricing
-                                    </h3>
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                                            <DollarSign className="w-5 h-5 text-cyan-400" />
+                                            Custom Pricing
+                                        </h3>
+
+                                        {/* Currency Selector */}
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-gray-400 text-sm">Currency:</span>
+                                            <div className="flex bg-gray-800 rounded-lg p-1">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleInputChange('currency', 'USD')}
+                                                    className={`px-3 py-1 rounded text-sm transition ${formData.currency === 'USD'
+                                                            ? 'bg-cyan-500 text-black font-medium'
+                                                            : 'text-gray-400 hover:text-white'
+                                                        }`}
+                                                >
+                                                    USD $
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleInputChange('currency', 'CAD')}
+                                                    className={`px-3 py-1 rounded text-sm transition ${formData.currency === 'CAD'
+                                                            ? 'bg-cyan-500 text-black font-medium'
+                                                            : 'text-gray-400 hover:text-white'
+                                                        }`}
+                                                >
+                                                    CAD $
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
                                     <div className="grid md:grid-cols-2 gap-4">
                                         <div>
                                             <label className="block text-sm font-medium text-gray-300 mb-2">
-                                                Upfront Cost (USD)
+                                                Upfront Cost ({currencyLabel})
                                             </label>
                                             <div className="relative">
-                                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-medium">$</span>
+                                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-medium text-sm">
+                                                    {currencySymbol}
+                                                </span>
                                                 <input
                                                     type="number"
                                                     min="0"
                                                     step="0.01"
                                                     value={formData.upfrontCost}
                                                     onChange={(e) => handleInputChange('upfrontCost', e.target.value)}
-                                                    className="w-full bg-gray-800/50 border border-gray-700 rounded-lg pl-8 pr-4 py-3 text-white placeholder-gray-500 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition"
+                                                    className="w-full bg-gray-800/50 border border-gray-700 rounded-lg pl-12 pr-4 py-3 text-white placeholder-gray-500 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition"
                                                     placeholder="0.00"
                                                 />
                                             </div>
@@ -469,17 +523,19 @@ export default function CustomAgreementPage() {
 
                                         <div>
                                             <label className="block text-sm font-medium text-gray-300 mb-2">
-                                                Monthly Cost (USD)
+                                                Monthly Cost ({currencyLabel})
                                             </label>
                                             <div className="relative">
-                                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-medium">$</span>
+                                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-medium text-sm">
+                                                    {currencySymbol}
+                                                </span>
                                                 <input
                                                     type="number"
                                                     min="0"
                                                     step="0.01"
                                                     value={formData.monthlyCost}
                                                     onChange={(e) => handleInputChange('monthlyCost', e.target.value)}
-                                                    className="w-full bg-gray-800/50 border border-gray-700 rounded-lg pl-8 pr-4 py-3 text-white placeholder-gray-500 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition"
+                                                    className="w-full bg-gray-800/50 border border-gray-700 rounded-lg pl-12 pr-4 py-3 text-white placeholder-gray-500 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition"
                                                     placeholder="0.00"
                                                 />
                                             </div>
@@ -537,19 +593,25 @@ export default function CustomAgreementPage() {
                                     <h4 className="text-white font-medium mb-2">Your Custom Pricing Summary</h4>
                                     <div className="space-y-1 text-sm">
                                         <div className="flex justify-between">
-                                            <span className="text-gray-400">Automation Type:</span>
-                                            <span className="text-white">{formData.automationType}</span>
+                                            <span className="text-gray-400">Service Type:</span>
+                                            <span className="text-white">
+                                                {SERVICE_TYPES.find(s => s.id === formData.serviceType)?.name || formData.serviceType}
+                                            </span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span className="text-gray-400">Currency:</span>
+                                            <span className="text-white">{formData.currency}</span>
                                         </div>
                                         {upfrontAmount > 0 && (
                                             <div className="flex justify-between">
                                                 <span className="text-gray-400">Upfront (one-time):</span>
-                                                <span className="text-cyan-400 font-semibold">${upfrontAmount.toFixed(2)}</span>
+                                                <span className="text-cyan-400 font-semibold">{currencySymbol}{upfrontAmount.toFixed(2)}</span>
                                             </div>
                                         )}
                                         {monthlyAmount > 0 && (
                                             <div className="flex justify-between">
                                                 <span className="text-gray-400">Monthly:</span>
-                                                <span className="text-cyan-400 font-semibold">${monthlyAmount.toFixed(2)}/mo</span>
+                                                <span className="text-cyan-400 font-semibold">{currencySymbol}{monthlyAmount.toFixed(2)}/mo</span>
                                             </div>
                                         )}
                                     </div>
@@ -582,8 +644,8 @@ export default function CustomAgreementPage() {
                                             className="sr-only"
                                         />
                                         <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition ${formData.ndaAgreed
-                                                ? 'bg-cyan-500 border-cyan-500'
-                                                : 'border-gray-600 group-hover:border-gray-500'
+                                            ? 'bg-cyan-500 border-cyan-500'
+                                            : 'border-gray-600 group-hover:border-gray-500'
                                             }`}>
                                             {formData.ndaAgreed && <Check className="w-3 h-3 text-black" />}
                                         </div>
