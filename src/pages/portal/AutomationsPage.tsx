@@ -1,6 +1,12 @@
 import { useEffect, useState } from 'react';
 import { supabase, Automation, AutomationLog } from '@/lib/supabase';
-import { Bot, Activity, Loader2, ChevronDown, ChevronUp, Mail, User, FileText, MessageSquare, Sparkles } from 'lucide-react';
+import {
+    fetchAutomationMetrics,
+    AutomationMetrics,
+    formatPercentage,
+    getAutomationTypeConfig
+} from '@/lib/metrics';
+import { Bot, Activity, Loader2, ChevronDown, ChevronUp, Mail, User, FileText, MessageSquare, Sparkles, TrendingUp } from 'lucide-react';
 import PortalLayout from '@/components/portal/PortalLayout';
 import { formatDate, formatRelativeTime } from '@/lib/formatters';
 
@@ -57,23 +63,30 @@ export default function AutomationsPage() {
     const [logs, setLogs] = useState<AutomationLog[]>([]);
     const [loadingLogs, setLoadingLogs] = useState(false);
     const [expandedLogs, setExpandedLogs] = useState<Set<string>>(new Set());
+    const [userId, setUserId] = useState<string | null>(null);
+
+    // CRITICAL: Use centralized metrics for consistency
+    const [automationMetrics, setAutomationMetrics] = useState<AutomationMetrics | null>(null);
 
     useEffect(() => {
         loadAutomations();
     }, []);
 
     useEffect(() => {
-        if (selectedAuto) {
-            loadLogs(selectedAuto.id);
+        if (selectedAuto && userId) {
+            loadLogsAndMetrics(selectedAuto.id, userId);
         } else {
             setLogs([]);
+            setAutomationMetrics(null);
         }
-    }, [selectedAuto]);
+    }, [selectedAuto, userId]);
 
     const loadAutomations = async () => {
         try {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) return;
+
+            setUserId(user.id);
 
             const { data, error } = await supabase
                 .from('client_automations')
@@ -94,9 +107,10 @@ export default function AutomationsPage() {
         }
     };
 
-    const loadLogs = async (automationId: string) => {
+    const loadLogsAndMetrics = async (automationId: string, userId: string) => {
         setLoadingLogs(true);
         try {
+            // Fetch logs for display
             const { data, error } = await supabase
                 .from('automation_logs')
                 .select('*')
@@ -106,6 +120,11 @@ export default function AutomationsPage() {
 
             if (error) throw error;
             setLogs(data || []);
+
+            // CRITICAL: Fetch metrics using centralized service for consistency with Dashboard
+            const metrics = await fetchAutomationMetrics(automationId, userId);
+            setAutomationMetrics(metrics);
+
         } catch (err) {
             console.error('Error loading logs:', err);
         } finally {
@@ -129,12 +148,6 @@ export default function AutomationsPage() {
             case 'pending_setup': return 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20';
             default: return 'bg-gray-500/10 text-gray-400 border-gray-500/20';
         }
-    };
-
-    const calculateReliability = () => {
-        if (logs.length === 0) return 100;
-        const successful = logs.filter(l => l.status === 'success').length;
-        return Math.round((successful / logs.length) * 100);
     };
 
     if (loading) {
@@ -171,7 +184,6 @@ export default function AutomationsPage() {
                                         }`}
                                 >
                                     <div className="flex justify-between items-start gap-2 mb-2">
-                                        {/* Use break-words to prevent text cutoff */}
                                         <h3 className={`font-bold text-sm sm:text-base break-words ${selectedAuto?.id === auto.id ? 'text-white' : 'text-gray-300 group-hover:text-white'}`}>
                                             {auto.display_name}
                                         </h3>
@@ -211,7 +223,6 @@ export default function AutomationsPage() {
                                         <Bot className="w-5 h-5 sm:w-6 sm:h-6 text-cyan-400" />
                                     </div>
                                     <div className="min-w-0 flex-1">
-                                        {/* Use break-words to prevent "Customer Support Ager" cutoff */}
                                         <h2 className="text-base sm:text-xl font-bold text-white break-words leading-tight">
                                             {selectedAuto.display_name}
                                         </h2>
@@ -225,11 +236,11 @@ export default function AutomationsPage() {
                                 </div>
                             </div>
 
-                            {/* Scrollable Content - this is the key fix */}
+                            {/* Scrollable Content */}
                             <div className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8">
                                 <div className="max-w-4xl mx-auto space-y-6 sm:space-y-8">
 
-                                    {/* Stats - responsive grid */}
+                                    {/* Stats - Using CENTRALIZED METRICS for consistency */}
                                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                                         <div className="bg-[#0a0a0f] border border-[#1a1a2e] p-3 sm:p-4 rounded-xl">
                                             <p className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-wider mb-1">Type</p>
@@ -241,11 +252,48 @@ export default function AutomationsPage() {
                                         </div>
                                         <div className="bg-[#0a0a0f] border border-[#1a1a2e] p-3 sm:p-4 rounded-xl">
                                             <p className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-wider mb-1">Total Runs</p>
-                                            <p className="text-white text-sm sm:text-base font-medium">{logs.length}</p>
+                                            {/* CRITICAL: Use centralized metrics for consistency with Dashboard */}
+                                            <p className="text-white text-sm sm:text-base font-medium">
+                                                {loadingLogs ? '...' : automationMetrics?.totalRuns || 0}
+                                            </p>
                                         </div>
                                         <div className="bg-[#0a0a0f] border border-[#1a1a2e] p-3 sm:p-4 rounded-xl">
                                             <p className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-wider mb-1">Reliability</p>
-                                            <p className="text-green-400 text-sm sm:text-base font-medium">{calculateReliability()}%</p>
+                                            {/* CRITICAL: Use centralized metrics for consistency */}
+                                            <p className="text-green-400 text-sm sm:text-base font-medium">
+                                                {loadingLogs ? '...' : formatPercentage(automationMetrics?.reliability || 100)}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    {/* Additional Metrics Row */}
+                                    <div className="grid grid-cols-3 gap-3 sm:gap-4">
+                                        <div className="bg-gradient-to-br from-green-500/10 to-green-500/5 border border-green-500/20 p-3 sm:p-4 rounded-xl">
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <TrendingUp className="w-4 h-4 text-green-400" />
+                                                <p className="text-[10px] sm:text-xs text-green-400 uppercase tracking-wider">Successful</p>
+                                            </div>
+                                            <p className="text-white text-lg sm:text-xl font-bold">
+                                                {automationMetrics?.successfulRuns || 0}
+                                            </p>
+                                        </div>
+                                        <div className="bg-gradient-to-br from-orange-500/10 to-orange-500/5 border border-orange-500/20 p-3 sm:p-4 rounded-xl">
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <Activity className="w-4 h-4 text-orange-400" />
+                                                <p className="text-[10px] sm:text-xs text-orange-400 uppercase tracking-wider">This Week</p>
+                                            </div>
+                                            <p className="text-white text-lg sm:text-xl font-bold">
+                                                {automationMetrics?.runsThisWeek || 0}
+                                            </p>
+                                        </div>
+                                        <div className="bg-gradient-to-br from-red-500/10 to-red-500/5 border border-red-500/20 p-3 sm:p-4 rounded-xl">
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <Sparkles className="w-4 h-4 text-red-400" />
+                                                <p className="text-[10px] sm:text-xs text-red-400 uppercase tracking-wider">Failed</p>
+                                            </div>
+                                            <p className="text-white text-lg sm:text-xl font-bold">
+                                                {automationMetrics?.failedRuns || 0}
+                                            </p>
                                         </div>
                                     </div>
 
@@ -254,6 +302,9 @@ export default function AutomationsPage() {
                                         <h3 className="text-base sm:text-lg font-bold text-white mb-4 flex items-center gap-2">
                                             <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-purple-500 flex-shrink-0" />
                                             Activity Log
+                                            <span className="text-xs text-gray-500 font-normal">
+                                                (showing last 50)
+                                            </span>
                                         </h3>
 
                                         {loadingLogs ? (
@@ -278,51 +329,49 @@ export default function AutomationsPage() {
                                                                     <div className="flex justify-between items-start gap-2 mb-2">
                                                                         <div className="min-w-0 flex-1">
                                                                             <h4 className="font-bold text-white text-sm sm:text-base break-words">{log.event_name}</h4>
-                                                                            <p className="text-xs text-gray-500 mt-1">{formatRelativeTime(log.created_at)}</p>
+                                                                            <p className="text-gray-500 text-xs sm:text-sm break-words">{log.event_type}</p>
                                                                         </div>
-                                                                        <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded border flex-shrink-0 ${log.status === 'success' ? 'bg-green-500/10 text-green-400 border-green-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20'}`}>
-                                                                            {log.status}
-                                                                        </span>
+                                                                        <div className="flex items-center gap-2 flex-shrink-0">
+                                                                            <span className={`px-2 py-0.5 rounded-full text-[10px] uppercase font-bold ${log.status === 'success' ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'}`}>
+                                                                                {log.status}
+                                                                            </span>
+                                                                        </div>
                                                                     </div>
-
-                                                                    {/* Expandable Technical Details */}
-                                                                    {hasMetadata && (
-                                                                        <button
-                                                                            onClick={() => toggleLogExpanded(log.id)}
-                                                                            className="flex items-center gap-1 text-cyan-500 text-xs sm:text-sm hover:text-cyan-400 transition mt-2 min-h-[44px] sm:min-h-0"
-                                                                        >
-                                                                            {isExpanded ? <ChevronUp className="w-3 h-3 sm:w-4 sm:h-4" /> : <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4" />}
-                                                                            {isExpanded ? 'Hide' : 'View'} Execution Details
-                                                                        </button>
-                                                                    )}
+                                                                    <div className="flex justify-between items-center">
+                                                                        <span className="text-gray-600 text-xs">{formatRelativeTime(log.created_at)}</span>
+                                                                        {hasMetadata && (
+                                                                            <button
+                                                                                onClick={() => toggleLogExpanded(log.id)}
+                                                                                className="text-cyan-400 text-xs flex items-center gap-1 hover:text-cyan-300 transition min-h-[32px] px-2"
+                                                                            >
+                                                                                {isExpanded ? 'Hide Details' : 'View Execution Details'}
+                                                                                {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                                                                            </button>
+                                                                        )}
+                                                                    </div>
                                                                 </div>
 
-                                                                {/* Expanded Details - SCROLLABLE on mobile */}
-                                                                {isExpanded && hasMetadata && (
-                                                                    <div className="border-t border-[#1a1a2e] bg-[#080810] p-3 sm:p-4">
-                                                                        <h5 className="text-xs text-gray-500 uppercase tracking-wider mb-3 sm:mb-4 font-medium flex items-center gap-2">
-                                                                            <Sparkles className="w-3 h-3 text-purple-400 flex-shrink-0" />
+                                                                {/* Execution Details - SCROLLABLE */}
+                                                                {isExpanded && parsedMetadata && (
+                                                                    <div className="border-t border-[#1a1a2e] p-3 sm:p-4 bg-[#080810]">
+                                                                        <p className="text-xs text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+                                                                            <Sparkles className="w-3 h-3" />
                                                                             Execution Details
-                                                                        </h5>
-                                                                        {/* Key fix: max-height and overflow-y-auto for scrollable content */}
-                                                                        <div className="space-y-3 sm:space-y-4 max-h-64 sm:max-h-80 overflow-y-auto pr-2">
-                                                                            {Object.entries(parsedMetadata!).map(([key, value]) => {
+                                                                        </p>
+                                                                        {/* Scrollable container */}
+                                                                        <div className="max-h-64 sm:max-h-80 overflow-y-auto pr-2 space-y-4">
+                                                                            {Object.entries(parsedMetadata).map(([key, value]) => {
                                                                                 const config = getFieldConfig(key);
-                                                                                const Icon = config.icon;
-                                                                                const displayValue = typeof value === 'object' ? JSON.stringify(value, null, 2) : String(value);
+                                                                                const IconComponent = config.icon;
 
                                                                                 return (
-                                                                                    <div key={key} className="bg-[#0a0a10] rounded-xl border border-[#151525] overflow-hidden">
-                                                                                        <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 border-b border-[#151525] bg-[#0c0c12]">
-                                                                                            <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-lg bg-[#151520] flex items-center justify-center flex-shrink-0`}>
-                                                                                                <Icon className={`w-3 h-3 sm:w-4 sm:h-4 ${config.color}`} />
-                                                                                            </div>
-                                                                                            <span className={`text-xs sm:text-sm font-medium ${config.color} truncate`}>{config.label}</span>
+                                                                                    <div key={key} className="bg-[#0a0a0f] border border-[#1a1a2e] rounded-lg p-3">
+                                                                                        <div className={`flex items-center gap-2 mb-2 ${config.color}`}>
+                                                                                            <IconComponent className="w-4 h-4 flex-shrink-0" />
+                                                                                            <span className="text-xs uppercase tracking-wider font-medium">{config.label}</span>
                                                                                         </div>
-                                                                                        <div className="p-3 sm:p-4">
-                                                                                            <p className="text-gray-300 text-xs sm:text-sm leading-relaxed whitespace-pre-wrap break-words">
-                                                                                                {displayValue}
-                                                                                            </p>
+                                                                                        <div className="text-gray-200 text-sm break-words whitespace-pre-wrap">
+                                                                                            {typeof value === 'object' ? JSON.stringify(value, null, 2) : String(value)}
                                                                                         </div>
                                                                                     </div>
                                                                                 );

@@ -1,5 +1,13 @@
-import { useEffect, useState, useRef, useMemo } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { supabase, Profile, Automation, AutomationLog } from '@/lib/supabase';
+import {
+    fetchDashboardMetrics,
+    DashboardMetrics,
+    formatMoneySaved,
+    formatPercentage,
+    getAutomationTypeConfig,
+    METRICS_CONFIG
+} from '@/lib/metrics';
 import { Link } from 'react-router-dom';
 import {
     Activity, Clock, TrendingUp, Bot, AlertCircle, RefreshCw, DollarSign,
@@ -9,189 +17,9 @@ import {
 import PortalLayout from '@/components/portal/PortalLayout';
 import { formatRelativeTime } from '@/lib/formatters';
 
-// Comprehensive automation type configurations with value metrics
-const AUTOMATION_CONFIG: Record<string, {
-    hourlyRate: number;
-    minutesPerTask: number;
-    humanCostPerMonth: number;
-    industryAvgResponse: string;
-    valueMetrics: string[];
-    icon: any;
-    color: string;
-    insightLabels: { label: string; unit: string; icon: any; color: string; calculate: (logs: AutomationLog[], total: number) => string | number }[];
-}> = {
-    'customer-support': {
-        hourlyRate: 25,
-        minutesPerTask: 15,
-        humanCostPerMonth: 4000,
-        industryAvgResponse: '24h',
-        valueMetrics: ['emails handled', 'response time', 'resolution rate'],
-        icon: Mail,
-        color: 'text-cyan-400',
-        insightLabels: [
-            {
-                label: 'Tickets Resolved',
-                unit: 'this week',
-                icon: Target,
-                color: 'text-green-400',
-                calculate: (logs, total) => {
-                    const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-                    return logs.filter(l => new Date(l.created_at) > weekAgo && l.status === 'success').length;
-                }
-            },
-            {
-                label: 'Avg Response',
-                unit: 'vs 24h human',
-                icon: Timer,
-                color: 'text-purple-400',
-                calculate: (logs) => '<2 min'
-            },
-            {
-                label: 'Cost Reduction',
-                unit: 'vs human agent',
-                icon: Percent,
-                color: 'text-emerald-400',
-                calculate: (logs, total) => '87%'
-            }
-        ]
-    },
-    'appointment-scheduling': {
-        hourlyRate: 22,
-        minutesPerTask: 10,
-        humanCostPerMonth: 3500,
-        industryAvgResponse: '4h',
-        valueMetrics: ['appointments booked', 'no-show reduction', 'scheduling efficiency'],
-        icon: Calendar,
-        color: 'text-purple-400',
-        insightLabels: [
-            {
-                label: 'Appointments Set',
-                unit: 'this month',
-                icon: Calendar,
-                color: 'text-purple-400',
-                calculate: (logs) => {
-                    const monthAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-                    return logs.filter(l => new Date(l.created_at) > monthAgo && l.status === 'success').length;
-                }
-            },
-            {
-                label: 'No-Show Reduction',
-                unit: 'with reminders',
-                icon: Shield,
-                color: 'text-green-400',
-                calculate: () => '42%'
-            },
-            {
-                label: 'Booking Speed',
-                unit: 'vs manual',
-                icon: Zap,
-                color: 'text-yellow-400',
-                calculate: () => '15x faster'
-            }
-        ]
-    },
-    'lead-generation': {
-        hourlyRate: 35,
-        minutesPerTask: 30,
-        humanCostPerMonth: 5500,
-        industryAvgResponse: '48h',
-        valueMetrics: ['leads captured', 'qualification rate', 'cost per lead'],
-        icon: Target,
-        color: 'text-orange-400',
-        insightLabels: [
-            {
-                label: 'Leads Captured',
-                unit: 'qualified',
-                icon: Users,
-                color: 'text-orange-400',
-                calculate: (logs) => logs.filter(l => l.status === 'success').length
-            },
-            {
-                label: 'Qualification Rate',
-                unit: 'AI-scored',
-                icon: Target,
-                color: 'text-cyan-400',
-                calculate: (logs, total) => total > 0 ? `${Math.round((logs.filter(l => l.status === 'success').length / total) * 100)}%` : '100%'
-            },
-            {
-                label: 'Cost Per Lead',
-                unit: 'vs $50 avg',
-                icon: DollarSign,
-                color: 'text-green-400',
-                calculate: () => '$8'
-            }
-        ]
-    },
-    'phone-agent': {
-        hourlyRate: 30,
-        minutesPerTask: 8,
-        humanCostPerMonth: 4500,
-        industryAvgResponse: '3min',
-        valueMetrics: ['calls handled', 'avg duration', 'transfer rate'],
-        icon: Phone,
-        color: 'text-green-400',
-        insightLabels: [
-            {
-                label: 'Calls Handled',
-                unit: 'this week',
-                icon: Phone,
-                color: 'text-green-400',
-                calculate: (logs) => {
-                    const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-                    return logs.filter(l => new Date(l.created_at) > weekAgo).length;
-                }
-            },
-            {
-                label: 'First Call Resolution',
-                unit: 'no transfers',
-                icon: Award,
-                color: 'text-purple-400',
-                calculate: (logs, total) => total > 0 ? `${Math.min(95, 85 + Math.floor(total / 10))}%` : '95%'
-            },
-            {
-                label: 'Availability',
-                unit: '24/7 coverage',
-                icon: Shield,
-                color: 'text-cyan-400',
-                calculate: () => '100%'
-            }
-        ]
-    },
-    'default': {
-        hourlyRate: 25,
-        minutesPerTask: 15,
-        humanCostPerMonth: 4000,
-        industryAvgResponse: '24h',
-        valueMetrics: ['tasks completed', 'efficiency', 'reliability'],
-        icon: Bot,
-        color: 'text-cyan-400',
-        insightLabels: [
-            {
-                label: 'Tasks This Week',
-                unit: 'completed',
-                icon: Zap,
-                color: 'text-green-400',
-                calculate: (logs) => {
-                    const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-                    return logs.filter(l => new Date(l.created_at) > weekAgo && l.status === 'success').length;
-                }
-            },
-            {
-                label: 'Processing Speed',
-                unit: 'avg per task',
-                icon: Timer,
-                color: 'text-purple-400',
-                calculate: () => '<3s'
-            },
-            {
-                label: 'Uptime',
-                unit: 'reliability',
-                icon: Shield,
-                color: 'text-cyan-400',
-                calculate: () => '99.9%'
-            }
-        ]
-    }
+// Icon mapping for automation types
+const ICON_MAP: Record<string, any> = {
+    Mail, Phone, Users, Target, Timer, Calendar, Bot, Zap, Shield, Award
 };
 
 export default function DashboardPage() {
@@ -200,17 +28,8 @@ export default function DashboardPage() {
     const [profile, setProfile] = useState<Profile | null>(null);
     const [automations, setAutomations] = useState<Automation[]>([]);
     const [recentLogs, setRecentLogs] = useState<AutomationLog[]>([]);
+    const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
     const loadingTimeout = useRef<NodeJS.Timeout | null>(null);
-
-    // Enhanced stats with no redundancy
-    const [stats, setStats] = useState({
-        totalExecutions: 0,
-        tasksThisWeek: 0,         // Changed from successfulExecutions to remove redundancy
-        hoursSaved: 0,
-        moneySaved: 0,
-        successRate: 0,
-        humanCostEquivalent: 0    // New: What it would cost with humans
-    });
 
     useEffect(() => {
         loadDashboardData();
@@ -221,70 +40,6 @@ export default function DashboardPage() {
             if (loadingTimeout.current) clearTimeout(loadingTimeout.current);
         };
     }, []);
-
-    // Dynamic performance insights based on actual automation types
-    const performanceInsights = useMemo(() => {
-        if (automations.length === 0) {
-            return AUTOMATION_CONFIG['default'].insightLabels;
-        }
-
-        // Get the primary automation type (first one or most used)
-        const primaryAutomation = automations[0];
-        const autoType = primaryAutomation?.automation_type || 'default';
-        const config = AUTOMATION_CONFIG[autoType] || AUTOMATION_CONFIG['default'];
-
-        return config.insightLabels.map(insight => ({
-            ...insight,
-            value: insight.calculate(recentLogs, stats.totalExecutions)
-        }));
-    }, [automations, recentLogs, stats.totalExecutions]);
-
-    const calculateAdvancedStats = (automations: Automation[], logs: AutomationLog[]) => {
-        let totalMinutesSaved = 0;
-        let totalMoneySaved = 0;
-        let totalHumanCost = 0;
-
-        // Calculate tasks this week
-        const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-        const tasksThisWeek = logs.filter(l =>
-            new Date(l.created_at) > weekAgo && l.status === 'success'
-        ).length;
-
-        const logsByAutomation = logs.reduce((acc, log) => {
-            const autoId = log.automation_id;
-            if (!acc[autoId]) acc[autoId] = [];
-            acc[autoId].push(log);
-            return acc;
-        }, {} as Record<string, AutomationLog[]>);
-
-        automations.forEach(auto => {
-            const autoLogs = logsByAutomation[auto.id] || [];
-            const successfulLogs = autoLogs.filter(l => l.status === 'success').length;
-            const config = AUTOMATION_CONFIG[auto.automation_type as keyof typeof AUTOMATION_CONFIG] || AUTOMATION_CONFIG.default;
-
-            const minutesSaved = successfulLogs * config.minutesPerTask;
-            const moneySaved = (minutesSaved / 60) * config.hourlyRate;
-
-            totalMinutesSaved += minutesSaved;
-            totalMoneySaved += moneySaved;
-            totalHumanCost += config.humanCostPerMonth;
-        });
-
-        if (automations.length === 0 && logs.length > 0) {
-            const config = AUTOMATION_CONFIG.default;
-            const successfulLogs = logs.filter(l => l.status === 'success').length;
-            totalMinutesSaved = successfulLogs * config.minutesPerTask;
-            totalMoneySaved = (totalMinutesSaved / 60) * config.hourlyRate;
-            totalHumanCost = config.humanCostPerMonth;
-        }
-
-        return {
-            hoursSaved: Math.round(totalMinutesSaved / 60 * 10) / 10,
-            moneySaved: Math.round(totalMoneySaved * 100) / 100,
-            humanCostEquivalent: totalHumanCost,
-            tasksThisWeek
-        };
-    };
 
     const loadDashboardData = async () => {
         setLoading(true);
@@ -300,6 +55,7 @@ export default function DashboardPage() {
 
             const user = authData.user;
 
+            // Load profile
             try {
                 const { data: profileData } = await supabase.from('profiles').select('*').eq('id', user.id).single();
                 setProfile(profileData || {
@@ -313,25 +69,26 @@ export default function DashboardPage() {
                 });
             }
 
-            const { data: automationData } = await supabase.from('client_automations').select('*').eq('user_id', user.id).order('created_at', { ascending: false });
+            // Fetch automations
+            const { data: automationData } = await supabase
+                .from('client_automations')
+                .select('*')
+                .eq('user_id', user.id)
+                .order('created_at', { ascending: false });
             setAutomations(automationData || []);
 
-            const { data: logData } = await supabase.from('automation_logs').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(100);
+            // Fetch recent logs for display (limit 10)
+            const { data: logData } = await supabase
+                .from('automation_logs')
+                .select('*')
+                .eq('user_id', user.id)
+                .order('created_at', { ascending: false })
+                .limit(10);
             setRecentLogs(logData || []);
 
-            const total = logData?.length || 0;
-            const successful = logData?.filter(l => l.status === 'success').length || 0;
-            const rate = total > 0 ? Math.round((successful / total) * 100) : 100;
-            const advancedStats = calculateAdvancedStats(automationData || [], logData || []);
-
-            setStats({
-                totalExecutions: total,
-                tasksThisWeek: advancedStats.tasksThisWeek,
-                hoursSaved: advancedStats.hoursSaved,
-                moneySaved: advancedStats.moneySaved,
-                successRate: rate,
-                humanCostEquivalent: advancedStats.humanCostEquivalent
-            });
+            // CRITICAL: Fetch metrics using centralized service for consistency
+            const dashboardMetrics = await fetchDashboardMetrics(user.id);
+            setMetrics(dashboardMetrics);
 
         } catch (err: any) {
             console.error('Dashboard error:', err);
@@ -358,11 +115,6 @@ export default function DashboardPage() {
         }
     };
 
-    const formatMoney = (amount: number) => {
-        if (amount >= 1000) return `$${(amount / 1000).toFixed(1)}k`;
-        return `$${amount.toFixed(0)}`;
-    };
-
     const getGreeting = () => {
         const hour = new Date().getHours();
         if (hour < 12) return 'Good morning';
@@ -370,14 +122,39 @@ export default function DashboardPage() {
         return 'Good evening';
     };
 
-    // Get automation-specific icon and color
-    const getPrimaryAutomationInfo = () => {
-        if (automations.length === 0) return AUTOMATION_CONFIG.default;
-        const autoType = automations[0]?.automation_type || 'default';
-        return AUTOMATION_CONFIG[autoType] || AUTOMATION_CONFIG.default;
+    // Get primary automation config for insights
+    const getPrimaryAutomationConfig = () => {
+        if (automations.length === 0) return getAutomationTypeConfig('default');
+        return getAutomationTypeConfig(automations[0]?.automation_type || 'default');
     };
 
-    const primaryAutoInfo = getPrimaryAutomationInfo();
+    const primaryConfig = getPrimaryAutomationConfig();
+
+    // Calculate dynamic insights based on metrics
+    const getInsightValue = (index: number): string | number => {
+        if (!metrics) return 0;
+
+        switch (index) {
+            case 0: // Tickets/Tasks resolved
+                return metrics.executionsThisWeek;
+            case 1: // Response time
+                return metrics.avgResponseTime;
+            case 2: // Cost reduction
+                return `${metrics.costReduction}%`;
+            default:
+                return 0;
+        }
+    };
+
+    if (loading) {
+        return (
+            <PortalLayout>
+                <div className="flex items-center justify-center h-64">
+                    <RefreshCw className="w-8 h-8 animate-spin text-cyan-500" />
+                </div>
+            </PortalLayout>
+        );
+    }
 
     return (
         <PortalLayout>
@@ -407,12 +184,12 @@ export default function DashboardPage() {
                     </div>
                 )}
 
-                {/* Enhanced Stats Grid - No Redundancy */}
+                {/* Stats Grid - Using CENTRALIZED METRICS */}
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-4 md:gap-5 mb-8">
                     {[
                         {
                             label: 'Total Executions',
-                            value: stats.totalExecutions,
+                            value: metrics?.totalExecutions || 0,
                             icon: Activity,
                             color: 'text-cyan-400',
                             sub: 'All time',
@@ -420,7 +197,7 @@ export default function DashboardPage() {
                         },
                         {
                             label: 'Tasks This Week',
-                            value: stats.tasksThisWeek,
+                            value: metrics?.executionsThisWeek || 0,
                             icon: Flame,
                             color: 'text-orange-400',
                             sub: 'Recent activity',
@@ -428,7 +205,7 @@ export default function DashboardPage() {
                         },
                         {
                             label: 'Hours Saved',
-                            value: stats.hoursSaved,
+                            value: metrics?.hoursSaved || 0,
                             icon: Clock,
                             color: 'text-purple-400',
                             sub: 'vs manual work',
@@ -436,15 +213,15 @@ export default function DashboardPage() {
                         },
                         {
                             label: 'Money Saved',
-                            value: formatMoney(stats.moneySaved),
+                            value: formatMoneySaved(metrics?.moneySaved || 0),
                             icon: DollarSign,
                             color: 'text-emerald-400',
-                            sub: `vs $${formatMoney(stats.humanCostEquivalent)}/mo human`,
+                            sub: `vs ${formatMoneySaved(metrics?.humanCostEquivalent || 0)} human`,
                             glow: 'shadow-[0_0_20px_rgba(16,185,129,0.1)]'
                         },
                         {
                             label: 'Success Rate',
-                            value: `${stats.successRate}%`,
+                            value: formatPercentage(metrics?.successRate || 100),
                             icon: TrendingUp,
                             color: 'text-green-400',
                             sub: 'Reliability score',
@@ -485,15 +262,14 @@ export default function DashboardPage() {
                         ) : (
                             <div className="grid gap-4">
                                 {automations.map(auto => {
-                                    const config = AUTOMATION_CONFIG[auto.automation_type as keyof typeof AUTOMATION_CONFIG] || AUTOMATION_CONFIG.default;
-                                    const AutoIcon = config.icon;
+                                    const config = getAutomationTypeConfig(auto.automation_type);
                                     return (
                                         <Link key={auto.id} to="/portal/automations" className="bg-[#0a0a0f] border border-[#1a1a2e] p-4 md:p-5 rounded-xl hover:border-cyan-500/30 transition-all group relative overflow-hidden block">
                                             <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 opacity-0 group-hover:opacity-100 transition duration-500"></div>
                                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 relative z-10">
                                                 <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
                                                     <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[#151520] rounded-xl flex items-center justify-center border border-[#2a2a3e] group-hover:border-cyan-500/30 transition flex-shrink-0">
-                                                        <AutoIcon className={`w-5 h-5 sm:w-6 sm:h-6 ${config.color}`} />
+                                                        <Bot className={`w-5 h-5 sm:w-6 sm:h-6 text-${config.color}-400`} />
                                                     </div>
                                                     <div className="min-w-0 flex-1">
                                                         <h3 className="font-bold text-white text-base sm:text-lg group-hover:text-cyan-400 transition truncate sm:whitespace-normal">{auto.display_name}</h3>
@@ -530,7 +306,7 @@ export default function DashboardPage() {
                                 </div>
                             ) : (
                                 <div className="space-y-1 max-h-[280px] overflow-y-auto">
-                                    {recentLogs.slice(0, 10).map((log) => (
+                                    {recentLogs.map((log) => (
                                         <div key={log.id} className="p-3 hover:bg-[#151520] rounded-lg transition group">
                                             <div className="flex items-start gap-3">
                                                 <div className={`mt-1.5 w-2 h-2 rounded-full flex-shrink-0 ${getLogStatusColor(log.status)}`} />
@@ -550,7 +326,7 @@ export default function DashboardPage() {
 
                 {/* Bottom Section - Dynamic Performance Insights & Quick Actions */}
                 <div className="grid md:grid-cols-3 gap-6">
-                    {/* Dynamic Performance Insights - Based on Automation Type */}
+                    {/* Dynamic Performance Insights */}
                     <div className="md:col-span-2 bg-gradient-to-br from-[#0a0a0f] to-[#0f0f18] border border-[#1a1a2e] rounded-2xl p-6">
                         <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
                             <BarChart3 className="w-5 h-5 text-cyan-500" />
@@ -562,23 +338,20 @@ export default function DashboardPage() {
                             )}
                         </h3>
                         <div className="grid sm:grid-cols-3 gap-4">
-                            {performanceInsights.map((insight, idx) => {
-                                const InsightIcon = insight.icon;
-                                return (
-                                    <div key={idx} className="bg-[#080810] border border-[#151525] rounded-xl p-4 hover:border-[#252535] transition">
-                                        <div className="flex items-center gap-3 mb-3">
-                                            <div className={`w-10 h-10 rounded-lg bg-${insight.color.replace('text-', '')}/10 flex items-center justify-center`}
-                                                style={{ backgroundColor: `rgba(${insight.color === 'text-green-400' ? '34,197,94' : insight.color === 'text-purple-400' ? '168,85,247' : insight.color === 'text-cyan-400' ? '6,182,212' : insight.color === 'text-orange-400' ? '251,146,60' : insight.color === 'text-emerald-400' ? '16,185,129' : '34,197,94'}, 0.1)` }}
-                                            >
-                                                <InsightIcon className={`w-5 h-5 ${insight.color}`} />
-                                            </div>
-                                            <span className="text-gray-400 text-sm">{insight.label}</span>
+                            {primaryConfig.insights.map((insight, idx) => (
+                                <div key={idx} className="bg-[#080810] border border-[#151525] rounded-xl p-4 hover:border-[#252535] transition">
+                                    <div className="flex items-center gap-3 mb-3">
+                                        <div className={`w-10 h-10 rounded-lg bg-${insight.color}-500/10 flex items-center justify-center`}>
+                                            {idx === 0 && <Target className={`w-5 h-5 text-${insight.color}-400`} />}
+                                            {idx === 1 && <Timer className={`w-5 h-5 text-${insight.color}-400`} />}
+                                            {idx === 2 && <Percent className={`w-5 h-5 text-${insight.color}-400`} />}
                                         </div>
-                                        <p className="text-2xl font-bold text-white">{insight.value !== undefined ? insight.value : insight.calculate(recentLogs, stats.totalExecutions)}</p>
-                                        <p className={`text-xs ${insight.color} mt-1`}>↑ {insight.unit}</p>
+                                        <span className="text-gray-400 text-sm">{insight.label}</span>
                                     </div>
-                                );
-                            })}
+                                    <p className="text-2xl font-bold text-white">{getInsightValue(idx)}</p>
+                                    <p className={`text-xs text-${insight.color}-400 mt-1`}>↑ {insight.unit}</p>
+                                </div>
+                            ))}
                         </div>
 
                         {/* Value Proposition Banner */}
@@ -590,7 +363,7 @@ export default function DashboardPage() {
                                 <div>
                                     <p className="text-white font-medium">Your AI is working 24/7</p>
                                     <p className="text-gray-400 text-sm">
-                                        That's <span className="text-cyan-400 font-bold">{Math.round(168 - stats.hoursSaved)}+ hours</span> you've saved this month vs. hiring a human employee
+                                        That's <span className="text-cyan-400 font-bold">{metrics?.hoursSaved || 0}+ hours</span> saved so far vs. hiring a human employee at ${METRICS_CONFIG.HOURLY_RATE}/hr
                                     </p>
                                 </div>
                             </div>
