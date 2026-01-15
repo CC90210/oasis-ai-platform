@@ -1,7 +1,7 @@
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import {
     LayoutDashboard, Bot, FileText, CreditCard, HelpCircle,
-    User, LogOut, Menu, X
+    User, LogOut, Menu, X, Home, ExternalLink
 } from 'lucide-react';
 import { supabase, logout, Profile } from '@/lib/supabase';
 import { useEffect, useState, useRef } from 'react';
@@ -101,17 +101,24 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
             console.error('Logout error', e);
         } finally {
             authCheckComplete.current = false;
-            navigate('/portal/login');
+            // Redirect to homepage, not login - users can access login from there if needed
+            navigate('/');
         }
     };
 
-    const navItems = [
-        { path: '/portal/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-        { path: '/portal/automations', icon: Bot, label: 'My Automations' },
-        { path: '/portal/reports', icon: FileText, label: 'Reports' },
-        { path: '/portal/billing', icon: CreditCard, label: 'Billing' },
-        { path: '/portal/support', icon: HelpCircle, label: 'Support' },
-        { path: '/portal/settings', icon: User, label: 'Settings' },
+    type NavItem =
+        | { type: 'divider' }
+        | { type: 'link'; path: string; icon: React.ComponentType<{ className?: string }>; label: string; external?: boolean };
+
+    const navItems: NavItem[] = [
+        { type: 'link', path: '/', icon: Home, label: 'Back to Website', external: true },
+        { type: 'divider' },
+        { type: 'link', path: '/portal/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+        { type: 'link', path: '/portal/automations', icon: Bot, label: 'My Automations' },
+        { type: 'link', path: '/portal/reports', icon: FileText, label: 'Reports' },
+        { type: 'link', path: '/portal/billing', icon: CreditCard, label: 'Billing' },
+        { type: 'link', path: '/portal/support', icon: HelpCircle, label: 'Support' },
+        { type: 'link', path: '/portal/settings', icon: User, label: 'Settings' },
     ];
 
     // Show minimal loading only on initial load
@@ -133,10 +140,10 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
 
             {/* Sidebar (Desktop) */}
             <aside className="w-72 bg-[#0a0a0f] border-r border-[#1a1a2e] p-6 flex flex-col hidden lg:flex shadow-2xl z-20 fixed top-0 left-0 h-screen">
-                {/* Logo */}
-                <div className="flex items-center gap-4 mb-10 pl-2">
-                    <div className="relative group">
-                        <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500 to-purple-600 rounded-xl blur opacity-25 group-hover:opacity-50 transition duration-500"></div>
+                {/* Logo - Clickable to go home */}
+                <Link to="/" className="flex items-center gap-4 mb-10 pl-2 group/logo hover:opacity-90 transition">
+                    <div className="relative">
+                        <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500 to-purple-600 rounded-xl blur opacity-25 group-hover/logo:opacity-50 transition duration-500"></div>
                         <div className="relative h-12 w-12 bg-[#0a0a14] rounded-xl flex items-center justify-center border border-[#2a2a3e] shadow-xl">
                             <Bot className="w-7 h-7 text-cyan-400" />
                         </div>
@@ -144,26 +151,39 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
                     <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
                         OASIS AI
                     </span>
-                </div>
+                </Link>
 
                 {/* Navigation */}
                 <nav className="flex-1 space-y-2">
-                    {navItems.map((item) => {
-                        const isActive = location.pathname === item.path;
+                    {navItems.map((item, index) => {
+                        // Handle divider
+                        if (item.type === 'divider') {
+                            return <div key={`divider-${index}`} className="border-t border-[#1a1a2e] my-3" />;
+                        }
+
+                        // TypeScript now knows item.type === 'link'
+                        const linkItem = item;
+                        const isActive = location.pathname === linkItem.path;
+                        const isExternal = linkItem.external === true;
+                        const IconComponent = linkItem.icon;
+
                         return (
                             <Link
-                                key={item.path}
-                                to={item.path}
-                                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group relative overflow-hidden ${isActive
-                                    ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 shadow-[0_0_20px_rgba(6,182,212,0.15)]'
-                                    : 'text-gray-400 hover:bg-[#151520] hover:text-white border border-transparent'
+                                key={linkItem.path}
+                                to={linkItem.path}
+                                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group relative overflow-hidden ${isExternal
+                                    ? 'text-gray-500 hover:bg-[#151520] hover:text-white border border-transparent'
+                                    : isActive
+                                        ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 shadow-[0_0_20px_rgba(6,182,212,0.15)]'
+                                        : 'text-gray-400 hover:bg-[#151520] hover:text-white border border-transparent'
                                     }`}
                             >
-                                {isActive && (
+                                {isActive && !isExternal && (
                                     <div className="absolute left-0 top-0 bottom-0 w-1 bg-cyan-500 rounded-l-xl"></div>
                                 )}
-                                <item.icon className={`w-5 h-5 ${isActive ? 'text-cyan-400' : 'text-gray-500 group-hover:text-cyan-400 transition-colors'}`} />
-                                <span className="font-medium">{item.label}</span>
+                                <IconComponent className={`w-5 h-5 ${isActive && !isExternal ? 'text-cyan-400' : 'text-gray-500 group-hover:text-cyan-400 transition-colors'}`} />
+                                <span className="font-medium">{linkItem.label}</span>
+                                {isExternal && <ExternalLink className="w-3 h-3 ml-auto opacity-50" />}
                             </Link>
                         );
                     })}
@@ -197,15 +217,27 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
             {/* Mobile Header */}
             <div className="lg:hidden fixed top-0 left-0 right-0 z-30 bg-[#0a0a0f] border-b border-[#1a1a2e] px-4 py-3 max-w-full">
                 <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 bg-[#0a0a14] rounded-xl flex items-center justify-center border border-[#2a2a3e] flex-shrink-0">
-                            <Bot className="w-5 h-5 text-cyan-400" />
+                    {/* Home button */}
+                    <Link
+                        to="/"
+                        className="p-2 -ml-2 text-gray-400 hover:text-cyan-400 transition min-h-[44px] min-w-[44px] flex items-center justify-center"
+                        aria-label="Back to website"
+                    >
+                        <Home className="w-5 h-5" />
+                    </Link>
+
+                    {/* Logo */}
+                    <Link to="/" className="flex items-center gap-2">
+                        <div className="h-8 w-8 bg-[#0a0a14] rounded-lg flex items-center justify-center border border-[#2a2a3e] flex-shrink-0">
+                            <Bot className="w-4 h-4 text-cyan-400" />
                         </div>
                         <span className="font-bold text-white">OASIS AI</span>
-                    </div>
+                    </Link>
+
+                    {/* Menu button */}
                     <button
                         onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                        className="p-2 text-gray-400 hover:text-white min-h-[44px] min-w-[44px] flex items-center justify-center"
+                        className="p-2 -mr-2 text-gray-400 hover:text-white min-h-[44px] min-w-[44px] flex items-center justify-center"
                         aria-label="Toggle menu"
                     >
                         {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -235,20 +267,33 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
                         </div>
 
                         <nav className="flex-1 space-y-2">
-                            {navItems.map((item) => {
-                                const isActive = location.pathname === item.path;
+                            {navItems.map((item, index) => {
+                                // Handle divider
+                                if (item.type === 'divider') {
+                                    return <div key={`mobile-divider-${index}`} className="border-t border-[#1a1a2e] my-3" />;
+                                }
+
+                                // TypeScript now knows item.type === 'link'
+                                const linkItem = item;
+                                const isActive = location.pathname === linkItem.path;
+                                const isExternal = linkItem.external === true;
+                                const IconComponent = linkItem.icon;
+
                                 return (
                                     <Link
-                                        key={item.path}
-                                        to={item.path}
+                                        key={linkItem.path}
+                                        to={linkItem.path}
                                         onClick={() => setMobileMenuOpen(false)}
-                                        className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all min-h-[48px] ${isActive
-                                            ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20'
-                                            : 'text-gray-400 hover:bg-[#151520] hover:text-white'
+                                        className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all min-h-[48px] ${isExternal
+                                            ? 'text-gray-500 hover:bg-[#151520] hover:text-white'
+                                            : isActive
+                                                ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20'
+                                                : 'text-gray-400 hover:bg-[#151520] hover:text-white'
                                             }`}
                                     >
-                                        <item.icon className="w-5 h-5 flex-shrink-0" />
-                                        <span className="font-medium">{item.label}</span>
+                                        <IconComponent className="w-5 h-5 flex-shrink-0" />
+                                        <span className="font-medium">{linkItem.label}</span>
+                                        {isExternal && <ExternalLink className="w-3 h-3 ml-auto opacity-50" />}
                                     </Link>
                                 );
                             })}

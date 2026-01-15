@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Mail, Lock, User, Building, Eye, EyeOff, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
+import { Mail, Lock, User, Building, Eye, EyeOff, Loader2, AlertCircle, CheckCircle, ArrowLeft } from 'lucide-react';
 
 // Use global constants defined in vite.config.ts
 // @ts-ignore - Defined in vite.config.ts
@@ -122,6 +122,17 @@ export default function SignupPage() {
 
     return (
         <div className="min-h-screen bg-black flex flex-col items-center justify-center p-4">
+            {/* Back to Website Link - Top */}
+            <div className="absolute top-4 left-4">
+                <Link
+                    to="/"
+                    className="inline-flex items-center gap-2 text-gray-400 hover:text-cyan-400 transition px-3 py-2 rounded-lg hover:bg-white/5"
+                >
+                    <ArrowLeft className="w-4 h-4" />
+                    <span className="text-sm">Back to OASIS AI</span>
+                </Link>
+            </div>
+
             {/* Title */}
             <h1 className="text-3xl font-bold text-white mb-2">Create Account</h1>
             <p className="text-cyan-400 mb-8">Get 10% off your first automation!</p>
