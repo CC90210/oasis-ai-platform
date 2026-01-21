@@ -1,7 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
-import { CreditCard, FileText, Loader2, DollarSign, Calendar, CheckCircle, AlertTriangle, ExternalLink, Download } from 'lucide-react';
+import {
+    CreditCard, FileText, Loader2, DollarSign, Calendar, CheckCircle,
+    AlertTriangle, ExternalLink, Download, Settings, ArrowUpCircle,
+    RefreshCw, Shield
+} from 'lucide-react';
 import { Link } from 'react-router-dom';
 import PortalLayout from '@/components/portal/PortalLayout';
 import { formatCurrency, formatDate } from '@/lib/formatters';
@@ -37,12 +41,21 @@ interface BillingHistory {
     hosted_invoice_url: string | null;
 }
 
+// Tier upgrade options
+const TIER_OPTIONS = [
+    { tier: 'starter', name: 'Starter', monthly: 149, features: ['Basic automation', 'Email support', '1,000 tasks/month'] },
+    { tier: 'professional', name: 'Professional', monthly: 297, features: ['Advanced automation', 'Priority support', '10,000 tasks/month', 'API access'] },
+    { tier: 'business', name: 'Business', monthly: 497, features: ['Enterprise automation', '24/7 support', 'Unlimited tasks', 'Custom integrations', 'Dedicated account manager'] },
+];
+
 export default function BillingPage() {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
     const [subscription, setSubscription] = useState<Subscription | null>(null);
     const [billingHistory, setBillingHistory] = useState<BillingHistory[]>([]);
     const [hasAccess, setHasAccess] = useState(true);
+    const [portalLoading, setPortalLoading] = useState(false);
+    const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
     useEffect(() => {
         loadBillingData();
@@ -99,6 +112,38 @@ export default function BillingPage() {
         }
     };
 
+    const openStripePortal = async () => {
+        if (!subscription?.stripe_customer_id) {
+            alert('No Stripe customer ID found. Please contact support.');
+            return;
+        }
+
+        setPortalLoading(true);
+        try {
+            const response = await fetch('/api/stripe/portal', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    customerId: subscription.stripe_customer_id,
+                    returnUrl: window.location.href
+                }),
+            });
+
+            const data = await response.json();
+
+            if (data.url) {
+                window.location.href = data.url;
+            } else {
+                alert(data.error || 'Failed to open billing portal');
+            }
+        } catch (err) {
+            console.error('Portal error:', err);
+            alert('Failed to open billing portal. Please try again.');
+        } finally {
+            setPortalLoading(false);
+        }
+    };
+
     const getStatusBadge = (status: string) => {
         const styles: Record<string, string> = {
             active: 'bg-green-500/20 text-green-400 border-green-500/30',
@@ -111,6 +156,11 @@ export default function BillingPage() {
             failed: 'bg-red-500/20 text-red-400 border-red-500/30',
         };
         return styles[status] || 'bg-gray-500/20 text-gray-400 border-gray-500/30';
+    };
+
+    const getCurrentTierIndex = () => {
+        if (!subscription?.tier) return 1; // Default to professional
+        return TIER_OPTIONS.findIndex(t => t.tier === subscription.tier);
     };
 
     if (loading) {
@@ -211,10 +261,36 @@ export default function BillingPage() {
                                 {subscription.status === 'past_due' && (
                                     <div className="p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
                                         <p className="text-yellow-400 text-sm">
-                                            ⚠️ Your payment is past due. Please update your payment method to avoid service interruption.
+                                            ⚠️ Your payment is past due. Please update your payment method.
                                         </p>
                                     </div>
                                 )}
+
+                                {/* Action Buttons */}
+                                <div className="flex flex-wrap gap-3 pt-4 border-t border-[#1a1a2e]">
+                                    {subscription.stripe_customer_id && (
+                                        <button
+                                            onClick={openStripePortal}
+                                            disabled={portalLoading}
+                                            className="flex items-center gap-2 px-4 py-2 bg-[#1a1a2e] hover:bg-[#2a2a3e] text-white rounded-lg transition border border-[#2a2a3e] disabled:opacity-50"
+                                        >
+                                            {portalLoading ? (
+                                                <Loader2 className="w-4 h-4 animate-spin" />
+                                            ) : (
+                                                <Settings className="w-4 h-4" />
+                                            )}
+                                            Manage Subscription
+                                        </button>
+                                    )}
+
+                                    <button
+                                        onClick={() => setShowUpgradeModal(true)}
+                                        className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400 text-white rounded-lg transition"
+                                    >
+                                        <ArrowUpCircle className="w-4 h-4" />
+                                        Upgrade Plan
+                                    </button>
+                                </div>
                             </div>
                         ) : (
                             <div className="text-center py-8">
@@ -235,60 +311,79 @@ export default function BillingPage() {
                         )}
                     </div>
 
-                    {/* Billing Summary */}
+                    {/* Billing Summary & Quick Actions */}
                     <div className="bg-[#0a0a0f] border border-[#1a1a2e] p-6 rounded-2xl">
                         <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                            <Calendar className="w-5 h-5 text-purple-500" />
-                            Billing Summary
+                            <Shield className="w-5 h-5 text-purple-500" />
+                            Quick Actions
                         </h2>
 
-                        <div className="space-y-4">
-                            <div className="p-4 bg-[#151520] rounded-xl border border-[#2a2a3e]">
-                                <div className="flex justify-between items-center mb-2">
-                                    <span className="text-gray-400">Monthly Service Fee</span>
-                                    <span className="text-white font-medium">
-                                        {subscription ? formatCurrency(subscription.amount_cents) : '$0.00'}
-                                    </span>
-                                </div>
-                                <div className="flex justify-between items-center text-sm">
-                                    <span className="text-gray-500">{subscription?.product_name || 'No Plan'}</span>
-                                    <span className="text-gray-500 capitalize">{subscription?.tier || 'N/A'} Tier</span>
-                                </div>
-                            </div>
-
-                            {/* Last Payment Info */}
-                            {billingHistory.length > 0 && billingHistory[0].status === 'paid' && (
-                                <div className="p-4 bg-green-500/5 rounded-xl border border-green-500/20">
-                                    <div className="flex justify-between items-center">
-                                        <div>
-                                            <p className="text-green-400 text-sm font-medium">Last Payment</p>
-                                            <p className="text-gray-500 text-xs">
-                                                {billingHistory[0].paid_at ? formatDate(billingHistory[0].paid_at) : 'N/A'}
-                                            </p>
+                        <div className="space-y-3">
+                            {subscription?.stripe_customer_id && (
+                                <>
+                                    <button
+                                        onClick={openStripePortal}
+                                        disabled={portalLoading}
+                                        className="w-full flex items-center justify-between p-4 bg-[#151520] hover:bg-[#1a1a2e] rounded-xl border border-[#2a2a3e] transition group"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 bg-blue-500/10 rounded-lg flex items-center justify-center">
+                                                <CreditCard className="w-5 h-5 text-blue-400" />
+                                            </div>
+                                            <div className="text-left">
+                                                <p className="text-white font-medium">Update Payment Method</p>
+                                                <p className="text-gray-500 text-sm">Change your card or payment details</p>
+                                            </div>
                                         </div>
-                                        <span className="text-green-400 font-bold">
-                                            {formatCurrency(billingHistory[0].amount_paid_cents)}
-                                        </span>
-                                    </div>
-                                </div>
+                                        <ExternalLink className="w-4 h-4 text-gray-500 group-hover:text-cyan-400" />
+                                    </button>
+
+                                    <button
+                                        onClick={openStripePortal}
+                                        disabled={portalLoading}
+                                        className="w-full flex items-center justify-between p-4 bg-[#151520] hover:bg-[#1a1a2e] rounded-xl border border-[#2a2a3e] transition group"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 bg-green-500/10 rounded-lg flex items-center justify-center">
+                                                <FileText className="w-5 h-5 text-green-400" />
+                                            </div>
+                                            <div className="text-left">
+                                                <p className="text-white font-medium">View All Invoices</p>
+                                                <p className="text-gray-500 text-sm">Download receipts and invoices</p>
+                                            </div>
+                                        </div>
+                                        <ExternalLink className="w-4 h-4 text-gray-500 group-hover:text-cyan-400" />
+                                    </button>
+
+                                    <button
+                                        onClick={openStripePortal}
+                                        disabled={portalLoading}
+                                        className="w-full flex items-center justify-between p-4 bg-[#151520] hover:bg-[#1a1a2e] rounded-xl border border-[#2a2a3e] transition group"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 bg-red-500/10 rounded-lg flex items-center justify-center">
+                                                <RefreshCw className="w-5 h-5 text-red-400" />
+                                            </div>
+                                            <div className="text-left">
+                                                <p className="text-white font-medium">Cancel Subscription</p>
+                                                <p className="text-gray-500 text-sm">Cancel anytime, no questions asked</p>
+                                            </div>
+                                        </div>
+                                        <ExternalLink className="w-4 h-4 text-gray-500 group-hover:text-cyan-400" />
+                                    </button>
+                                </>
                             )}
 
-                            <div className="border-t border-[#1a1a2e] pt-4">
+                            <div className="border-t border-[#1a1a2e] pt-4 mt-4">
                                 <div className="flex items-center gap-2 mb-3 text-sm">
                                     <div className="w-6 h-6 rounded bg-gradient-to-r from-[#635BFF] to-[#7A73FF] flex items-center justify-center">
                                         <span className="text-white text-[10px] font-bold">S</span>
                                     </div>
-                                    <span className="text-gray-400">Payments processed by <span className="text-white font-medium">Stripe</span></span>
+                                    <span className="text-gray-400">Secure payments by <span className="text-white font-medium">Stripe</span></span>
                                 </div>
                                 <p className="text-gray-500 text-sm">
-                                    Need to update your billing information or have questions about your invoice?
+                                    Your payment information is encrypted and secure. We never store your card details.
                                 </p>
-                                <Link
-                                    to="/portal/support"
-                                    className="text-cyan-400 hover:text-cyan-300 text-sm mt-2 inline-block"
-                                >
-                                    Contact billing support →
-                                </Link>
                             </div>
                         </div>
                     </div>
@@ -298,7 +393,7 @@ export default function BillingPage() {
                 <div className="mt-8 bg-[#0a0a0f] border border-[#1a1a2e] p-6 rounded-2xl">
                     <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
                         <FileText className="w-5 h-5 text-green-500" />
-                        Billing History
+                        Recent Invoices
                     </h2>
 
                     {billingHistory.length === 0 ? (
@@ -307,12 +402,12 @@ export default function BillingPage() {
                                 <FileText className="w-6 h-6 text-gray-500" />
                             </div>
                             <p className="text-gray-500 text-sm">
-                                No billing history available yet. Invoices will appear here after your first payment cycle.
+                                No billing history available yet. Invoices will appear here after your first payment.
                             </p>
                         </div>
                     ) : (
                         <div className="space-y-3">
-                            {billingHistory.map((item) => (
+                            {billingHistory.slice(0, 5).map((item) => (
                                 <div
                                     key={item.id}
                                     className="flex items-center justify-between p-4 bg-[#151520] rounded-xl border border-[#2a2a3e] hover:border-[#3a3a4e] transition"
@@ -360,10 +455,109 @@ export default function BillingPage() {
                                     </div>
                                 </div>
                             ))}
+
+                            {billingHistory.length > 5 && subscription?.stripe_customer_id && (
+                                <button
+                                    onClick={openStripePortal}
+                                    className="w-full py-3 text-center text-cyan-400 hover:text-cyan-300 text-sm font-medium"
+                                >
+                                    View all invoices →
+                                </button>
+                            )}
                         </div>
                     )}
                 </div>
             </div>
+
+            {/* Upgrade Modal */}
+            {showUpgradeModal && (
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="bg-[#0a0a0f] border border-[#1a1a2e] rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-auto">
+                        <div className="p-6 border-b border-[#1a1a2e] flex items-center justify-between">
+                            <div>
+                                <h2 className="text-2xl font-bold text-white">Upgrade Your Plan</h2>
+                                <p className="text-gray-400">Choose a plan that best fits your needs</p>
+                            </div>
+                            <button
+                                onClick={() => setShowUpgradeModal(false)}
+                                className="p-2 hover:bg-[#1a1a2e] rounded-lg transition"
+                            >
+                                <span className="text-gray-400 text-2xl">×</span>
+                            </button>
+                        </div>
+
+                        <div className="p-6">
+                            <div className="grid md:grid-cols-3 gap-6">
+                                {TIER_OPTIONS.map((tier, index) => {
+                                    const isCurrentTier = subscription?.tier === tier.tier;
+                                    const isUpgrade = index > getCurrentTierIndex();
+
+                                    return (
+                                        <div
+                                            key={tier.tier}
+                                            className={`relative p-6 rounded-2xl border transition ${isCurrentTier
+                                                    ? 'border-cyan-500 bg-cyan-500/5'
+                                                    : 'border-[#2a2a3e] bg-[#151520] hover:border-[#3a3a4e]'
+                                                }`}
+                                        >
+                                            {isCurrentTier && (
+                                                <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-cyan-500 text-black text-xs font-bold rounded-full">
+                                                    CURRENT PLAN
+                                                </span>
+                                            )}
+
+                                            <h3 className="text-xl font-bold text-white mb-2">{tier.name}</h3>
+                                            <div className="mb-4">
+                                                <span className="text-3xl font-bold text-white">${tier.monthly}</span>
+                                                <span className="text-gray-400">/month</span>
+                                            </div>
+
+                                            <ul className="space-y-2 mb-6">
+                                                {tier.features.map((feature, i) => (
+                                                    <li key={i} className="flex items-center gap-2 text-gray-300 text-sm">
+                                                        <CheckCircle className="w-4 h-4 text-green-400" />
+                                                        {feature}
+                                                    </li>
+                                                ))}
+                                            </ul>
+
+                                            {isCurrentTier ? (
+                                                <button
+                                                    disabled
+                                                    className="w-full py-3 bg-[#2a2a3e] text-gray-500 rounded-xl cursor-not-allowed"
+                                                >
+                                                    Current Plan
+                                                </button>
+                                            ) : subscription?.stripe_customer_id ? (
+                                                <button
+                                                    onClick={openStripePortal}
+                                                    className={`w-full py-3 rounded-xl font-semibold transition ${isUpgrade
+                                                            ? 'bg-gradient-to-r from-cyan-500 to-cyan-400 text-black hover:from-cyan-400 hover:to-cyan-300'
+                                                            : 'bg-[#2a2a3e] text-white hover:bg-[#3a3a4e]'
+                                                        }`}
+                                                >
+                                                    {isUpgrade ? 'Upgrade' : 'Downgrade'}
+                                                </button>
+                                            ) : (
+                                                <Link
+                                                    to="/pricing"
+                                                    className="block w-full py-3 text-center bg-gradient-to-r from-cyan-500 to-cyan-400 text-black rounded-xl font-semibold hover:from-cyan-400 hover:to-cyan-300 transition"
+                                                >
+                                                    Get Started
+                                                </Link>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+
+                            <p className="text-center text-gray-500 text-sm mt-6">
+                                Changes take effect immediately. You'll be charged the prorated difference.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            )}
         </PortalLayout>
     );
 }

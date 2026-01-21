@@ -7,14 +7,12 @@ import SplashScreen from './components/SplashScreen';
 import { CartDrawer } from './components/cart/CartDrawer';
 import { Analytics } from '@vercel/analytics/react';
 import StarField from './components/StarField';
-import CinematicDNA from './components/CinematicDNA';
+import ProtectedRoute from './components/auth/ProtectedRoute';
 
 // Lazy load pages for performance
 import { Navigate } from 'react-router-dom';
 
-// ... other imports ...
-
-// Lazy load pages for performance
+// Public Pages
 const LandingPage = lazy(() => import('./pages/landing/LandingPage'));
 const ServicesPage = lazy(() => import('./pages/services/ServicesPage'));
 const PricingPage = lazy(() => import('./pages/pricing/PricingPage'));
@@ -30,15 +28,18 @@ const CaseStudiesPage = lazy(() => import('./pages/case-studies/CaseStudiesPage'
 // Portal Pages
 const PortalLoginPage = lazy(() => import('./pages/portal/LoginPage'));
 const PortalSignupPage = lazy(() => import('./pages/portal/SignupPage'));
+const PortalWelcomePage = lazy(() => import('./pages/portal/WelcomePage'));
 const PortalDashboard = lazy(() => import('./pages/portal/DashboardPage'));
 const PortalAutomationsPage = lazy(() => import('./pages/portal/AutomationsPage'));
 const PortalReportsPage = lazy(() => import('./pages/portal/ReportsPage'));
 const PortalBillingPage = lazy(() => import('./pages/portal/BillingPage'));
 const PortalSupportPage = lazy(() => import('./pages/portal/SupportPage'));
 const PortalSettingsPage = lazy(() => import('./pages/portal/SettingsPage'));
+const PortalProfilePage = lazy(() => import('./pages/portal/ProfilePage'));
 const TestConnection = lazy(() => import('./pages/portal/TestConnection'));
 const ConnectionDebugger = lazy(() => import('./pages/portal/ConnectionDebugger'));
 
+// Legal Pages
 const PrivacyPage = lazy(() => import('./pages/legal/PrivacyPage'));
 const TermsPage = lazy(() => import('./pages/legal/TermsPage'));
 
@@ -59,7 +60,7 @@ function App() {
 
     // Loading fallback
     const PageLoader = () => (
-        <div className="min-h-screen flex items-center justify-center bg-gray-900">
+        <div className="min-h-screen flex items-center justify-center bg-black">
             <div className="w-8 h-8 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin"></div>
         </div>
     );
@@ -68,7 +69,6 @@ function App() {
         <ErrorBoundary>
             <StarField paused={showSplash} />
             {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
-
 
             {/* Main content is always rendered behind the splash screen for seamless transition */}
             <Router>
@@ -98,21 +98,65 @@ function App() {
                         <Route path="/privacy" element={<MainLayout showChat={!showSplash}><PrivacyPage /></MainLayout>} />
                         <Route path="/terms" element={<MainLayout showChat={!showSplash}><TermsPage /></MainLayout>} />
 
-                        {/* Portal Routes */}
+                        {/* Portal Auth Routes (No Protection) */}
                         <Route path="/portal/login" element={<PortalLoginPage />} />
                         <Route path="/portal/signup" element={<PortalSignupPage />} />
-                        <Route path="/portal/dashboard" element={<PortalDashboard />} />
-                        <Route path="/portal/automations" element={<PortalAutomationsPage />} />
-                        <Route path="/portal/reports" element={<PortalReportsPage />} />
-                        <Route path="/portal/billing" element={<PortalBillingPage />} />
-                        <Route path="/portal/support" element={<PortalSupportPage />} />
-                        <Route path="/portal/settings" element={<PortalSettingsPage />} />
-                        <Route path="/portal/test" element={<TestConnection />} />
-                        <Route path="/portal/debug" element={<ConnectionDebugger />} />
+
+                        {/* Protected Portal Routes */}
+                        <Route path="/portal/welcome" element={
+                            <ProtectedRoute>
+                                <PortalWelcomePage />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="/portal/dashboard" element={
+                            <ProtectedRoute>
+                                <PortalDashboard />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="/portal/automations" element={
+                            <ProtectedRoute>
+                                <PortalAutomationsPage />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="/portal/reports" element={
+                            <ProtectedRoute>
+                                <PortalReportsPage />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="/portal/billing" element={
+                            <ProtectedRoute>
+                                <PortalBillingPage />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="/portal/support" element={
+                            <ProtectedRoute>
+                                <PortalSupportPage />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="/portal/settings" element={
+                            <ProtectedRoute>
+                                <PortalSettingsPage />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="/portal/profile" element={
+                            <ProtectedRoute>
+                                <PortalProfilePage />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="/portal/test" element={
+                            <ProtectedRoute>
+                                <TestConnection />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="/portal/debug" element={
+                            <ProtectedRoute>
+                                <ConnectionDebugger />
+                            </ProtectedRoute>
+                        } />
 
                         {/* Convenience Redirects */}
                         <Route path="/login" element={<Navigate to="/portal/login" replace />} />
-                        <Route path="/portal" element={<Navigate to="/portal/login" replace />} />
+                        <Route path="/portal" element={<Navigate to="/portal/dashboard" replace />} />
                     </Routes>
                 </Suspense>
                 <Analytics />
