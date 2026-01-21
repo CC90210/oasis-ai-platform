@@ -91,14 +91,62 @@ export interface MonthlyReport {
 export interface Subscription {
     id: string;
     user_id: string;
+    stripe_customer_id: string | null;
+    stripe_subscription_id: string | null;
+    stripe_price_id: string | null;
     product_name: string;
     tier: string | null;
-    status: 'active' | 'past_due' | 'cancelled' | 'paused';
+    status: 'active' | 'past_due' | 'cancelled' | 'paused' | 'trialing' | 'incomplete';
     amount_cents: number;
     currency: string;
+    billing_interval: 'month' | 'year';
+    current_period_start: string | null;
     current_period_end: string | null;
+    cancel_at_period_end: boolean;
+    canceled_at: string | null;
+    metadata: Record<string, any>;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface BillingHistory {
+    id: string;
+    user_id: string;
+    subscription_id: string | null;
+    stripe_invoice_id: string | null;
+    stripe_payment_intent_id: string | null;
+    stripe_charge_id: string | null;
+    description: string;
+    amount_cents: number;
+    amount_paid_cents: number;
+    currency: string;
+    status: 'draft' | 'open' | 'paid' | 'void' | 'uncollectible' | 'pending' | 'failed';
+    invoice_date: string;
+    due_date: string | null;
+    paid_at: string | null;
+    invoice_pdf_url: string | null;
+    hosted_invoice_url: string | null;
+    metadata: Record<string, any>;
+    created_at: string;
+}
+
+export interface PendingStripeSession {
+    id: string;
+    stripe_session_id: string;
+    stripe_customer_id: string | null;
+    customer_email: string;
+    plan_type: string | null;
+    product_name: string | null;
+    tier: string | null;
+    amount_total_cents: number | null;
+    currency: string;
+    status: 'pending' | 'linked' | 'expired';
+    linked_user_id: string | null;
+    linked_at: string | null;
+    expires_at: string;
     created_at: string;
 }
 
 // Also export for components that need direct access
 export { SUPABASE_URL as supabaseUrl, SUPABASE_ANON_KEY as supabaseAnonKey };
+

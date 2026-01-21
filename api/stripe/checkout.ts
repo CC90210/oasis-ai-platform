@@ -203,6 +203,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             });
         }
 
+        // Get primary product info for metadata
+        const primaryItem = cartItems[0];
+        const primaryProductName = PRODUCT_NAMES[primaryItem.productId] || primaryItem.productId;
+        const primaryTier = primaryItem.tier || 'professional';
+
         // Create Stripe Checkout Session
         const session = await stripe.checkout.sessions.create({
             mode: 'subscription',
@@ -213,14 +218,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 itemCount: cartItems.length.toString(),
                 promoCode: promoCode || '',
                 currency,
+                // Add product info for webhook/signup flow
+                productName: primaryProductName,
+                tier: primaryTier,
+                productId: primaryItem.productId,
             },
             subscription_data: {
                 metadata: {
                     type: 'cart_subscription',
                     promoCode: promoCode || '',
+                    productName: primaryProductName,
+                    tier: primaryTier,
                 },
             },
-            success_url: `${process.env.NEXT_PUBLIC_APP_URL || 'https://oasisai.work'}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+            success_url: `${process.env.NEXT_PUBLIC_APP_URL || 'https://oasisai.work'}/portal/signup?session_id={CHECKOUT_SESSION_ID}`,
             cancel_url: `${process.env.NEXT_PUBLIC_APP_URL || 'https://oasisai.work'}/checkout`,
             allow_promotion_codes: true,
             billing_address_collection: 'required',

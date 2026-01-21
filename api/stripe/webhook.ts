@@ -1,6 +1,14 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { stripe } from '../lib/stripe';
 import Stripe from 'stripe';
+import { createClient } from '@supabase/supabase-js';
+
+// Initialize Supabase with Service Role key for admin operations
+const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.VITE_SUPABASE_URL || '',
+    process.env.SUPABASE_SERVICE_ROLE_KEY || '',
+    { auth: { autoRefreshToken: false, persistSession: false } }
+);
 
 export const config = {
     api: {
@@ -15,6 +23,174 @@ async function getRawBody(req: VercelRequest): Promise<Buffer> {
         req.on('end', () => resolve(Buffer.concat(chunks)));
         req.on('error', reject);
     });
+}
+
+/**
+ * Find user by email in profiles table
+ */
+async function findUserByEmail(email: string) {
+    const { data, error } = await supabase
+        .from('profiles')
+        .select('id, email, full_name')
+        .eq('email', email)
+        .single();
+
+    if (error && error.code !== 'PGRST116') {
+        console.error('Error finding user:', error);
+    }
+    return data;
+}
+
+/**
+ * Create or update subscription in Supabase
+ */
+async function upsertSubscription(
+    userId: string | null,
+    stripeSubscription: Stripe.Subscription,
+    customerEmail: string,
+    productName: string,
+    tier: string
+) {
+    const subscriptionData = {
+        user_id: userId,
+        stripe_customer_id: typeof stripeSubscription.customer === 'string'
+            ? stripeSubscription.customer
+            : stripeSubscription.customer?.id,
+        stripe_subscription_id: stripeSubscription.id,
+        product_name: productName,
+        tier: tier,
+        status: stripeSubscription.status,
+        amount_cents: stripeSubscription.items.data.reduce(
+            (sum, item) => sum + (item.price?.unit_amount || 0) * (item.quantity || 1), 0
+        ),
+        currency: stripeSubscription.currency,
+        billing_interval: stripeSubscription.items.data[0]?.price?.recurring?.interval || 'month',
+        current_period_start: new Date(stripeSubscription.current_period_start * 1000).toISOString(),
+        current_period_end: new Date(stripeSubscription.current_period_end * 1000).toISOString(),
+        cancel_at_period_end: stripeSubscription.cancel_at_period_end,
+        canceled_at: stripeSubscription.canceled_at
+            ? new Date(stripeSubscription.canceled_at * 1000).toISOString()
+            : null,
+        metadata: {
+            customer_email: customerEmail,
+            stripe_metadata: stripeSubscription.metadata,
+        },
+    };
+
+    const { data, error } = await supabase
+        .from('subscriptions')
+        .upsert(subscriptionData, {
+            onConflict: 'stripe_subscription_id',
+            ignoreDuplicates: false
+        })
+        .select()
+        .single();
+
+    if (error) {
+        console.error('Error upserting subscription:', error);
+        throw error;
+    }
+
+    return data;
+}
+
+/**
+ * Record invoice in billing_history
+ */
+async function recordInvoice(
+    userId: string | null,
+    invoice: Stripe.Invoice
+) {
+    // Find subscription_id in our database
+    let subscriptionId = null;
+    if (invoice.subscription) {
+        const stripeSubId = typeof invoice.subscription === 'string'
+            ? invoice.subscription
+            : invoice.subscription.id;
+
+        const { data: sub } = await supabase
+            .from('subscriptions')
+            .select('id')
+            .eq('stripe_subscription_id', stripeSubId)
+            .single();
+
+        subscriptionId = sub?.id;
+    }
+
+    const invoiceData = {
+        user_id: userId,
+        subscription_id: subscriptionId,
+        stripe_invoice_id: invoice.id,
+        stripe_payment_intent_id: typeof invoice.payment_intent === 'string'
+            ? invoice.payment_intent
+            : invoice.payment_intent?.id,
+        stripe_charge_id: invoice.charge ? (typeof invoice.charge === 'string' ? invoice.charge : invoice.charge.id) : null,
+        description: invoice.description || `Invoice ${invoice.number}`,
+        amount_cents: invoice.amount_due,
+        amount_paid_cents: invoice.amount_paid,
+        currency: invoice.currency,
+        status: invoice.status === 'paid' ? 'paid' :
+            invoice.status === 'open' ? 'pending' :
+                invoice.status as string,
+        invoice_date: new Date(invoice.created * 1000).toISOString(),
+        due_date: invoice.due_date ? new Date(invoice.due_date * 1000).toISOString() : null,
+        paid_at: invoice.status_transitions?.paid_at
+            ? new Date(invoice.status_transitions.paid_at * 1000).toISOString()
+            : null,
+        invoice_pdf_url: invoice.invoice_pdf,
+        hosted_invoice_url: invoice.hosted_invoice_url,
+        metadata: {
+            number: invoice.number,
+            customer_email: invoice.customer_email,
+            lines: invoice.lines?.data?.map(line => ({
+                description: line.description,
+                amount: line.amount,
+            })),
+        },
+    };
+
+    const { error } = await supabase
+        .from('billing_history')
+        .upsert(invoiceData, {
+            onConflict: 'stripe_invoice_id',
+            ignoreDuplicates: false
+        });
+
+    if (error) {
+        console.error('Error recording invoice:', error);
+    }
+}
+
+/**
+ * Store pending session for later linking during signup
+ */
+async function storePendingSession(session: Stripe.Checkout.Session) {
+    const metadata = session.metadata || {};
+
+    const sessionData = {
+        stripe_session_id: session.id,
+        stripe_customer_id: typeof session.customer === 'string'
+            ? session.customer
+            : session.customer?.id,
+        customer_email: session.customer_email || '',
+        plan_type: metadata.type || 'automation',
+        product_name: metadata.productName || 'OASIS AI Automation',
+        tier: metadata.tier || 'professional',
+        amount_total_cents: session.amount_total,
+        currency: session.currency || 'usd',
+        status: 'pending',
+    };
+
+    const { error } = await supabase
+        .from('pending_stripe_sessions')
+        .upsert(sessionData, {
+            onConflict: 'stripe_session_id',
+            ignoreDuplicates: false
+        });
+
+    if (error) {
+        console.error('Error storing pending session:', error);
+    }
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -42,46 +218,101 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(400).json({ error: 'Invalid signature' });
     }
 
+    console.log(`📬 Received Stripe event: ${event.type}`);
+
     // Handle the event
     switch (event.type) {
         case 'checkout.session.completed': {
             const session = event.data.object as Stripe.Checkout.Session;
             const metadata = session.metadata;
 
-            console.log('✅ SALE COMPLETED!');
+            console.log('✅ CHECKOUT COMPLETED');
             console.log('-------------------');
-            console.log('Product:', metadata?.productName);
-            console.log('Type:', metadata?.productType);
-            console.log('Tier:', metadata?.tier || 'N/A');
-            console.log('Customer:', metadata?.customerName);
-            console.log('Business:', metadata?.businessName);
             console.log('Email:', session.customer_email);
             console.log('Amount:', session.amount_total ? `$${session.amount_total / 100}` : 'N/A');
-            console.log('Currency:', metadata?.currency?.toUpperCase());
             console.log('Session ID:', session.id);
-            console.log('-------------------');
 
-            // TODO: Add your business logic here
+            // Store session for later linking during signup
+            await storePendingSession(session);
+
+            // Try to find existing user and link immediately
+            if (session.customer_email) {
+                const user = await findUserByEmail(session.customer_email);
+
+                if (user && session.subscription) {
+                    // User already exists - retrieve full subscription and link
+                    const subscription = await stripe.subscriptions.retrieve(
+                        typeof session.subscription === 'string'
+                            ? session.subscription
+                            : session.subscription.id
+                    );
+
+                    await upsertSubscription(
+                        user.id,
+                        subscription,
+                        session.customer_email,
+                        metadata?.productName || 'OASIS AI Automation',
+                        metadata?.tier || 'professional'
+                    );
+
+                    console.log(`✅ Linked subscription to existing user: ${user.email}`);
+
+                    // Mark pending session as linked
+                    await supabase
+                        .from('pending_stripe_sessions')
+                        .update({
+                            status: 'linked',
+                            linked_user_id: user.id,
+                            linked_at: new Date().toISOString()
+                        })
+                        .eq('stripe_session_id', session.id);
+                } else {
+                    console.log(`⏳ User not found, session stored for later linking: ${session.customer_email}`);
+                }
+            }
             break;
         }
 
-        case 'customer.subscription.created': {
-            const subscription = event.data.object as Stripe.Subscription;
-            console.log('📅 New subscription created:', subscription.id);
-            console.log('Status:', subscription.status);
-            break;
-        }
-
+        case 'customer.subscription.created':
         case 'customer.subscription.updated': {
             const subscription = event.data.object as Stripe.Subscription;
-            console.log('🔄 Subscription updated:', subscription.id);
-            console.log('New status:', subscription.status);
+            console.log(`📅 Subscription ${event.type === 'customer.subscription.created' ? 'created' : 'updated'}: ${subscription.id}`);
+
+            // Get customer email
+            const customer = typeof subscription.customer === 'string'
+                ? await stripe.customers.retrieve(subscription.customer)
+                : subscription.customer;
+
+            const email = (customer as Stripe.Customer).email;
+
+            if (email) {
+                const user = await findUserByEmail(email);
+                if (user) {
+                    await upsertSubscription(
+                        user.id,
+                        subscription,
+                        email,
+                        subscription.metadata?.productName || 'OASIS AI Automation',
+                        subscription.metadata?.tier || 'professional'
+                    );
+                    console.log(`✅ Subscription synced for user: ${email}`);
+                }
+            }
             break;
         }
 
         case 'customer.subscription.deleted': {
             const subscription = event.data.object as Stripe.Subscription;
             console.log('❌ Subscription cancelled:', subscription.id);
+
+            // Update status in database
+            await supabase
+                .from('subscriptions')
+                .update({
+                    status: 'cancelled',
+                    canceled_at: new Date().toISOString()
+                })
+                .eq('stripe_subscription_id', subscription.id);
             break;
         }
 
@@ -89,6 +320,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             const invoice = event.data.object as Stripe.Invoice;
             console.log('💰 Invoice paid:', invoice.id);
             console.log('Amount:', `$${(invoice.amount_paid || 0) / 100}`);
+
+            // Find user and record invoice
+            if (invoice.customer_email) {
+                const user = await findUserByEmail(invoice.customer_email);
+                await recordInvoice(user?.id || null, invoice);
+                console.log(`✅ Invoice recorded for: ${invoice.customer_email}`);
+            }
             break;
         }
 
@@ -96,11 +334,41 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             const invoice = event.data.object as Stripe.Invoice;
             console.log('⚠️ Payment failed:', invoice.id);
             console.log('Customer:', invoice.customer_email);
+
+            // Update subscription status if linked
+            if (invoice.subscription) {
+                const stripeSubId = typeof invoice.subscription === 'string'
+                    ? invoice.subscription
+                    : invoice.subscription.id;
+
+                await supabase
+                    .from('subscriptions')
+                    .update({ status: 'past_due' })
+                    .eq('stripe_subscription_id', stripeSubId);
+            }
+
+            // Record failed invoice
+            if (invoice.customer_email) {
+                const user = await findUserByEmail(invoice.customer_email);
+                await recordInvoice(user?.id || null, invoice);
+            }
+            break;
+        }
+
+        case 'invoice.created':
+        case 'invoice.finalized': {
+            const invoice = event.data.object as Stripe.Invoice;
+            console.log(`📄 Invoice ${event.type}:`, invoice.id);
+
+            if (invoice.customer_email) {
+                const user = await findUserByEmail(invoice.customer_email);
+                await recordInvoice(user?.id || null, invoice);
+            }
             break;
         }
 
         default:
-            console.log(`Unhandled event type: ${event.type}`);
+            console.log(`ℹ️ Unhandled event type: ${event.type}`);
     }
 
     return res.json({ received: true });
