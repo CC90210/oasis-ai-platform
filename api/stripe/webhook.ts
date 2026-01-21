@@ -1,15 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { stripe } from '../lib/stripe';
-import Stripe from 'stripe';
-import { createClient } from '@supabase/supabase-js';
 
-// Initialize Supabase with Service Role key for admin operations
-const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.VITE_SUPABASE_URL || '',
-    process.env.SUPABASE_SERVICE_ROLE_KEY || '',
-    { auth: { autoRefreshToken: false, persistSession: false } }
-);
-
+// Disable body parsing for raw webhook payload
 export const config = {
     api: {
         bodyParser: false,
@@ -25,10 +17,21 @@ async function getRawBody(req: VercelRequest): Promise<Buffer> {
     });
 }
 
+// Dynamic import for Supabase to avoid issues
+async function getSupabase() {
+    const { createClient } = await import('@supabase/supabase-js');
+    return createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.VITE_SUPABASE_URL || '',
+        process.env.SUPABASE_SERVICE_ROLE_KEY || '',
+        { auth: { autoRefreshToken: false, persistSession: false } }
+    );
+}
+
 /**
  * Find user by email in profiles table
  */
 async function findUserByEmail(email: string) {
+    const supabase = await getSupabase();
     const { data, error } = await supabase
         .from('profiles')
         .select('id, email, full_name')
@@ -46,11 +49,13 @@ async function findUserByEmail(email: string) {
  */
 async function upsertSubscription(
     userId: string | null,
-    stripeSubscription: Stripe.Subscription,
+    stripeSubscription: any,
     customerEmail: string,
     productName: string,
     tier: string
 ) {
+    const supabase = await getSupabase();
+
     const subscriptionData = {
         user_id: userId,
         stripe_customer_id: typeof stripeSubscription.customer === 'string'
@@ -60,14 +65,18 @@ async function upsertSubscription(
         product_name: productName,
         tier: tier,
         status: stripeSubscription.status,
-        amount_cents: stripeSubscription.items.data.reduce(
-            (sum, item) => sum + (item.price?.unit_amount || 0) * (item.quantity || 1), 0
-        ),
+        amount_cents: stripeSubscription.items?.data?.reduce(
+            (sum: number, item: any) => sum + (item.price?.unit_amount || 0) * (item.quantity || 1), 0
+        ) || 0,
         currency: stripeSubscription.currency,
-        billing_interval: stripeSubscription.items.data[0]?.price?.recurring?.interval || 'month',
-        current_period_start: new Date(stripeSubscription.current_period_start * 1000).toISOString(),
-        current_period_end: new Date(stripeSubscription.current_period_end * 1000).toISOString(),
-        cancel_at_period_end: stripeSubscription.cancel_at_period_end,
+        billing_interval: stripeSubscription.items?.data?.[0]?.price?.recurring?.interval || 'month',
+        current_period_start: stripeSubscription.current_period_start
+            ? new Date(stripeSubscription.current_period_start * 1000).toISOString()
+            : null,
+        current_period_end: stripeSubscription.current_period_end
+            ? new Date(stripeSubscription.current_period_end * 1000).toISOString()
+            : null,
+        cancel_at_period_end: stripeSubscription.cancel_at_period_end || false,
         canceled_at: stripeSubscription.canceled_at
             ? new Date(stripeSubscription.canceled_at * 1000).toISOString()
             : null,
@@ -97,24 +106,25 @@ async function upsertSubscription(
 /**
  * Record invoice in billing_history
  */
-async function recordInvoice(
-    userId: string | null,
-    invoice: Stripe.Invoice
-) {
+async function recordInvoice(userId: string | null, invoice: any) {
+    const supabase = await getSupabase();
+
     // Find subscription_id in our database
     let subscriptionId = null;
     if (invoice.subscription) {
         const stripeSubId = typeof invoice.subscription === 'string'
             ? invoice.subscription
-            : invoice.subscription.id;
+            : invoice.subscription?.id;
 
-        const { data: sub } = await supabase
-            .from('subscriptions')
-            .select('id')
-            .eq('stripe_subscription_id', stripeSubId)
-            .single();
+        if (stripeSubId) {
+            const { data: sub } = await supabase
+                .from('subscriptions')
+                .select('id')
+                .eq('stripe_subscription_id', stripeSubId)
+                .single();
 
-        subscriptionId = sub?.id;
+            subscriptionId = sub?.id;
+        }
     }
 
     const invoiceData = {
@@ -123,15 +133,17 @@ async function recordInvoice(
         stripe_invoice_id: invoice.id,
         stripe_payment_intent_id: typeof invoice.payment_intent === 'string'
             ? invoice.payment_intent
-            : invoice.payment_intent?.id,
-        stripe_charge_id: invoice.charge ? (typeof invoice.charge === 'string' ? invoice.charge : invoice.charge.id) : null,
+            : invoice.payment_intent?.id || null,
+        stripe_charge_id: invoice.charge
+            ? (typeof invoice.charge === 'string' ? invoice.charge : invoice.charge?.id)
+            : null,
         description: invoice.description || `Invoice ${invoice.number}`,
-        amount_cents: invoice.amount_due,
-        amount_paid_cents: invoice.amount_paid,
+        amount_cents: invoice.amount_due || 0,
+        amount_paid_cents: invoice.amount_paid || 0,
         currency: invoice.currency,
         status: invoice.status === 'paid' ? 'paid' :
             invoice.status === 'open' ? 'pending' :
-                invoice.status as string,
+                invoice.status || 'pending',
         invoice_date: new Date(invoice.created * 1000).toISOString(),
         due_date: invoice.due_date ? new Date(invoice.due_date * 1000).toISOString() : null,
         paid_at: invoice.status_transitions?.paid_at
@@ -142,7 +154,7 @@ async function recordInvoice(
         metadata: {
             number: invoice.number,
             customer_email: invoice.customer_email,
-            lines: invoice.lines?.data?.map(line => ({
+            lines: invoice.lines?.data?.map((line: any) => ({
                 description: line.description,
                 amount: line.amount,
             })),
@@ -164,7 +176,8 @@ async function recordInvoice(
 /**
  * Store pending session for later linking during signup
  */
-async function storePendingSession(session: Stripe.Checkout.Session) {
+async function storePendingSession(session: any) {
+    const supabase = await getSupabase();
     const metadata = session.metadata || {};
 
     const sessionData = {
@@ -205,7 +218,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     const rawBody = await getRawBody(req);
-    let event: Stripe.Event;
+    let event: any;
 
     try {
         event = stripe.webhooks.constructEvent(
@@ -219,18 +232,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     console.log(`📬 Received Stripe event: ${event.type}`);
+    const supabase = await getSupabase();
 
     // Handle the event
     switch (event.type) {
         case 'checkout.session.completed': {
-            const session = event.data.object as Stripe.Checkout.Session;
+            const session = event.data.object;
             const metadata = session.metadata;
 
             console.log('✅ CHECKOUT COMPLETED');
-            console.log('-------------------');
             console.log('Email:', session.customer_email);
             console.log('Amount:', session.amount_total ? `$${session.amount_total / 100}` : 'N/A');
-            console.log('Session ID:', session.id);
 
             // Store session for later linking during signup
             await storePendingSession(session);
@@ -267,7 +279,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                         })
                         .eq('stripe_session_id', session.id);
                 } else {
-                    console.log(`⏳ User not found, session stored for later linking: ${session.customer_email}`);
+                    console.log(`⏳ User not found, session stored for later: ${session.customer_email}`);
                 }
             }
             break;
@@ -275,15 +287,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         case 'customer.subscription.created':
         case 'customer.subscription.updated': {
-            const subscription = event.data.object as Stripe.Subscription;
-            console.log(`📅 Subscription ${event.type === 'customer.subscription.created' ? 'created' : 'updated'}: ${subscription.id}`);
+            const subscription = event.data.object;
+            console.log(`📅 Subscription ${event.type.includes('created') ? 'created' : 'updated'}: ${subscription.id}`);
 
             // Get customer email
             const customer = typeof subscription.customer === 'string'
                 ? await stripe.customers.retrieve(subscription.customer)
                 : subscription.customer;
 
-            const email = (customer as Stripe.Customer).email;
+            const email = (customer as any).email;
 
             if (email) {
                 const user = await findUserByEmail(email);
@@ -302,7 +314,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
 
         case 'customer.subscription.deleted': {
-            const subscription = event.data.object as Stripe.Subscription;
+            const subscription = event.data.object;
             console.log('❌ Subscription cancelled:', subscription.id);
 
             // Update status in database
@@ -317,9 +329,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
 
         case 'invoice.paid': {
-            const invoice = event.data.object as Stripe.Invoice;
+            const invoice = event.data.object;
             console.log('💰 Invoice paid:', invoice.id);
-            console.log('Amount:', `$${(invoice.amount_paid || 0) / 100}`);
 
             // Find user and record invoice
             if (invoice.customer_email) {
@@ -331,20 +342,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
 
         case 'invoice.payment_failed': {
-            const invoice = event.data.object as Stripe.Invoice;
+            const invoice = event.data.object;
             console.log('⚠️ Payment failed:', invoice.id);
-            console.log('Customer:', invoice.customer_email);
 
             // Update subscription status if linked
             if (invoice.subscription) {
                 const stripeSubId = typeof invoice.subscription === 'string'
                     ? invoice.subscription
-                    : invoice.subscription.id;
+                    : invoice.subscription?.id;
 
-                await supabase
-                    .from('subscriptions')
-                    .update({ status: 'past_due' })
-                    .eq('stripe_subscription_id', stripeSubId);
+                if (stripeSubId) {
+                    await supabase
+                        .from('subscriptions')
+                        .update({ status: 'past_due' })
+                        .eq('stripe_subscription_id', stripeSubId);
+                }
             }
 
             // Record failed invoice
@@ -357,7 +369,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         case 'invoice.created':
         case 'invoice.finalized': {
-            const invoice = event.data.object as Stripe.Invoice;
+            const invoice = event.data.object;
             console.log(`📄 Invoice ${event.type}:`, invoice.id);
 
             if (invoice.customer_email) {

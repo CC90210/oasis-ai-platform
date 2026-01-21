@@ -5,17 +5,8 @@
     "functions": {
         "api/chat.ts": {
             "maxDuration": 60
-        },
-        "api/cron/renew-subscriptions.ts": {
-            "maxDuration": 30
         }
     },
-    "crons": [
-        {
-            "path": "/api/cron/renew-subscriptions",
-            "schedule": "0 0 * * *"
-        }
-    ],
     "headers": [
         {
             "source": "/favicon.ico",
