@@ -3,8 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import {
     CreditCard, FileText, Loader2, DollarSign, Calendar, CheckCircle,
-    AlertTriangle, ExternalLink, Download, Settings, ArrowUpCircle,
-    RefreshCw, Shield
+    AlertTriangle, ExternalLink, Download, Settings, Mail, Phone,
+    Shield, Package, MessageCircle
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import PortalLayout from '@/components/portal/PortalLayout';
@@ -25,6 +25,17 @@ interface Subscription {
     current_period_end: string | null;
     cancel_at_period_end: boolean;
     created_at: string;
+    // Custom agreement fields
+    is_custom_agreement?: boolean;
+    custom_price?: number;
+    custom_name?: string;
+    agreement_details?: {
+        type?: string;
+        includes?: string[];
+        billing_cycle?: string;
+        setup_fee?: number;
+        setup_fee_paid?: boolean;
+    };
 }
 
 interface BillingHistory {
@@ -41,13 +52,6 @@ interface BillingHistory {
     hosted_invoice_url: string | null;
 }
 
-// Tier upgrade options
-const TIER_OPTIONS = [
-    { tier: 'starter', name: 'Starter', monthly: 149, features: ['Basic automation', 'Email support', '1,000 tasks/month'] },
-    { tier: 'professional', name: 'Professional', monthly: 297, features: ['Advanced automation', 'Priority support', '10,000 tasks/month', 'API access'] },
-    { tier: 'business', name: 'Business', monthly: 497, features: ['Enterprise automation', '24/7 support', 'Unlimited tasks', 'Custom integrations', 'Dedicated account manager'] },
-];
-
 export default function BillingPage() {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
@@ -55,7 +59,7 @@ export default function BillingPage() {
     const [billingHistory, setBillingHistory] = useState<BillingHistory[]>([]);
     const [hasAccess, setHasAccess] = useState(true);
     const [portalLoading, setPortalLoading] = useState(false);
-    const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         loadBillingData();
@@ -112,13 +116,27 @@ export default function BillingPage() {
         }
     };
 
+    const isCustomAgreement = subscription?.is_custom_agreement ||
+        !subscription?.stripe_customer_id?.startsWith('cus_') ||
+        subscription?.stripe_customer_id?.includes('custom') ||
+        subscription?.stripe_customer_id?.includes('demo') ||
+        subscription?.stripe_customer_id?.includes('oasis');
+
     const openStripePortal = async () => {
+        // For custom agreements, don't try to open Stripe portal
+        if (isCustomAgreement) {
+            setError('You have a custom agreement. Please contact us to manage your subscription.');
+            return;
+        }
+
         if (!subscription?.stripe_customer_id) {
-            alert('No Stripe customer ID found. Please contact support.');
+            setError('No Stripe customer ID found. Please contact support.');
             return;
         }
 
         setPortalLoading(true);
+        setError(null);
+
         try {
             const response = await fetch('/api/stripe/portal', {
                 method: 'POST',
@@ -134,11 +152,11 @@ export default function BillingPage() {
             if (data.url) {
                 window.location.href = data.url;
             } else {
-                alert(data.error || 'Failed to open billing portal');
+                setError(data.error || 'Failed to open billing portal. Please contact support.');
             }
         } catch (err) {
             console.error('Portal error:', err);
-            alert('Failed to open billing portal. Please try again.');
+            setError('Failed to open billing portal. Please contact support.');
         } finally {
             setPortalLoading(false);
         }
@@ -158,10 +176,9 @@ export default function BillingPage() {
         return styles[status] || 'bg-gray-500/20 text-gray-400 border-gray-500/30';
     };
 
-    const getCurrentTierIndex = () => {
-        if (!subscription?.tier) return 1; // Default to professional
-        return TIER_OPTIONS.findIndex(t => t.tier === subscription.tier);
-    };
+    // Get the display price (custom price takes priority)
+    const displayPrice = subscription?.custom_price || subscription?.amount_cents || 0;
+    const displayName = subscription?.custom_name || subscription?.product_name || 'Subscription';
 
     if (loading) {
         return (
@@ -218,6 +235,31 @@ export default function BillingPage() {
                     <p className="text-gray-400 mt-2">Manage your plan, payment methods, and view invoices.</p>
                 </header>
 
+                {/* Error Message */}
+                {error && (
+                    <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-xl">
+                        <p className="text-red-400">{error}</p>
+                        {isCustomAgreement && (
+                            <div className="flex gap-3 mt-3">
+                                <a
+                                    href="mailto:oasisaisolutions@gmail.com"
+                                    className="inline-flex items-center gap-2 text-cyan-400 hover:text-cyan-300"
+                                >
+                                    <Mail className="w-4 h-4" />
+                                    oasisaisolutions@gmail.com
+                                </a>
+                                <a
+                                    href="tel:7054403117"
+                                    className="inline-flex items-center gap-2 text-cyan-400 hover:text-cyan-300"
+                                >
+                                    <Phone className="w-4 h-4" />
+                                    705-440-3117
+                                </a>
+                            </div>
+                        )}
+                    </div>
+                )}
+
                 <div className="grid lg:grid-cols-2 gap-8">
                     {/* Current Plan */}
                     <div className="bg-[#0a0a0f] border border-[#1a1a2e] p-6 rounded-2xl">
@@ -230,12 +272,19 @@ export default function BillingPage() {
                             <div className="space-y-4">
                                 <div className="flex items-center justify-between p-4 bg-[#151520] rounded-xl border border-[#2a2a3e]">
                                     <div>
-                                        <h3 className="text-white font-bold text-lg">{subscription.product_name}</h3>
-                                        <p className="text-gray-400 text-sm capitalize">{subscription.tier || 'Professional'} Tier</p>
+                                        <h3 className="text-white font-bold text-lg">{displayName}</h3>
+                                        <div className="flex items-center gap-2 mt-1">
+                                            {isCustomAgreement && (
+                                                <span className="text-xs bg-purple-500/20 text-purple-400 px-2 py-0.5 rounded-full border border-purple-500/30">
+                                                    Custom Agreement
+                                                </span>
+                                            )}
+                                            <p className="text-gray-400 text-sm capitalize">{subscription.tier || 'Professional'} Tier</p>
+                                        </div>
                                     </div>
                                     <div className="text-right">
                                         <p className="text-2xl font-bold text-cyan-400">
-                                            {formatCurrency(subscription.amount_cents)}
+                                            {formatCurrency(displayPrice)}
                                         </p>
                                         <p className="text-gray-500 text-sm">/{subscription.billing_interval || 'month'}</p>
                                     </div>
@@ -258,6 +307,24 @@ export default function BillingPage() {
                                     </p>
                                 )}
 
+                                {/* What's Included - for custom agreements */}
+                                {isCustomAgreement && subscription.agreement_details?.includes && (
+                                    <div className="mt-4 pt-4 border-t border-[#1a1a2e]">
+                                        <h4 className="text-sm font-medium text-gray-300 mb-2 flex items-center gap-2">
+                                            <Package className="w-4 h-4" />
+                                            What's Included:
+                                        </h4>
+                                        <ul className="space-y-1">
+                                            {subscription.agreement_details.includes.map((item: string, index: number) => (
+                                                <li key={index} className="flex items-center gap-2 text-gray-400 text-sm">
+                                                    <CheckCircle className="w-4 h-4 text-green-400" />
+                                                    {item.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+
                                 {subscription.status === 'past_due' && (
                                     <div className="p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
                                         <p className="text-yellow-400 text-sm">
@@ -268,11 +335,42 @@ export default function BillingPage() {
 
                                 {/* Action Buttons */}
                                 <div className="flex flex-wrap gap-3 pt-4 border-t border-[#1a1a2e]">
-                                    {subscription.stripe_customer_id && (
+                                    {isCustomAgreement ? (
+                                        // Custom Agreement - Contact Support
+                                        <div className="w-full">
+                                            <p className="text-gray-400 text-sm mb-3">
+                                                You have a custom agreement. To make changes, please contact us:
+                                            </p>
+                                            <div className="flex flex-wrap gap-3">
+                                                <a
+                                                    href="mailto:oasisaisolutions@gmail.com"
+                                                    className="flex items-center gap-2 px-4 py-2 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 rounded-lg transition border border-cyan-500/30"
+                                                >
+                                                    <Mail className="w-4 h-4" />
+                                                    Email Support
+                                                </a>
+                                                <a
+                                                    href="tel:7054403117"
+                                                    className="flex items-center gap-2 px-4 py-2 bg-[#1a1a2e] hover:bg-[#2a2a3e] text-white rounded-lg transition border border-[#2a2a3e]"
+                                                >
+                                                    <Phone className="w-4 h-4" />
+                                                    705-440-3117
+                                                </a>
+                                                <Link
+                                                    to="/portal/support"
+                                                    className="flex items-center gap-2 px-4 py-2 bg-[#1a1a2e] hover:bg-[#2a2a3e] text-white rounded-lg transition border border-[#2a2a3e]"
+                                                >
+                                                    <MessageCircle className="w-4 h-4" />
+                                                    Open Ticket
+                                                </Link>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        // Standard Stripe Subscription
                                         <button
                                             onClick={openStripePortal}
                                             disabled={portalLoading}
-                                            className="flex items-center gap-2 px-4 py-2 bg-[#1a1a2e] hover:bg-[#2a2a3e] text-white rounded-lg transition border border-[#2a2a3e] disabled:opacity-50"
+                                            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-500 to-cyan-400 hover:from-cyan-400 hover:to-cyan-300 text-black font-semibold rounded-lg transition disabled:opacity-50"
                                         >
                                             {portalLoading ? (
                                                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -282,14 +380,6 @@ export default function BillingPage() {
                                             Manage Subscription
                                         </button>
                                     )}
-
-                                    <button
-                                        onClick={() => setShowUpgradeModal(true)}
-                                        className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400 text-white rounded-lg transition"
-                                    >
-                                        <ArrowUpCircle className="w-4 h-4" />
-                                        Upgrade Plan
-                                    </button>
                                 </div>
                             </div>
                         ) : (
@@ -311,7 +401,7 @@ export default function BillingPage() {
                         )}
                     </div>
 
-                    {/* Billing Summary & Quick Actions */}
+                    {/* Quick Actions */}
                     <div className="bg-[#0a0a0f] border border-[#1a1a2e] p-6 rounded-2xl">
                         <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
                             <Shield className="w-5 h-5 text-purple-500" />
@@ -319,7 +409,59 @@ export default function BillingPage() {
                         </h2>
 
                         <div className="space-y-3">
-                            {subscription?.stripe_customer_id && (
+                            {isCustomAgreement ? (
+                                // Custom Agreement Actions
+                                <>
+                                    <a
+                                        href="mailto:oasisaisolutions@gmail.com?subject=Billing%20Inquiry"
+                                        className="w-full flex items-center justify-between p-4 bg-[#151520] hover:bg-[#1a1a2e] rounded-xl border border-[#2a2a3e] transition group"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 bg-blue-500/10 rounded-lg flex items-center justify-center">
+                                                <Mail className="w-5 h-5 text-blue-400" />
+                                            </div>
+                                            <div className="text-left">
+                                                <p className="text-white font-medium">Request Invoice</p>
+                                                <p className="text-gray-500 text-sm">Get a copy of your latest invoice</p>
+                                            </div>
+                                        </div>
+                                        <ExternalLink className="w-4 h-4 text-gray-500 group-hover:text-cyan-400" />
+                                    </a>
+
+                                    <a
+                                        href="mailto:oasisaisolutions@gmail.com?subject=Update%20Payment%20Method"
+                                        className="w-full flex items-center justify-between p-4 bg-[#151520] hover:bg-[#1a1a2e] rounded-xl border border-[#2a2a3e] transition group"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 bg-green-500/10 rounded-lg flex items-center justify-center">
+                                                <CreditCard className="w-5 h-5 text-green-400" />
+                                            </div>
+                                            <div className="text-left">
+                                                <p className="text-white font-medium">Update Payment Method</p>
+                                                <p className="text-gray-500 text-sm">Change how you pay</p>
+                                            </div>
+                                        </div>
+                                        <ExternalLink className="w-4 h-4 text-gray-500 group-hover:text-cyan-400" />
+                                    </a>
+
+                                    <Link
+                                        to="/portal/support"
+                                        className="w-full flex items-center justify-between p-4 bg-[#151520] hover:bg-[#1a1a2e] rounded-xl border border-[#2a2a3e] transition group"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 bg-purple-500/10 rounded-lg flex items-center justify-center">
+                                                <MessageCircle className="w-5 h-5 text-purple-400" />
+                                            </div>
+                                            <div className="text-left">
+                                                <p className="text-white font-medium">Billing Support</p>
+                                                <p className="text-gray-500 text-sm">Questions about your agreement</p>
+                                            </div>
+                                        </div>
+                                        <ExternalLink className="w-4 h-4 text-gray-500 group-hover:text-cyan-400" />
+                                    </Link>
+                                </>
+                            ) : subscription?.stripe_customer_id && (
+                                // Standard Stripe Actions
                                 <>
                                     <button
                                         onClick={openStripePortal}
@@ -350,23 +492,6 @@ export default function BillingPage() {
                                             <div className="text-left">
                                                 <p className="text-white font-medium">View All Invoices</p>
                                                 <p className="text-gray-500 text-sm">Download receipts and invoices</p>
-                                            </div>
-                                        </div>
-                                        <ExternalLink className="w-4 h-4 text-gray-500 group-hover:text-cyan-400" />
-                                    </button>
-
-                                    <button
-                                        onClick={openStripePortal}
-                                        disabled={portalLoading}
-                                        className="w-full flex items-center justify-between p-4 bg-[#151520] hover:bg-[#1a1a2e] rounded-xl border border-[#2a2a3e] transition group"
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 bg-red-500/10 rounded-lg flex items-center justify-center">
-                                                <RefreshCw className="w-5 h-5 text-red-400" />
-                                            </div>
-                                            <div className="text-left">
-                                                <p className="text-white font-medium">Cancel Subscription</p>
-                                                <p className="text-gray-500 text-sm">Cancel anytime, no questions asked</p>
                                             </div>
                                         </div>
                                         <ExternalLink className="w-4 h-4 text-gray-500 group-hover:text-cyan-400" />
@@ -402,8 +527,20 @@ export default function BillingPage() {
                                 <FileText className="w-6 h-6 text-gray-500" />
                             </div>
                             <p className="text-gray-500 text-sm">
-                                No billing history available yet. Invoices will appear here after your first payment.
+                                {isCustomAgreement
+                                    ? "Contact us to receive invoice copies via email."
+                                    : "No billing history available yet. Invoices will appear here after your first payment."
+                                }
                             </p>
+                            {isCustomAgreement && (
+                                <a
+                                    href="mailto:oasisaisolutions@gmail.com?subject=Invoice%20Request"
+                                    className="inline-flex items-center gap-2 text-cyan-400 hover:text-cyan-300 text-sm mt-3"
+                                >
+                                    <Mail className="w-4 h-4" />
+                                    Request Invoice →
+                                </a>
+                            )}
                         </div>
                     ) : (
                         <div className="space-y-3">
@@ -455,109 +592,34 @@ export default function BillingPage() {
                                     </div>
                                 </div>
                             ))}
-
-                            {billingHistory.length > 5 && subscription?.stripe_customer_id && (
-                                <button
-                                    onClick={openStripePortal}
-                                    className="w-full py-3 text-center text-cyan-400 hover:text-cyan-300 text-sm font-medium"
-                                >
-                                    View all invoices →
-                                </button>
-                            )}
                         </div>
                     )}
                 </div>
-            </div>
 
-            {/* Upgrade Modal */}
-            {showUpgradeModal && (
-                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <div className="bg-[#0a0a0f] border border-[#1a1a2e] rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-auto">
-                        <div className="p-6 border-b border-[#1a1a2e] flex items-center justify-between">
-                            <div>
-                                <h2 className="text-2xl font-bold text-white">Upgrade Your Plan</h2>
-                                <p className="text-gray-400">Choose a plan that best fits your needs</p>
-                            </div>
-                            <button
-                                onClick={() => setShowUpgradeModal(false)}
-                                className="p-2 hover:bg-[#1a1a2e] rounded-lg transition"
-                            >
-                                <span className="text-gray-400 text-2xl">×</span>
-                            </button>
-                        </div>
-
-                        <div className="p-6">
-                            <div className="grid md:grid-cols-3 gap-6">
-                                {TIER_OPTIONS.map((tier, index) => {
-                                    const isCurrentTier = subscription?.tier === tier.tier;
-                                    const isUpgrade = index > getCurrentTierIndex();
-
-                                    return (
-                                        <div
-                                            key={tier.tier}
-                                            className={`relative p-6 rounded-2xl border transition ${isCurrentTier
-                                                    ? 'border-cyan-500 bg-cyan-500/5'
-                                                    : 'border-[#2a2a3e] bg-[#151520] hover:border-[#3a3a4e]'
-                                                }`}
-                                        >
-                                            {isCurrentTier && (
-                                                <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-cyan-500 text-black text-xs font-bold rounded-full">
-                                                    CURRENT PLAN
-                                                </span>
-                                            )}
-
-                                            <h3 className="text-xl font-bold text-white mb-2">{tier.name}</h3>
-                                            <div className="mb-4">
-                                                <span className="text-3xl font-bold text-white">${tier.monthly}</span>
-                                                <span className="text-gray-400">/month</span>
-                                            </div>
-
-                                            <ul className="space-y-2 mb-6">
-                                                {tier.features.map((feature, i) => (
-                                                    <li key={i} className="flex items-center gap-2 text-gray-300 text-sm">
-                                                        <CheckCircle className="w-4 h-4 text-green-400" />
-                                                        {feature}
-                                                    </li>
-                                                ))}
-                                            </ul>
-
-                                            {isCurrentTier ? (
-                                                <button
-                                                    disabled
-                                                    className="w-full py-3 bg-[#2a2a3e] text-gray-500 rounded-xl cursor-not-allowed"
-                                                >
-                                                    Current Plan
-                                                </button>
-                                            ) : subscription?.stripe_customer_id ? (
-                                                <button
-                                                    onClick={openStripePortal}
-                                                    className={`w-full py-3 rounded-xl font-semibold transition ${isUpgrade
-                                                            ? 'bg-gradient-to-r from-cyan-500 to-cyan-400 text-black hover:from-cyan-400 hover:to-cyan-300'
-                                                            : 'bg-[#2a2a3e] text-white hover:bg-[#3a3a4e]'
-                                                        }`}
-                                                >
-                                                    {isUpgrade ? 'Upgrade' : 'Downgrade'}
-                                                </button>
-                                            ) : (
-                                                <Link
-                                                    to="/pricing"
-                                                    className="block w-full py-3 text-center bg-gradient-to-r from-cyan-500 to-cyan-400 text-black rounded-xl font-semibold hover:from-cyan-400 hover:to-cyan-300 transition"
-                                                >
-                                                    Get Started
-                                                </Link>
-                                            )}
-                                        </div>
-                                    );
-                                })}
-                            </div>
-
-                            <p className="text-center text-gray-500 text-sm mt-6">
-                                Changes take effect immediately. You'll be charged the prorated difference.
-                            </p>
-                        </div>
+                {/* Support Section */}
+                <div className="mt-8 bg-gradient-to-r from-cyan-500/5 to-purple-500/5 border border-cyan-500/20 p-6 rounded-2xl">
+                    <h2 className="text-lg font-bold text-white mb-2">Need Help?</h2>
+                    <p className="text-gray-400 mb-4">
+                        Questions about your subscription or billing? We're here to help.
+                    </p>
+                    <div className="flex flex-wrap gap-3">
+                        <a
+                            href="mailto:oasisaisolutions@gmail.com"
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-500 to-cyan-400 text-black font-semibold rounded-lg hover:from-cyan-400 hover:to-cyan-300 transition"
+                        >
+                            <Mail className="w-4 h-4" />
+                            Contact Support
+                        </a>
+                        <a
+                            href="tel:7054403117"
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-[#1a1a2e] text-white rounded-lg hover:bg-[#2a2a3e] transition border border-[#2a2a3e]"
+                        >
+                            <Phone className="w-4 h-4" />
+                            705-440-3117
+                        </a>
                     </div>
                 </div>
-            )}
+            </div>
         </PortalLayout>
     );
 }
