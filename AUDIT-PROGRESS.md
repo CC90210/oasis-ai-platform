@@ -98,7 +98,7 @@
 #### **7. Contact Page Verification**
 - [ ] Verify form displays correctly
 - [ ] Check email: oasisaisolutions@gmail.com
-- [ ] Check phone: 705-440-3117
+- [ ] Check phone: +1 (240) 332-5062
 - [ ] Verify office locations displayed
 - [ ] Test on mobile
 

@@ -27,7 +27,7 @@ Your OASIS AI website has undergone a complete audit and enhancement. All critic
 - ✅ Animated background with pulsing glow effects
 - ✅ Show/hide password toggle with eye icon
 - ✅ Tagline: "Work on your business, not in your business"
-- ✅ Contact information (oasisaisolutions@gmail.com, 705-440-3117)
+- ✅ Contact information (oasisaisolutions@gmail.com, +1 (240) 332-5062)
 - ✅ Professional hover states and smooth transitions
 - ✅ "Remember me" checkbox
 - ✅ "Forgot password?" link
@@ -153,7 +153,7 @@ Your OASIS AI website has undergone a complete audit and enhancement. All critic
 
 ### **Contact Page** ✅
 - ✅ Email: oasisaisolutions@gmail.com
-- ✅ Phone: 705-440-3117
+- ✅ Phone: +1 (240) 332-5062
 - ✅ Office locations displayed
 - ✅ Contact form complete and functional
 - ✅ "Book a Call" CTA card
@@ -435,7 +435,7 @@ The site is ready to impress clients and convert visitors into leads. All critic
 - **Company:** OASIS AI Solutions ✅
 - **Founder:** Conaugh McKenna, Founder & CEO ✅
 - **Email:** oasisaisolutions@gmail.com ✅
-- **Phone:** 705-440-3117 ✅
+- **Phone:** +1 (240) 332-5062 ✅
 - **Locations:** Toronto (HQ), Montreal ✅
 - **Tagline:** "Work on your business, not in your business." ✅
 - **Domain:** oasisai.work ✅

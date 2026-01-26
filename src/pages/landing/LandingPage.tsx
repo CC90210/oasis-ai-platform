@@ -380,8 +380,8 @@ const LandingPage = () => {
                         <Link to="/contact" className="btn-primary text-lg px-10 py-5 shadow-oasis-strong hover:scale-105 transition-transform duration-300">
                             Book Free Strategy Call
                         </Link>
-                        <a href="tel:705-440-3117" className="btn-secondary text-lg px-10 py-5">
-                            Call 705-440-3117
+                        <a href="tel:+12403325062" className="btn-secondary text-lg px-10 py-5">
+                            Call +1 (240) 332-5062
                         </a>
                     </div>
                 </div>

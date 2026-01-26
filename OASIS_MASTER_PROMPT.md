@@ -27,7 +27,7 @@ Build a **world-class, fully functional AI automation agency website** for OASIS
 **Secondary Office:** Montreal, Quebec, Canada
 **Website:** oasisai.work
 **Email:** oasisaisolutions@gmail.com
-**Phone:** 705-440-3117
+**Phone:** +1 (240) 332-5062
 
 ## Brand Mission
 
@@ -857,7 +857,7 @@ CONTENT:
 - Headline: "Ready to Build Your AI Workforce?"
 - Subheadline: "Book a free 15-minute strategy call and discover how automation can transform your business."
 - CTA Primary: "Book Free Strategy Call" (large button with pulse animation)
-- CTA Secondary: "Call 705-440-3117"
+- CTA Secondary: "Call +1 (240) 332-5062"
 
 TRUST ELEMENTS:
 - "No obligation"
@@ -892,7 +892,7 @@ COLUMNS:
 
 4. Contact
    - oasisaisolutions@gmail.com
-   - 705-440-3117
+   - +1 (240) 332-5062
    - Toronto & Montreal, Canada
 
 BOTTOM BAR:
@@ -1088,7 +1088,7 @@ TRUST BADGES:
 🔒 Secure Checkout
 💳 Encrypted Payment
 ✓ Money-Back Guarantee
-📞 Support: 705-440-3117
+📞 Support: +1 (240) 332-5062
 ```
 
 ---

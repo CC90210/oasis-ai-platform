@@ -275,7 +275,7 @@ const TermsPage = () => {
                             <div className="space-y-2 text-text-secondary">
                                 <p><strong className="text-white">OASIS AI Solutions</strong></p>
                                 <p><strong className="text-white">Email:</strong> oasisaisolutions@gmail.com</p>
-                                <p><strong className="text-white">Phone:</strong> 705-440-3117</p>
+                                <p><strong className="text-white">Phone:</strong> +1 (240) 332-5062</p>
                                 <p><strong className="text-white">Location:</strong> Ontario, Canada</p>
                             </div>
                         </div>

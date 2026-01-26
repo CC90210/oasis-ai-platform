@@ -192,8 +192,8 @@ export default function LoginPage() {
                         oasisaisolutions@gmail.com
                     </a>
                     <span>|</span>
-                    <a href="tel:705-440-3117" className="text-cyan-400 hover:text-cyan-300">
-                        705-440-3117
+                    <a href="tel:+12403325062" className="text-cyan-400 hover:text-cyan-300">
+                        +1 (240) 332-5062
                     </a>
                 </div>
             </div>

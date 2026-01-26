@@ -240,10 +240,10 @@ const LoginPage: React.FC = () => {
                         </a>
                         <span className="hidden sm:inline text-gray-500">|</span>
                         <a
-                            href="tel:705-440-3117"
+                            href="tel:+12403325062"
                             className="text-[#00D4FF] hover:text-white transition-colors"
                         >
-                            📞 705-440-3117
+                            📞 +1 (240) 332-5062
                         </a>
                     </div>
                 </div>

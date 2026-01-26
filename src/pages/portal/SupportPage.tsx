@@ -113,7 +113,7 @@ export default function SupportPage() {
                                     </div>
                                 </a>
 
-                                <a href="tel:7054403117" className="flex items-center gap-4 p-4 rounded-xl bg-[#151520] hover:bg-[#1a1a2e] transition border border-[#2a2a3e] group">
+                                <a href="tel:+12403325062" className="flex items-center gap-4 p-4 rounded-xl bg-[#151520] hover:bg-[#1a1a2e] transition border border-[#2a2a3e] group">
                                     <div className="w-10 h-10 rounded-lg bg-green-500/10 flex items-center justify-center text-green-500 group-hover:scale-110 transition">
                                         <MessageSquare className="w-5 h-5" />
                                     </div>
@@ -153,7 +153,7 @@ export default function SupportPage() {
                                         <div className="flex items-center gap-4">
                                             <span>{formatRelativeTime(ticket.created_at)}</span>
                                             <span className={`capitalize px-2 py-0.5 rounded ${ticket.status === 'open' ? 'bg-blue-500/20 text-blue-400' :
-                                                    ticket.status === 'resolved' ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'
+                                                ticket.status === 'resolved' ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'
                                                 }`}>
                                                 {ticket.status.replace('_', ' ')}
                                             </span>

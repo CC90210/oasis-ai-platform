@@ -231,7 +231,7 @@ const PrivacyPage = () => {
                             <div className="space-y-2 text-text-secondary">
                                 <p><strong className="text-white">OASIS AI Solutions</strong></p>
                                 <p><strong className="text-white">Email:</strong> oasisaisolutions@gmail.com</p>
-                                <p><strong className="text-white">Phone:</strong> 705-440-3117</p>
+                                <p><strong className="text-white">Phone:</strong> +1 (240) 332-5062</p>
                                 <p><strong className="text-white">Location:</strong> Ontario, Canada</p>
                                 <p className="mt-4"><strong className="text-white">Privacy Officer:</strong> CC</p>
                                 <p><strong className="text-white">Response Time:</strong> We aim to respond to all privacy inquiries within 30 days.</p>

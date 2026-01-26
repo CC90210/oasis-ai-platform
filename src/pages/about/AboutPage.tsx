@@ -250,9 +250,9 @@ const AboutPage = () => {
                                 <Mail className="w-5 h-5 text-oasis-cyan group-hover:scale-110 transition-transform" />
                                 <span className="text-white font-medium">oasisaisolutions@gmail.com</span>
                             </a>
-                            <a href="tel:705-440-3117" className="flex items-center justify-center gap-3 px-6 py-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors border border-white/10 group">
+                            <a href="tel:+12403325062" className="flex items-center justify-center gap-3 px-6 py-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors border border-white/10 group">
                                 <Phone className="w-5 h-5 text-oasis-cyan group-hover:scale-110 transition-transform" />
-                                <span className="text-white font-medium">705-440-3117</span>
+                                <span className="text-white font-medium">+1 (240) 332-5062</span>
                             </a>
                         </div>
                     </motion.div>

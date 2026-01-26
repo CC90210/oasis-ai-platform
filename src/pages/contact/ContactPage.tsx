@@ -99,8 +99,8 @@ const ContactPage = () => {
                             >
                                 <Phone className="w-10 h-10 text-oasis-cyan mb-4 group-hover:scale-110 transition-transform" />
                                 <h3 className="font-display font-bold text-xl mb-2 text-white">Call Us</h3>
-                                <a href="tel:705-440-3117" className="text-text-secondary hover:text-oasis-cyan transition-colors">
-                                    705-440-3117
+                                <a href="tel:+12403325062" className="text-text-secondary hover:text-oasis-cyan transition-colors">
+                                    +1 (240) 332-5062
                                 </a>
                             </motion.div>
 
@@ -321,8 +321,8 @@ const ContactPage = () => {
 
                                         <p className="text-sm text-text-tertiary text-center">
                                             We typically respond within 24 hours. For urgent inquiries, call us at{' '}
-                                            <a href="tel:705-440-3117" className="text-oasis-cyan hover:underline">
-                                                705-440-3117
+                                            <a href="tel:+12403325062" className="text-oasis-cyan hover:underline">
+                                                +1 (240) 332-5062
                                             </a>
                                         </p>
                                     </form>
