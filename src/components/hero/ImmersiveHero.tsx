@@ -63,7 +63,40 @@ const FloatingIcons = () => {
                 ))}
             </div>
 
-            {/* Mobile: No floating icons - clean interface */}
+            {/* Mobile icons - fewer, smaller, positioned at edges */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none z-[5] block md:hidden">
+                {/* Top left - small CPU icon */}
+                <div
+                    className="absolute animate-float rounded-lg p-1.5 bg-white/5 backdrop-blur-sm border border-white/10 shadow-[0_0_15px_rgba(0,212,255,0.4)]"
+                    style={{ top: '15%', left: '5%', animationDelay: '0s', animationDuration: '6s' }}
+                >
+                    <Cpu className="w-6 h-6 text-cyan-400 drop-shadow-lg" />
+                </div>
+
+                {/* Top right - small Zap icon */}
+                <div
+                    className="absolute animate-float rounded-lg p-1.5 bg-white/5 backdrop-blur-sm border border-white/10 shadow-[0_0_15px_rgba(250,204,21,0.4)]"
+                    style={{ top: '12%', right: '5%', animationDelay: '1s', animationDuration: '5s' }}
+                >
+                    <Zap className="w-6 h-6 text-yellow-400 drop-shadow-lg" />
+                </div>
+
+                {/* Bottom left - small Bot icon */}
+                <div
+                    className="absolute animate-float rounded-lg p-1.5 bg-white/5 backdrop-blur-sm border border-white/10 shadow-[0_0_15px_rgba(167,139,250,0.4)]"
+                    style={{ top: '75%', left: '8%', animationDelay: '2s', animationDuration: '7s' }}
+                >
+                    <Bot className="w-6 h-6 text-purple-400 drop-shadow-lg" />
+                </div>
+
+                {/* Bottom right - small Workflow icon */}
+                <div
+                    className="absolute animate-float rounded-lg p-1.5 bg-white/5 backdrop-blur-sm border border-white/10 shadow-[0_0_15px_rgba(74,222,128,0.4)]"
+                    style={{ top: '72%', right: '8%', animationDelay: '1.5s', animationDuration: '6s' }}
+                >
+                    <Workflow className="w-6 h-6 text-green-400 drop-shadow-lg" />
+                </div>
+            </div>
         </>
     );
 };
