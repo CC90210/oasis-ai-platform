@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import PortalLayout from '@/components/portal/PortalLayout';
+import NDAViewerModal from '@/components/portal/NDAViewerModal';
 import { formatCurrency, formatDate } from '@/lib/formatters';
 
 
@@ -66,6 +67,7 @@ export default function BillingPage() {
     // NEW: Tabbed interface and agreements
     const [activeTab, setActiveTab] = useState<'overview' | 'agreements' | 'invoices'>('overview');
     const [agreements, setAgreements] = useState<any[]>([]);
+    const [viewingNDA, setViewingNDA] = useState<any>(null);
 
     useEffect(() => {
         loadBillingData();
@@ -160,6 +162,30 @@ export default function BillingPage() {
         subscription?.stripe_customer_id?.includes('custom') ||
         subscription?.stripe_customer_id?.includes('demo') ||
         subscription?.stripe_customer_id?.includes('oasis');
+
+    // Helper function to get the correct status badge for agreements
+    const getAgreementStatusBadge = (agreement: any) => {
+        // Check payment_status first (highest priority)
+        if (agreement.payment_status === 'paid') {
+            return { label: 'PAID', className: 'bg-green-500/20 text-green-400' };
+        }
+        if (agreement.payment_status === 'failed') {
+            return { label: 'FAILED', className: 'bg-red-500/20 text-red-400' };
+        }
+
+        // Then check general status
+        if (agreement.status === 'active') {
+            return { label: 'ACTIVE', className: 'bg-green-500/20 text-green-400' };
+        }
+        if (agreement.status === 'nda_signed') {
+            return { label: 'NDA SIGNED', className: 'bg-purple-500/20 text-purple-400' };
+        }
+        if (agreement.status === 'payment_pending') {
+            return { label: 'AWAITING PAYMENT', className: 'bg-yellow-500/20 text-yellow-400' };
+        }
+
+        return { label: 'PENDING', className: 'bg-yellow-500/20 text-yellow-400' };
+    };
 
     const openStripePortal = async () => {
         // For custom agreements, don't try to open Stripe portal
@@ -399,11 +425,11 @@ export default function BillingPage() {
                                     oasisaisolutions@gmail.com
                                 </a>
                                 <a
-                                    href="tel:+12403325062"
+                                    href="tel:+17054403117"
                                     className="inline-flex items-center gap-2 text-cyan-400 hover:text-cyan-300"
                                 >
                                     <Phone className="w-4 h-4" />
-                                    +1 (240) 332-5062
+                                    705-440-3117
                                 </a>
                             </div>
                         )}
@@ -436,12 +462,14 @@ export default function BillingPage() {
                                                 </p>
                                             </div>
                                         </div>
-                                        <span className={`px-2 py-1 text-xs rounded ${agreement.payment_status === 'paid'
-                                            ? 'bg-green-500/20 text-green-400'
-                                            : 'bg-yellow-500/20 text-yellow-400'
-                                            }`}>
-                                            {(agreement.payment_status || agreement.status || 'pending').toUpperCase()}
-                                        </span>
+                                        {(() => {
+                                            const status = getAgreementStatusBadge(agreement);
+                                            return (
+                                                <span className={`px-2 py-1 text-xs rounded ${status.className}`}>
+                                                    {status.label}
+                                                </span>
+                                            );
+                                        })()}
                                     </div>
 
                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-4">
@@ -475,7 +503,10 @@ export default function BillingPage() {
                                                     </p>
                                                 </div>
                                             </div>
-                                            <button className="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-white text-sm rounded-lg flex items-center gap-2 transition">
+                                            <button
+                                                onClick={() => setViewingNDA(agreement)}
+                                                className="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-white text-sm rounded-lg flex items-center gap-2 transition"
+                                            >
                                                 <Eye className="w-4 h-4" />
                                                 View
                                             </button>
@@ -893,15 +924,23 @@ export default function BillingPage() {
                             Contact Support
                         </a>
                         <a
-                            href="tel:+12403325062"
+                            href="tel:+17054403117"
                             className="inline-flex items-center gap-2 px-4 py-2 bg-[#1a1a2e] text-white rounded-lg hover:bg-[#2a2a3e] transition border border-[#2a2a3e]"
                         >
                             <Phone className="w-4 h-4" />
-                            +1 (240) 332-5062
+                            705-440-3117
                         </a>
                     </div>
                 </div>
             </div>
+
+            {/* NDA Viewer Modal */}
+            {viewingNDA && (
+                <NDAViewerModal
+                    agreement={viewingNDA}
+                    onClose={() => setViewingNDA(null)}
+                />
+            )}
         </PortalLayout>
     );
 }
