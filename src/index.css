@@ -145,17 +145,26 @@
 }
 
 @layer base {
+
+  /* Body base styles - dark mode uses transparent for StarField */
   body {
     background-color: var(--bg-primary);
-    /* #0A0A0F */
     color: var(--text-primary);
     font-family: var(--font-body);
     overflow-x: hidden;
     min-height: 100vh;
-    /* FIX: Transparent background for StarField visibility */
-    background: transparent !important;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Dark mode: transparent background for StarField visibility */
+  :root:not(.light-mode) body {
+    background: transparent !important;
+  }
+
+  /* Light mode: solid background, no starfield */
+  :root.light-mode body {
+    background: var(--bg-primary) !important;
   }
 
   /* Ensure content sits above global background */
@@ -166,6 +175,13 @@
     position: relative;
     z-index: 1;
     background: transparent;
+  }
+
+  /* Light mode content needs solid backgrounds */
+  :root.light-mode main,
+  :root.light-mode .page-container,
+  :root.light-mode .content-wrapper {
+    background: var(--bg-primary);
   }
 
   /* Subtle vignette overlay for depth - only in dark mode */
@@ -183,18 +199,25 @@
   }
 
   /* Hide vignette in light mode */
-  .light-mode body::before {
+  :root.light-mode body::before {
     opacity: 0;
+    display: none;
   }
 
-  /* FIX: Ensure StarField is always visible */
+  /* FIX: Ensure StarField is always visible in dark mode only */
   #global-star-field {
     position: fixed !important;
     top: 0 !important;
     left: 0 !important;
     z-index: 0 !important;
     pointer-events: none !important;
-    transition: background 0.5s ease;
+    transition: opacity 0.5s ease;
+  }
+
+  /* Hide starfield in light mode */
+  :root.light-mode #global-star-field {
+    opacity: 0 !important;
+    display: none !important;
   }
 
   h1,

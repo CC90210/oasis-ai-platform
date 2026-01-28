@@ -7,10 +7,12 @@ import { supabase, logout, Profile } from '@/lib/supabase';
 import { useEffect, useState, useRef } from 'react';
 import StarField from '@/components/StarField';
 import { DashboardThemeProvider } from '@/contexts/DashboardThemeContext';
+import { useTheme } from '@/store/themeStore';
 
 export default function PortalLayout({ children }: { children: React.ReactNode }) {
     const navigate = useNavigate();
     const location = useLocation();
+    const { theme } = useTheme();
     const [profile, setProfile] = useState<Profile | null>(null);
     const [loading, setLoading] = useState(true);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -136,9 +138,9 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
 
     return (
         <DashboardThemeProvider>
-            <div id="dashboard-root" className="min-h-screen bg-[var(--bg-main)] flex selection:bg-cyan-500/20 text-[var(--text-primary)] font-sans relative overflow-x-hidden max-w-full transition-colors duration-300 dark">
-                {/* Real StarField background - same as main site */}
-                <StarField />
+            <div id="dashboard-root" className={`min-h-screen bg-[var(--bg-main)] flex selection:bg-cyan-500/20 text-[var(--text-primary)] font-sans relative overflow-x-hidden max-w-full transition-colors duration-300 ${theme}`}>
+                {/* Real StarField background - only visible in dark mode */}
+                {theme === 'dark' && <StarField />}
 
                 {/* Sidebar (Desktop) */}
                 <aside className="w-72 bg-[var(--bg-primary)] border-r border-[var(--bg-tertiary)] p-6 flex flex-col hidden lg:flex shadow-2xl z-20 fixed top-0 left-0 h-screen transition-colors duration-300">
