@@ -61,8 +61,8 @@ export const Header = () => {
             {/* Header Bar */}
             <header
                 className={`fixed top-0 left-0 right-0 transition-all duration-300 ${isScrolled || isMobileMenuOpen
-                    ? 'bg-[#050508]/95 backdrop-blur-xl border-b border-white/10 py-3 lg:py-4'
-                    : 'bg-transparent py-4 lg:py-6'
+                    ? 'bg-[#050508]/95 backdrop-blur-xl border-b border-white/10 pt-10 pb-3 sm:pt-3 sm:pb-3 lg:py-4'
+                    : 'bg-transparent pt-12 pb-4 sm:pt-4 sm:pb-4 lg:py-6'
                     }`}
                 style={{ zIndex: 9999 }}
             >
@@ -200,8 +200,8 @@ export const Header = () => {
                                         to={link.path}
                                         onClick={handleNavClick}
                                         className={`block px-4 py-3 rounded-xl text-base font-medium transition-all ${isActive
-                                                ? 'bg-oasis-cyan/10 text-oasis-cyan border border-oasis-cyan/20'
-                                                : 'text-gray-300 hover:bg-white/5 hover:text-white'
+                                            ? 'bg-oasis-cyan/10 text-oasis-cyan border border-oasis-cyan/20'
+                                            : 'text-gray-300 hover:bg-white/5 hover:text-white'
                                             }`}
                                     >
                                         {link.name}
@@ -216,8 +216,8 @@ export const Header = () => {
                                 to="/portal/login"
                                 onClick={handleNavClick}
                                 className={`flex items-center justify-center gap-2 w-full px-4 py-3 rounded-xl text-base font-medium transition-all ${location.pathname === '/portal/login'
-                                        ? 'bg-gray-700 text-white'
-                                        : 'bg-gray-800/50 hover:bg-gray-800 text-gray-200 hover:text-white border border-gray-700/50'
+                                    ? 'bg-gray-700 text-white'
+                                    : 'bg-gray-800/50 hover:bg-gray-800 text-gray-200 hover:text-white border border-gray-700/50'
                                     }`}
                             >
                                 <User className="w-5 h-5" />
