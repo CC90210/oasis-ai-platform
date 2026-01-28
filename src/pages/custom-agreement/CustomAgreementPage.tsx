@@ -16,9 +16,11 @@ import {
     Calendar,
     AlertCircle,
     Loader2,
-    CheckCircle
+    CheckCircle,
+    Scale
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import LegalAcceptance, { AcceptanceData } from '@/components/legal/LegalAcceptance';
 
 // Type definitions
 interface FormData {
@@ -97,6 +99,7 @@ export default function CustomAgreementPage() {
     const [currentStep, setCurrentStep] = useState(1);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [agreementId, setAgreementId] = useState<string | null>(null);
     const [showCancelledMessage, setShowCancelledMessage] = useState(false);
 
     const [formData, setFormData] = useState<FormData>({
@@ -171,7 +174,8 @@ export default function CustomAgreementPage() {
         }
     };
 
-    const handleSignAndPay = async () => {
+    // After NDA is signed, save to Supabase and move to step 3
+    const handleNdaSigned = async () => {
         if (!validateStep2()) return;
 
         setIsSubmitting(true);
@@ -203,52 +207,141 @@ export default function CustomAgreementPage() {
                 status: 'nda_signed',
             };
 
-            // 1. Save to Supabase with logging
-            console.log('Saving to Supabase:', agreementData);
-            const { data: supabaseData, error: supabaseError } = await supabase.from('custom_agreements').insert(agreementData);
+            // Save to Supabase
+            const { data: insertedData, error: supabaseError } = await supabase
+                .from('custom_agreements')
+                .insert(agreementData)
+                .select()
+                .single();
 
             if (supabaseError) {
                 console.error('Supabase error:', supabaseError);
-                // Continue anyway - we want the payment to proceed
-            } else {
-                console.log('Saved successfully:', supabaseData);
+                throw supabaseError;
             }
 
-            // 2. Create Stripe Checkout Session
-            const response = await fetch('/api/stripe/custom-checkout', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    clientName: formData.fullName,
-                    clientEmail: formData.email,
-                    companyName: formData.companyName,
-                    automationType: serviceName,
-                    upfrontCostCents,
-                    monthlyCostCents,
-                    currency: formData.currency.toLowerCase(),
-                }),
-            });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.error || 'Failed to create checkout session');
-            }
-
-            // 3. Redirect to Stripe
-            if (data.url) {
-                window.location.href = data.url;
-            } else {
-                throw new Error('No checkout URL returned');
-            }
+            // Store the agreement ID for later
+            setAgreementId(insertedData.id);
+            setCurrentStep(3); // Move to legal acceptance
         } catch (err: any) {
             console.error('Error:', err);
+            setError(err.message || 'An error occurred. Please try again.');
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    // Handle legal acceptance and proceed to Stripe
+    const handleLegalAcceptance = async (acceptanceData: AcceptanceData) => {
+        setIsSubmitting(true);
+        setError(null);
+
+        try {
+            // Update the custom_agreements record with legal acceptance
+            if (agreementId) {
+                const { error: updateError } = await supabase
+                    .from('custom_agreements')
+                    .update({
+                        tos_accepted: true,
+                        tos_accepted_at: acceptanceData.tosAcceptedAt,
+                        tos_version: acceptanceData.tosVersion,
+                        privacy_accepted: true,
+                        privacy_accepted_at: acceptanceData.privacyAcceptedAt,
+                        privacy_version: acceptanceData.privacyVersion,
+                        service_agreement_accepted: true,
+                        service_agreement_accepted_at: acceptanceData.serviceAgreementAcceptedAt,
+                        service_agreement_signature: acceptanceData.serviceAgreementSignature,
+                        user_agent: navigator.userAgent,
+                        status: 'legal_accepted',
+                    })
+                    .eq('id', agreementId);
+
+                if (updateError) throw updateError;
+            }
+
+            // Log to legal_acceptances table for audit trail
+            await supabase.from('legal_acceptances').insert([
+                {
+                    client_name: formData.fullName,
+                    client_email: formData.email,
+                    company_name: formData.companyName || null,
+                    document_type: 'terms_of_service',
+                    document_version: acceptanceData.tosVersion,
+                    acceptance_method: 'checkbox',
+                    related_agreement_id: agreementId,
+                    related_purchase_type: 'custom',
+                    user_agent: navigator.userAgent,
+                },
+                {
+                    client_name: formData.fullName,
+                    client_email: formData.email,
+                    company_name: formData.companyName || null,
+                    document_type: 'privacy_policy',
+                    document_version: acceptanceData.privacyVersion,
+                    acceptance_method: 'checkbox',
+                    related_agreement_id: agreementId,
+                    related_purchase_type: 'custom',
+                    user_agent: navigator.userAgent,
+                },
+                {
+                    client_name: formData.fullName,
+                    client_email: formData.email,
+                    company_name: formData.companyName || null,
+                    document_type: 'service_agreement',
+                    document_version: acceptanceData.serviceAgreementVersion,
+                    acceptance_method: 'signature',
+                    signature_name: acceptanceData.serviceAgreementSignature,
+                    related_agreement_id: agreementId,
+                    related_purchase_type: 'custom',
+                    user_agent: navigator.userAgent,
+                },
+            ]);
+
+            // Proceed to Stripe checkout
+            await createStripeCheckout();
+
+        } catch (err: any) {
+            console.error('Error saving legal acceptance:', err);
             setError(err.message || 'An error occurred. Please try again.');
             setIsSubmitting(false);
         }
     };
+
+    // Create Stripe checkout session
+    const createStripeCheckout = async () => {
+        const upfrontCostCents = Math.round(parseFloat(formData.upfrontCost || '0') * 100);
+        const monthlyCostCents = Math.round(parseFloat(formData.monthlyCost || '0') * 100);
+        const serviceInfo = SERVICE_TYPES.find(s => s.id === formData.serviceType);
+        const serviceName = serviceInfo?.name || formData.serviceType;
+
+        const response = await fetch('/api/stripe/custom-checkout', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                clientName: formData.fullName,
+                clientEmail: formData.email,
+                companyName: formData.companyName,
+                automationType: serviceName,
+                upfrontCostCents,
+                monthlyCostCents,
+                currency: formData.currency.toLowerCase(),
+            }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.error || 'Failed to create checkout session');
+        }
+
+        if (data.url) {
+            window.location.href = data.url;
+        } else {
+            throw new Error('No checkout URL returned');
+        }
+    };
+
 
     const formatNDAText = () => {
         const today = new Date().toLocaleDateString('en-US', {
@@ -306,46 +399,57 @@ export default function CustomAgreementPage() {
                     </div>
                 )}
 
-                {/* Progress Steps */}
-                <div className="max-w-2xl mx-auto mb-10">
+                {/* Progress Steps - 4 Steps */}
+                <div className="max-w-3xl mx-auto mb-10">
                     <div className="flex items-center justify-between relative">
                         {/* Progress Line */}
                         <div className="absolute top-5 left-0 right-0 h-0.5 bg-gray-700">
                             <div
                                 className="h-full bg-cyan-500 transition-all duration-500"
-                                style={{ width: `${((currentStep - 1) / 2) * 100}%` }}
+                                style={{ width: `${((currentStep - 1) / 3) * 100}%` }}
                             />
                         </div>
 
-                        {/* Step 1 */}
+                        {/* Step 1: Details */}
                         <div className="relative z-10 flex flex-col items-center">
                             <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${currentStep >= 1 ? 'bg-cyan-500 text-black' : 'bg-gray-700 text-gray-400'
                                 }`}>
                                 {currentStep > 1 ? <Check className="w-5 h-5" /> : <User className="w-5 h-5" />}
                             </div>
-                            <span className={`mt-2 text-sm ${currentStep >= 1 ? 'text-white' : 'text-gray-500'}`}>
+                            <span className={`mt-2 text-xs sm:text-sm ${currentStep >= 1 ? 'text-white' : 'text-gray-500'}`}>
                                 Details
                             </span>
                         </div>
 
-                        {/* Step 2 */}
+                        {/* Step 2: NDA */}
                         <div className="relative z-10 flex flex-col items-center">
                             <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${currentStep >= 2 ? 'bg-cyan-500 text-black' : 'bg-gray-700 text-gray-400'
                                 }`}>
                                 {currentStep > 2 ? <Check className="w-5 h-5" /> : <FileText className="w-5 h-5" />}
                             </div>
-                            <span className={`mt-2 text-sm ${currentStep >= 2 ? 'text-white' : 'text-gray-500'}`}>
+                            <span className={`mt-2 text-xs sm:text-sm ${currentStep >= 2 ? 'text-white' : 'text-gray-500'}`}>
                                 NDA
                             </span>
                         </div>
 
-                        {/* Step 3 */}
+                        {/* Step 3: Terms */}
                         <div className="relative z-10 flex flex-col items-center">
                             <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${currentStep >= 3 ? 'bg-cyan-500 text-black' : 'bg-gray-700 text-gray-400'
                                 }`}>
+                                {currentStep > 3 ? <Check className="w-5 h-5" /> : <Scale className="w-5 h-5" />}
+                            </div>
+                            <span className={`mt-2 text-xs sm:text-sm ${currentStep >= 3 ? 'text-white' : 'text-gray-500'}`}>
+                                Terms
+                            </span>
+                        </div>
+
+                        {/* Step 4: Payment */}
+                        <div className="relative z-10 flex flex-col items-center">
+                            <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${currentStep >= 4 ? 'bg-cyan-500 text-black' : 'bg-gray-700 text-gray-400'
+                                }`}>
                                 <CreditCard className="w-5 h-5" />
                             </div>
-                            <span className={`mt-2 text-sm ${currentStep >= 3 ? 'text-white' : 'text-gray-500'}`}>
+                            <span className={`mt-2 text-xs sm:text-sm ${currentStep >= 4 ? 'text-white' : 'text-gray-500'}`}>
                                 Payment
                             </span>
                         </div>
@@ -480,8 +584,8 @@ export default function CustomAgreementPage() {
                                                     type="button"
                                                     onClick={() => handleInputChange('currency', 'USD')}
                                                     className={`px-3 py-1 rounded text-sm transition ${formData.currency === 'USD'
-                                                            ? 'bg-cyan-500 text-black font-medium'
-                                                            : 'text-gray-400 hover:text-white'
+                                                        ? 'bg-cyan-500 text-black font-medium'
+                                                        : 'text-gray-400 hover:text-white'
                                                         }`}
                                                 >
                                                     USD $
@@ -490,8 +594,8 @@ export default function CustomAgreementPage() {
                                                     type="button"
                                                     onClick={() => handleInputChange('currency', 'CAD')}
                                                     className={`px-3 py-1 rounded text-sm transition ${formData.currency === 'CAD'
-                                                            ? 'bg-cyan-500 text-black font-medium'
-                                                            : 'text-gray-400 hover:text-white'
+                                                        ? 'bg-cyan-500 text-black font-medium'
+                                                        : 'text-gray-400 hover:text-white'
                                                         }`}
                                                 >
                                                     CAD $
@@ -664,7 +768,7 @@ export default function CustomAgreementPage() {
                                 )}
 
                                 <button
-                                    onClick={handleSignAndPay}
+                                    onClick={handleNdaSigned}
                                     disabled={isSubmitting}
                                     className="w-full bg-cyan-500 hover:bg-cyan-400 disabled:bg-cyan-500/50 disabled:cursor-not-allowed text-black font-semibold py-4 rounded-lg transition flex items-center justify-center gap-2"
                                 >
@@ -675,15 +779,44 @@ export default function CustomAgreementPage() {
                                         </>
                                     ) : (
                                         <>
-                                            <Lock className="w-5 h-5" />
-                                            Sign & Continue to Payment
+                                            <ArrowRight className="w-5 h-5" />
+                                            Sign & Continue
                                         </>
                                     )}
                                 </button>
+                            </div>
+                        )}
 
-                                <p className="text-center text-xs text-gray-500">
-                                    You will be redirected to our secure payment partner, Stripe
-                                </p>
+                        {/* Step 3: Legal Acceptance */}
+                        {currentStep === 3 && (
+                            <div className="space-y-6">
+                                <div className="flex items-center justify-between mb-4">
+                                    <h2 className="text-xl font-semibold text-white flex items-center gap-2">
+                                        <Scale className="w-5 h-5 text-purple-400" />
+                                        Terms & Agreement
+                                    </h2>
+                                    <button
+                                        onClick={() => setCurrentStep(2)}
+                                        className="text-gray-400 hover:text-white flex items-center gap-1 text-sm"
+                                    >
+                                        <ArrowLeft className="w-4 h-4" />
+                                        Back
+                                    </button>
+                                </div>
+
+                                {/* Error Display */}
+                                {error && (
+                                    <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 flex items-center gap-2">
+                                        <AlertCircle className="w-5 h-5 text-red-400" />
+                                        <span className="text-red-200 text-sm">{error}</span>
+                                    </div>
+                                )}
+
+                                <LegalAcceptance
+                                    clientName={formData.fullName}
+                                    onAcceptanceComplete={handleLegalAcceptance}
+                                    isLoading={isSubmitting}
+                                />
                             </div>
                         )}
                     </div>
