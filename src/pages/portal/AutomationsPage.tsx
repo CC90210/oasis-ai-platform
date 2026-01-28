@@ -6,7 +6,11 @@ import {
     formatPercentage,
     getAutomationTypeConfig
 } from '@/lib/metrics';
-import { Bot, Activity, Loader2, ChevronDown, ChevronUp, Mail, User, FileText, MessageSquare, Sparkles, TrendingUp } from 'lucide-react';
+import {
+    Bot, Activity, Loader2, ChevronDown, ChevronUp, Mail, User, FileText,
+    MessageSquare, Sparkles, TrendingUp, Trash2, MoreVertical, Edit,
+    Download, X, AlertTriangle
+} from 'lucide-react';
 import PortalLayout from '@/components/portal/PortalLayout';
 import { formatDate, formatRelativeTime } from '@/lib/formatters';
 
@@ -68,6 +72,20 @@ export default function AutomationsPage() {
     // CRITICAL: Use centralized metrics for consistency
     const [automationMetrics, setAutomationMetrics] = useState<AutomationMetrics | null>(null);
 
+    // NEW: Settings menu state
+    const [showSettingsMenu, setShowSettingsMenu] = useState(false);
+    const [editingName, setEditingName] = useState(false);
+    const [newName, setNewName] = useState('');
+    const [savingName, setSavingName] = useState(false);
+
+    // NEW: Delete log state
+    const [deleteLogId, setDeleteLogId] = useState<string | null>(null);
+    const [deletingLog, setDeletingLog] = useState(false);
+
+    // NEW: Clear all logs state
+    const [showClearAllLogs, setShowClearAllLogs] = useState(false);
+    const [clearingAllLogs, setClearingAllLogs] = useState(false);
+
     useEffect(() => {
         loadAutomations();
     }, []);
@@ -75,6 +93,7 @@ export default function AutomationsPage() {
     useEffect(() => {
         if (selectedAuto && userId) {
             loadLogsAndMetrics(selectedAuto.id, userId);
+            setNewName(selectedAuto.display_name);
         } else {
             setLogs([]);
             setAutomationMetrics(null);
@@ -150,6 +169,119 @@ export default function AutomationsPage() {
         }
     };
 
+    // NEW: Handle rename automation
+    const handleRename = async () => {
+        if (!newName.trim() || !selectedAuto || !userId) return;
+
+        setSavingName(true);
+        try {
+            const { error } = await supabase
+                .from('client_automations')
+                .update({ display_name: newName.trim() })
+                .eq('id', selectedAuto.id)
+                .eq('user_id', userId);
+
+            if (!error) {
+                // Update local state
+                setSelectedAuto(prev => prev ? { ...prev, display_name: newName.trim() } : null);
+                setAutomations(prev => prev.map(a =>
+                    a.id === selectedAuto.id ? { ...a, display_name: newName.trim() } : a
+                ));
+                setEditingName(false);
+            } else {
+                alert('Failed to rename automation');
+            }
+        } catch (err) {
+            console.error('Error renaming:', err);
+            alert('Failed to rename automation');
+        } finally {
+            setSavingName(false);
+        }
+    };
+
+    // NEW: Handle delete single log
+    const handleDeleteLog = async (logId: string) => {
+        if (!userId) return;
+
+        setDeletingLog(true);
+        try {
+            const { error } = await supabase
+                .from('automation_logs')
+                .delete()
+                .eq('id', logId)
+                .eq('user_id', userId);
+
+            if (!error) {
+                setLogs(prev => prev.filter(log => log.id !== logId));
+                setDeleteLogId(null);
+            } else {
+                alert('Failed to delete log');
+            }
+        } catch (err) {
+            console.error('Error deleting log:', err);
+            alert('Failed to delete log');
+        } finally {
+            setDeletingLog(false);
+        }
+    };
+
+    // NEW: Handle clear all logs
+    const handleClearAllLogs = async () => {
+        if (!selectedAuto || !userId) return;
+
+        setClearingAllLogs(true);
+        try {
+            const { error } = await supabase
+                .from('automation_logs')
+                .delete()
+                .eq('automation_id', selectedAuto.id)
+                .eq('user_id', userId);
+
+            if (!error) {
+                setLogs([]);
+                setShowClearAllLogs(false);
+                // Reload metrics after clearing
+                const metrics = await fetchAutomationMetrics(selectedAuto.id, userId);
+                setAutomationMetrics(metrics);
+            } else {
+                alert('Failed to clear logs');
+            }
+        } catch (err) {
+            console.error('Error clearing logs:', err);
+            alert('Failed to clear logs');
+        } finally {
+            setClearingAllLogs(false);
+        }
+    };
+
+    // NEW: Export logs to CSV
+    const exportLogsToCSV = () => {
+        if (!logs.length || !selectedAuto) return;
+
+        const headers = ['Date', 'Event Name', 'Event Type', 'Status'];
+        const rows = logs.map(log => [
+            new Date(log.created_at).toISOString(),
+            log.event_name,
+            log.event_type,
+            log.status
+        ]);
+
+        const csv = [headers, ...rows].map(row =>
+            row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')
+        ).join('\n');
+
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${selectedAuto.display_name.replace(/[^a-z0-9]/gi, '_')}-logs-${new Date().toISOString().split('T')[0]}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    };
+
     if (loading) {
         return <PortalLayout><div className="flex items-center justify-center h-full"><Loader2 className="animate-spin text-cyan-500 w-8 h-8" /></div></PortalLayout>;
     }
@@ -210,7 +342,7 @@ export default function AutomationsPage() {
                         </div>
                     ) : (
                         <>
-                            {/* Header */}
+                            {/* Header with Settings Menu */}
                             <div className="p-4 sm:p-6 border-b border-[#1a1a2e] bg-[#0a0a0f] flex items-center justify-between shadow-lg z-10 flex-shrink-0">
                                 <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
                                     <button
@@ -233,6 +365,42 @@ export default function AutomationsPage() {
                                             <span className="capitalize truncate">{selectedAuto.tier} Plan</span>
                                         </div>
                                     </div>
+                                </div>
+
+                                {/* Settings Menu Button */}
+                                <div className="relative">
+                                    <button
+                                        onClick={() => setShowSettingsMenu(!showSettingsMenu)}
+                                        className="p-2 text-gray-400 hover:text-white rounded-lg hover:bg-gray-800 transition"
+                                    >
+                                        <MoreVertical className="w-5 h-5" />
+                                    </button>
+
+                                    {showSettingsMenu && (
+                                        <>
+                                            <div
+                                                className="fixed inset-0 z-10"
+                                                onClick={() => setShowSettingsMenu(false)}
+                                            />
+                                            <div className="absolute right-0 top-full mt-2 w-48 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-20">
+                                                <button
+                                                    onClick={() => { setEditingName(true); setShowSettingsMenu(false); }}
+                                                    className="w-full px-4 py-3 text-left text-gray-300 hover:bg-gray-700 flex items-center gap-2 rounded-t-lg transition"
+                                                >
+                                                    <Edit className="w-4 h-4" />
+                                                    Rename
+                                                </button>
+                                                <button
+                                                    onClick={() => { exportLogsToCSV(); setShowSettingsMenu(false); }}
+                                                    className="w-full px-4 py-3 text-left text-gray-300 hover:bg-gray-700 flex items-center gap-2 rounded-b-lg transition"
+                                                    disabled={logs.length === 0}
+                                                >
+                                                    <Download className="w-4 h-4" />
+                                                    Export Logs
+                                                </button>
+                                            </div>
+                                        </>
+                                    )}
                                 </div>
                             </div>
 
@@ -297,15 +465,25 @@ export default function AutomationsPage() {
                                         </div>
                                     </div>
 
-                                    {/* Activity Log */}
+                                    {/* Activity Log Header with Clear All */}
                                     <div>
-                                        <h3 className="text-base sm:text-lg font-bold text-white mb-4 flex items-center gap-2">
-                                            <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-purple-500 flex-shrink-0" />
-                                            Activity Log
-                                            <span className="text-xs text-gray-500 font-normal">
-                                                (showing last 50)
-                                            </span>
-                                        </h3>
+                                        <div className="flex items-center justify-between mb-4">
+                                            <h3 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+                                                <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-purple-500 flex-shrink-0" />
+                                                Activity Log
+                                                <span className="text-xs text-gray-500 font-normal">
+                                                    ({logs.length} entries)
+                                                </span>
+                                            </h3>
+                                            {logs.length > 0 && (
+                                                <button
+                                                    onClick={() => setShowClearAllLogs(true)}
+                                                    className="text-sm text-gray-400 hover:text-red-400 transition"
+                                                >
+                                                    Clear All
+                                                </button>
+                                            )}
+                                        </div>
 
                                         {loadingLogs ? (
                                             <div className="py-10 text-center"><Loader2 className="animate-spin w-8 h-8 text-cyan-500 mx-auto" /></div>
@@ -321,10 +499,10 @@ export default function AutomationsPage() {
                                                     const hasMetadata = parsedMetadata && Object.keys(parsedMetadata).length > 0;
 
                                                     return (
-                                                        <div key={log.id} className="relative pl-4 sm:pl-6 pb-4 border-l border-[#1a1a2e] last:border-0 last:pb-0 group">
+                                                        <div key={log.id} className="relative pl-4 sm:pl-6 pb-4 border-l border-[#1a1a2e] last:border-0 last:pb-0 group/log">
                                                             <div className={`absolute -left-[5px] top-1.5 w-2.5 h-2.5 rounded-full border-2 border-[#050505] ${log.status === 'success' ? 'bg-green-500' : 'bg-red-500'}`}></div>
 
-                                                            <div className="bg-[#0a0a0f] border border-[#1a1a2e] rounded-xl group-hover:border-[#2a2a3e] transition overflow-hidden">
+                                                            <div className="bg-[#0a0a0f] border border-[#1a1a2e] rounded-xl group-hover/log:border-[#2a2a3e] transition overflow-hidden">
                                                                 <div className="p-3 sm:p-4">
                                                                     <div className="flex justify-between items-start gap-2 mb-2">
                                                                         <div className="min-w-0 flex-1">
@@ -335,6 +513,14 @@ export default function AutomationsPage() {
                                                                             <span className={`px-2 py-0.5 rounded-full text-[10px] uppercase font-bold ${log.status === 'success' ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'}`}>
                                                                                 {log.status}
                                                                             </span>
+                                                                            {/* Delete button - shows on hover */}
+                                                                            <button
+                                                                                onClick={() => setDeleteLogId(log.id)}
+                                                                                className="p-1.5 text-gray-600 hover:text-red-400 opacity-0 group-hover/log:opacity-100 transition rounded hover:bg-red-500/10"
+                                                                                title="Delete log"
+                                                                            >
+                                                                                <Trash2 className="w-4 h-4" />
+                                                                            </button>
                                                                         </div>
                                                                     </div>
                                                                     <div className="flex justify-between items-center">
@@ -392,6 +578,106 @@ export default function AutomationsPage() {
                     )}
                 </div>
             </div>
+
+            {/* MODAL: Rename Automation */}
+            {editingName && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 max-w-sm w-full shadow-2xl">
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-lg font-semibold text-white">Rename Automation</h3>
+                            <button onClick={() => setEditingName(false)} className="text-gray-400 hover:text-white">
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+                        <input
+                            type="text"
+                            value={newName}
+                            onChange={(e) => setNewName(e.target.value)}
+                            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white mb-4 focus:border-cyan-500 focus:outline-none transition"
+                            placeholder="Automation name"
+                            autoFocus
+                        />
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setEditingName(false)}
+                                className="flex-1 py-2.5 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleRename}
+                                disabled={savingName || !newName.trim()}
+                                className="flex-1 py-2.5 bg-cyan-500 text-black font-semibold rounded-lg hover:bg-cyan-400 transition disabled:opacity-50"
+                            >
+                                {savingName ? 'Saving...' : 'Save'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* MODAL: Delete Log Confirmation */}
+            {deleteLogId && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 max-w-sm w-full shadow-2xl">
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className="w-10 h-10 bg-red-500/20 rounded-full flex items-center justify-center">
+                                <AlertTriangle className="w-5 h-5 text-red-400" />
+                            </div>
+                            <h3 className="text-lg font-semibold text-white">Delete Log Entry?</h3>
+                        </div>
+                        <p className="text-gray-400 mb-6">This action cannot be undone.</p>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setDeleteLogId(null)}
+                                className="flex-1 py-2.5 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={() => handleDeleteLog(deleteLogId)}
+                                disabled={deletingLog}
+                                className="flex-1 py-2.5 bg-red-500 text-white font-semibold rounded-lg hover:bg-red-400 transition disabled:opacity-50"
+                            >
+                                {deletingLog ? 'Deleting...' : 'Delete'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* MODAL: Clear All Logs Confirmation */}
+            {showClearAllLogs && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 max-w-sm w-full shadow-2xl">
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className="w-10 h-10 bg-red-500/20 rounded-full flex items-center justify-center">
+                                <AlertTriangle className="w-5 h-5 text-red-400" />
+                            </div>
+                            <h3 className="text-lg font-semibold text-white">Clear All Logs?</h3>
+                        </div>
+                        <p className="text-gray-400 mb-2">
+                            This will permanently delete <span className="text-white font-bold">{logs.length}</span> log entries.
+                        </p>
+                        <p className="text-gray-500 text-sm mb-6">This action cannot be undone.</p>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setShowClearAllLogs(false)}
+                                className="flex-1 py-2.5 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleClearAllLogs}
+                                disabled={clearingAllLogs}
+                                className="flex-1 py-2.5 bg-red-500 text-white font-semibold rounded-lg hover:bg-red-400 transition disabled:opacity-50"
+                            >
+                                {clearingAllLogs ? 'Clearing...' : 'Clear All'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </PortalLayout>
     );
 }

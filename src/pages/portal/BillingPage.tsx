@@ -4,7 +4,7 @@ import { supabase, Profile, isBillingExempt, isOwnerAccount } from '@/lib/supaba
 import {
     CreditCard, FileText, Loader2, DollarSign, Calendar, CheckCircle,
     AlertTriangle, ExternalLink, Download, Settings, Mail, Phone,
-    Shield, Package, MessageCircle, Crown
+    Shield, Package, MessageCircle, Crown, Eye
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import PortalLayout from '@/components/portal/PortalLayout';
@@ -62,6 +62,10 @@ export default function BillingPage() {
     const [portalLoading, setPortalLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [profile, setProfile] = useState<Profile | null>(null);
+
+    // NEW: Tabbed interface and agreements
+    const [activeTab, setActiveTab] = useState<'overview' | 'agreements' | 'invoices'>('overview');
+    const [agreements, setAgreements] = useState<any[]>([]);
 
     useEffect(() => {
         loadBillingData();
@@ -129,12 +133,26 @@ export default function BillingPage() {
 
             setBillingHistory(historyData || []);
 
+            // NEW: Load custom agreements (NDAs)
+            const { data: agreementsData, error: agreementsError } = await supabase
+                .from('custom_agreements')
+                .select('*')
+                .eq('client_email', user.email)
+                .order('created_at', { ascending: false });
+
+            if (agreementsError && agreementsError.code !== 'PGRST116') {
+                console.error('Error loading agreements:', agreementsError);
+            }
+
+            setAgreements(agreementsData || []);
+
         } catch (err) {
             console.error('Error loading billing:', err);
         } finally {
             setLoading(false);
         }
     };
+
 
 
     const isCustomAgreement = subscription?.is_custom_agreement ||
@@ -342,14 +360,30 @@ export default function BillingPage() {
 
     return (
         <PortalLayout>
-            <div className="p-8 max-w-5xl mx-auto">
-                <header className="mb-10">
+            <div className="p-8 max-w-5xl mx-auto page-transition">
+                <header className="mb-6">
                     <h1 className="text-3xl font-bold text-white flex items-center gap-3">
                         <CreditCard className="w-8 h-8 text-cyan-500" />
-                        Billing & Subscription
+                        Billing & Agreements
                     </h1>
-                    <p className="text-gray-400 mt-2">Manage your plan, payment methods, and view invoices.</p>
+                    <p className="text-gray-400 mt-2">Manage your plan, view agreements, and access invoices.</p>
                 </header>
+
+                {/* Tab Navigation */}
+                <div className="flex gap-1 mb-6 border-b border-gray-800">
+                    {(['overview', 'agreements', 'invoices'] as const).map(tab => (
+                        <button
+                            key={tab}
+                            onClick={() => setActiveTab(tab)}
+                            className={`px-4 py-3 text-sm font-medium capitalize border-b-2 transition ${activeTab === tab
+                                ? 'border-cyan-500 text-cyan-400'
+                                : 'border-transparent text-gray-400 hover:text-white'
+                                }`}
+                        >
+                            {tab === 'agreements' ? 'Agreements & NDAs' : tab}
+                        </button>
+                    ))}
+                </div>
 
                 {/* Error Message */}
                 {error && (
@@ -376,341 +410,473 @@ export default function BillingPage() {
                     </div>
                 )}
 
-                <div className="grid lg:grid-cols-2 gap-8">
-                    {/* Current Plan */}
-                    <div className="bg-[#0a0a0f] border border-[#1a1a2e] p-6 rounded-2xl">
-                        <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                            <DollarSign className="w-5 h-5 text-cyan-500" />
-                            Current Plan
-                        </h2>
-
-                        {subscription ? (
-                            <div className="space-y-4">
-                                <div className="flex items-center justify-between p-4 bg-[#151520] rounded-xl border border-[#2a2a3e]">
-                                    <div>
-                                        <h3 className="text-white font-bold text-lg">{displayName}</h3>
-                                        <div className="flex items-center gap-2 mt-1">
-                                            {isCustomAgreement && (
-                                                <span className="text-xs bg-purple-500/20 text-purple-400 px-2 py-0.5 rounded-full border border-purple-500/30">
-                                                    Custom Agreement
-                                                </span>
-                                            )}
-                                            <p className="text-gray-400 text-sm capitalize">{subscription.tier || 'Professional'} Tier</p>
-                                        </div>
-                                    </div>
-                                    <div className="text-right">
-                                        <p className="text-2xl font-bold text-cyan-400">
-                                            {formatCurrency(displayPrice)}
-                                        </p>
-                                        <p className="text-gray-500 text-sm">/{subscription.billing_interval || 'month'}</p>
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center gap-2">
-                                    <span className={`text-sm px-3 py-1 rounded-full border ${getStatusBadge(subscription.status)}`}>
-                                        {subscription.status === 'active' && <CheckCircle className="w-3 h-3 inline mr-1" />}
-                                        {subscription.status.replace('_', ' ').toUpperCase()}
-                                    </span>
-                                    {subscription.cancel_at_period_end && (
-                                        <span className="text-yellow-400 text-sm">Cancels at period end</span>
-                                    )}
-                                </div>
-
-                                {subscription.current_period_end && (
-                                    <p className="text-gray-500 text-sm flex items-center gap-2">
-                                        <Calendar className="w-4 h-4" />
-                                        Next billing: {formatDate(subscription.current_period_end)}
-                                    </p>
-                                )}
-
-                                {/* What's Included - for custom agreements */}
-                                {isCustomAgreement && subscription.agreement_details?.includes && (
-                                    <div className="mt-4 pt-4 border-t border-[#1a1a2e]">
-                                        <h4 className="text-sm font-medium text-gray-300 mb-2 flex items-center gap-2">
-                                            <Package className="w-4 h-4" />
-                                            What's Included:
-                                        </h4>
-                                        <ul className="space-y-1">
-                                            {subscription.agreement_details.includes.map((item: string, index: number) => (
-                                                <li key={index} className="flex items-center gap-2 text-gray-400 text-sm">
-                                                    <CheckCircle className="w-4 h-4 text-green-400" />
-                                                    {item.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </div>
-                                )}
-
-                                {subscription.status === 'past_due' && (
-                                    <div className="p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
-                                        <p className="text-yellow-400 text-sm">
-                                            ⚠️ Your payment is past due. Please update your payment method.
-                                        </p>
-                                    </div>
-                                )}
-
-                                {/* Action Buttons */}
-                                <div className="flex flex-wrap gap-3 pt-4 border-t border-[#1a1a2e]">
-                                    {isCustomAgreement ? (
-                                        // Custom Agreement - Contact Support
-                                        <div className="w-full">
-                                            <p className="text-gray-400 text-sm mb-3">
-                                                You have a custom agreement. To make changes, please contact us:
-                                            </p>
-                                            <div className="flex flex-wrap gap-3">
-                                                <a
-                                                    href="mailto:oasisaisolutions@gmail.com"
-                                                    className="flex items-center gap-2 px-4 py-2 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 rounded-lg transition border border-cyan-500/30"
-                                                >
-                                                    <Mail className="w-4 h-4" />
-                                                    Email Support
-                                                </a>
-                                                <a
-                                                    href="tel:+12403325062"
-                                                    className="flex items-center gap-2 px-4 py-2 bg-[#1a1a2e] hover:bg-[#2a2a3e] text-white rounded-lg transition border border-[#2a2a3e]"
-                                                >
-                                                    <Phone className="w-4 h-4" />
-                                                    +1 (240) 332-5062
-                                                </a>
-                                                <Link
-                                                    to="/portal/support"
-                                                    className="flex items-center gap-2 px-4 py-2 bg-[#1a1a2e] hover:bg-[#2a2a3e] text-white rounded-lg transition border border-[#2a2a3e]"
-                                                >
-                                                    <MessageCircle className="w-4 h-4" />
-                                                    Open Ticket
-                                                </Link>
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        // Standard Stripe Subscription
-                                        <button
-                                            onClick={openStripePortal}
-                                            disabled={portalLoading}
-                                            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-500 to-cyan-400 hover:from-cyan-400 hover:to-cyan-300 text-black font-semibold rounded-lg transition disabled:opacity-50"
-                                        >
-                                            {portalLoading ? (
-                                                <Loader2 className="w-4 h-4 animate-spin" />
-                                            ) : (
-                                                <Settings className="w-4 h-4" />
-                                            )}
-                                            Manage Subscription
-                                        </button>
-                                    )}
-                                </div>
+                {/* AGREEMENTS TAB */}
+                {activeTab === 'agreements' && (
+                    <div className="space-y-4">
+                        {agreements.length === 0 ? (
+                            <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-8 text-center">
+                                <FileText className="w-12 h-12 text-gray-600 mx-auto mb-4" />
+                                <p className="text-gray-400">No agreements found</p>
+                                <p className="text-sm text-gray-500 mt-2">Your signed agreements and NDAs will appear here.</p>
                             </div>
                         ) : (
-                            <div className="text-center py-8">
-                                <div className="w-16 h-16 bg-[#151520] rounded-full flex items-center justify-center mx-auto mb-4 border border-[#2a2a3e]">
-                                    <CreditCard className="w-8 h-8 text-gray-500" />
+                            agreements.map((agreement: any) => (
+                                <div key={agreement.id} className="bg-gray-900/50 border border-gray-800 rounded-xl p-6">
+                                    <div className="flex items-start justify-between mb-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center">
+                                                <FileText className="w-5 h-5 text-purple-400" />
+                                            </div>
+                                            <div>
+                                                <h3 className="text-white font-semibold capitalize">
+                                                    {agreement.automation_type?.replace(/-/g, ' ')} Agreement
+                                                </h3>
+                                                <p className="text-sm text-gray-500">
+                                                    {agreement.agreement_reference || `#${agreement.id.slice(0, 8)}`}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <span className={`px-2 py-1 text-xs rounded ${agreement.payment_status === 'paid'
+                                            ? 'bg-green-500/20 text-green-400'
+                                            : 'bg-yellow-500/20 text-yellow-400'
+                                            }`}>
+                                            {(agreement.payment_status || agreement.status || 'pending').toUpperCase()}
+                                        </span>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-4">
+                                        <div>
+                                            <p className="text-gray-500">Setup Cost</p>
+                                            <p className="text-white">{formatCurrency(agreement.upfront_cost_cents || 0)} {agreement.currency?.toUpperCase()}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-gray-500">Monthly</p>
+                                            <p className="text-white">{formatCurrency(agreement.monthly_cost_cents || 0)}/mo</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-gray-500">Date</p>
+                                            <p className="text-white">{formatDate(agreement.created_at)}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-gray-500">Currency</p>
+                                            <p className="text-white uppercase">{agreement.currency || 'USD'}</p>
+                                        </div>
+                                    </div>
+
+                                    {/* NDA Info */}
+                                    {agreement.nda_signed && (
+                                        <div className="bg-gray-800/50 rounded-lg p-4 flex items-center justify-between">
+                                            <div className="flex items-center gap-3">
+                                                <Shield className="w-5 h-5 text-green-400" />
+                                                <div>
+                                                    <p className="text-white text-sm font-medium">NDA Signed</p>
+                                                    <p className="text-gray-500 text-xs">
+                                                        By {agreement.nda_signature_name} on {formatDate(agreement.nda_signed_at)}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <button className="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-white text-sm rounded-lg flex items-center gap-2 transition">
+                                                <Eye className="w-4 h-4" />
+                                                View
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
-                                <h3 className="text-white font-bold mb-2">No Active Subscription</h3>
-                                <p className="text-gray-500 text-sm mb-4">
-                                    Contact us to set up your billing preferences.
+                            ))
+                        )}
+                    </div>
+                )}
+
+                {/* INVOICES TAB */}
+                {activeTab === 'invoices' && (
+                    <div>
+                        {billingHistory.length === 0 ? (
+                            <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-8 text-center">
+                                <FileText className="w-12 h-12 text-gray-600 mx-auto mb-4" />
+                                <p className="text-gray-400 mb-2">No invoices yet</p>
+                                <p className="text-sm text-gray-500">
+                                    Contact <a href="mailto:oasisaisolutions@gmail.com" className="text-cyan-400 hover:underline">oasisaisolutions@gmail.com</a> for invoice requests.
                                 </p>
-                                <Link
-                                    to="/portal/support"
-                                    className="inline-flex items-center gap-2 text-cyan-400 hover:text-cyan-300 font-medium"
-                                >
-                                    Contact Support →
-                                </Link>
+                            </div>
+                        ) : (
+                            <div className="space-y-3">
+                                {billingHistory.map(invoice => (
+                                    <div key={invoice.id} className="bg-gray-900/50 border border-gray-800 rounded-xl p-4 flex items-center justify-between">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-10 h-10 bg-cyan-500/20 rounded-lg flex items-center justify-center">
+                                                <FileText className="w-5 h-5 text-cyan-400" />
+                                            </div>
+                                            <div>
+                                                <p className="text-white font-medium">{invoice.description}</p>
+                                                <p className="text-sm text-gray-500">{formatDate(invoice.invoice_date)}</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-4">
+                                            <div className="text-right">
+                                                <p className="text-white font-bold">{formatCurrency(invoice.amount_cents)}</p>
+                                                <span className={`text-xs px-2 py-0.5 rounded ${invoice.status === 'paid' ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'
+                                                    }`}>
+                                                    {invoice.status?.toUpperCase()}
+                                                </span>
+                                            </div>
+                                            {invoice.invoice_pdf_url && (
+                                                <a
+                                                    href={invoice.invoice_pdf_url}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="p-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition"
+                                                >
+                                                    <Download className="w-4 h-4 text-gray-400" />
+                                                </a>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
                         )}
                     </div>
+                )}
 
-                    {/* Quick Actions */}
-                    <div className="bg-[#0a0a0f] border border-[#1a1a2e] p-6 rounded-2xl">
-                        <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                            <Shield className="w-5 h-5 text-purple-500" />
-                            Quick Actions
-                        </h2>
+                {/* OVERVIEW TAB - Original content */}
+                {activeTab === 'overview' && (
+                    <>
+                        <div className="grid lg:grid-cols-2 gap-8">
+                            {/* Current Plan */}
+                            <div className="bg-[#0a0a0f] border border-[#1a1a2e] p-6 rounded-2xl">
+                                <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                                    <DollarSign className="w-5 h-5 text-cyan-500" />
+                                    Current Plan
+                                </h2>
 
-                        <div className="space-y-3">
-                            {isCustomAgreement ? (
-                                // Custom Agreement Actions
-                                <>
-                                    <a
-                                        href="mailto:oasisaisolutions@gmail.com?subject=Billing%20Inquiry"
-                                        className="w-full flex items-center justify-between p-4 bg-[#151520] hover:bg-[#1a1a2e] rounded-xl border border-[#2a2a3e] transition group"
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 bg-blue-500/10 rounded-lg flex items-center justify-center">
-                                                <Mail className="w-5 h-5 text-blue-400" />
+                                {subscription ? (
+                                    <div className="space-y-4">
+                                        <div className="flex items-center justify-between p-4 bg-[#151520] rounded-xl border border-[#2a2a3e]">
+                                            <div>
+                                                <h3 className="text-white font-bold text-lg">{displayName}</h3>
+                                                <div className="flex items-center gap-2 mt-1">
+                                                    {isCustomAgreement && (
+                                                        <span className="text-xs bg-purple-500/20 text-purple-400 px-2 py-0.5 rounded-full border border-purple-500/30">
+                                                            Custom Agreement
+                                                        </span>
+                                                    )}
+                                                    <p className="text-gray-400 text-sm capitalize">{subscription.tier || 'Professional'} Tier</p>
+                                                </div>
                                             </div>
-                                            <div className="text-left">
-                                                <p className="text-white font-medium">Request Invoice</p>
-                                                <p className="text-gray-500 text-sm">Get a copy of your latest invoice</p>
+                                            <div className="text-right">
+                                                <p className="text-2xl font-bold text-cyan-400">
+                                                    {formatCurrency(displayPrice)}
+                                                </p>
+                                                <p className="text-gray-500 text-sm">/{subscription.billing_interval || 'month'}</p>
                                             </div>
                                         </div>
-                                        <ExternalLink className="w-4 h-4 text-gray-500 group-hover:text-cyan-400" />
-                                    </a>
 
-                                    <a
-                                        href="mailto:oasisaisolutions@gmail.com?subject=Update%20Payment%20Method"
-                                        className="w-full flex items-center justify-between p-4 bg-[#151520] hover:bg-[#1a1a2e] rounded-xl border border-[#2a2a3e] transition group"
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 bg-green-500/10 rounded-lg flex items-center justify-center">
-                                                <CreditCard className="w-5 h-5 text-green-400" />
-                                            </div>
-                                            <div className="text-left">
-                                                <p className="text-white font-medium">Update Payment Method</p>
-                                                <p className="text-gray-500 text-sm">Change how you pay</p>
-                                            </div>
-                                        </div>
-                                        <ExternalLink className="w-4 h-4 text-gray-500 group-hover:text-cyan-400" />
-                                    </a>
-
-                                    <Link
-                                        to="/portal/support"
-                                        className="w-full flex items-center justify-between p-4 bg-[#151520] hover:bg-[#1a1a2e] rounded-xl border border-[#2a2a3e] transition group"
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 bg-purple-500/10 rounded-lg flex items-center justify-center">
-                                                <MessageCircle className="w-5 h-5 text-purple-400" />
-                                            </div>
-                                            <div className="text-left">
-                                                <p className="text-white font-medium">Billing Support</p>
-                                                <p className="text-gray-500 text-sm">Questions about your agreement</p>
-                                            </div>
-                                        </div>
-                                        <ExternalLink className="w-4 h-4 text-gray-500 group-hover:text-cyan-400" />
-                                    </Link>
-                                </>
-                            ) : subscription?.stripe_customer_id && (
-                                // Standard Stripe Actions
-                                <>
-                                    <button
-                                        onClick={openStripePortal}
-                                        disabled={portalLoading}
-                                        className="w-full flex items-center justify-between p-4 bg-[#151520] hover:bg-[#1a1a2e] rounded-xl border border-[#2a2a3e] transition group"
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 bg-blue-500/10 rounded-lg flex items-center justify-center">
-                                                <CreditCard className="w-5 h-5 text-blue-400" />
-                                            </div>
-                                            <div className="text-left">
-                                                <p className="text-white font-medium">Update Payment Method</p>
-                                                <p className="text-gray-500 text-sm">Change your card or payment details</p>
-                                            </div>
-                                        </div>
-                                        <ExternalLink className="w-4 h-4 text-gray-500 group-hover:text-cyan-400" />
-                                    </button>
-
-                                    <button
-                                        onClick={openStripePortal}
-                                        disabled={portalLoading}
-                                        className="w-full flex items-center justify-between p-4 bg-[#151520] hover:bg-[#1a1a2e] rounded-xl border border-[#2a2a3e] transition group"
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 bg-green-500/10 rounded-lg flex items-center justify-center">
-                                                <FileText className="w-5 h-5 text-green-400" />
-                                            </div>
-                                            <div className="text-left">
-                                                <p className="text-white font-medium">View All Invoices</p>
-                                                <p className="text-gray-500 text-sm">Download receipts and invoices</p>
-                                            </div>
-                                        </div>
-                                        <ExternalLink className="w-4 h-4 text-gray-500 group-hover:text-cyan-400" />
-                                    </button>
-                                </>
-                            )}
-
-                            <div className="border-t border-[#1a1a2e] pt-4 mt-4">
-                                <div className="flex items-center gap-2 mb-3 text-sm">
-                                    <div className="w-6 h-6 rounded bg-gradient-to-r from-[#635BFF] to-[#7A73FF] flex items-center justify-center">
-                                        <span className="text-white text-[10px] font-bold">S</span>
-                                    </div>
-                                    <span className="text-gray-400">Secure payments by <span className="text-white font-medium">Stripe</span></span>
-                                </div>
-                                <p className="text-gray-500 text-sm">
-                                    Your payment information is encrypted and secure. We never store your card details.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Billing History */}
-                <div className="mt-8 bg-[#0a0a0f] border border-[#1a1a2e] p-6 rounded-2xl">
-                    <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                        <FileText className="w-5 h-5 text-green-500" />
-                        Recent Invoices
-                    </h2>
-
-                    {billingHistory.length === 0 ? (
-                        <div className="text-center py-8">
-                            <div className="w-12 h-12 bg-[#151520] rounded-full flex items-center justify-center mx-auto mb-3 border border-[#2a2a3e]">
-                                <FileText className="w-6 h-6 text-gray-500" />
-                            </div>
-                            <p className="text-gray-500 text-sm">
-                                {isCustomAgreement
-                                    ? "Contact us to receive invoice copies via email."
-                                    : "No billing history available yet. Invoices will appear here after your first payment."
-                                }
-                            </p>
-                            {isCustomAgreement && (
-                                <a
-                                    href="mailto:oasisaisolutions@gmail.com?subject=Invoice%20Request"
-                                    className="inline-flex items-center gap-2 text-cyan-400 hover:text-cyan-300 text-sm mt-3"
-                                >
-                                    <Mail className="w-4 h-4" />
-                                    Request Invoice →
-                                </a>
-                            )}
-                        </div>
-                    ) : (
-                        <div className="space-y-3">
-                            {billingHistory.slice(0, 5).map((item) => (
-                                <div
-                                    key={item.id}
-                                    className="flex items-center justify-between p-4 bg-[#151520] rounded-xl border border-[#2a2a3e] hover:border-[#3a3a4e] transition"
-                                >
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-10 h-10 bg-[#1a1a2e] rounded-lg flex items-center justify-center">
-                                            <FileText className="w-5 h-5 text-gray-400" />
-                                        </div>
-                                        <div>
-                                            <p className="text-white font-medium">{item.description}</p>
-                                            <p className="text-gray-500 text-sm">{formatDate(item.invoice_date)}</p>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-4">
-                                        <div className="text-right">
-                                            <p className="text-white font-medium">{formatCurrency(item.amount_paid_cents || item.amount_cents)}</p>
-                                            <span className={`text-xs px-2 py-0.5 rounded border ${getStatusBadge(item.status)}`}>
-                                                {item.status}
+                                        <div className="flex items-center gap-2">
+                                            <span className={`text-sm px-3 py-1 rounded-full border ${getStatusBadge(subscription.status)}`}>
+                                                {subscription.status === 'active' && <CheckCircle className="w-3 h-3 inline mr-1" />}
+                                                {subscription.status.replace('_', ' ').toUpperCase()}
                                             </span>
-                                        </div>
-                                        <div className="flex gap-2">
-                                            {item.invoice_pdf_url && (
-                                                <a
-                                                    href={item.invoice_pdf_url}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="p-2 text-gray-400 hover:text-cyan-400 hover:bg-cyan-500/10 rounded-lg transition"
-                                                    title="Download PDF"
-                                                >
-                                                    <Download className="w-4 h-4" />
-                                                </a>
+                                            {subscription.cancel_at_period_end && (
+                                                <span className="text-yellow-400 text-sm">Cancels at period end</span>
                                             )}
-                                            {item.hosted_invoice_url && (
-                                                <a
-                                                    href={item.hosted_invoice_url}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="p-2 text-gray-400 hover:text-cyan-400 hover:bg-cyan-500/10 rounded-lg transition"
-                                                    title="View Invoice"
+                                        </div>
+
+                                        {subscription.current_period_end && (
+                                            <p className="text-gray-500 text-sm flex items-center gap-2">
+                                                <Calendar className="w-4 h-4" />
+                                                Next billing: {formatDate(subscription.current_period_end)}
+                                            </p>
+                                        )}
+
+                                        {/* What's Included - for custom agreements */}
+                                        {isCustomAgreement && subscription.agreement_details?.includes && (
+                                            <div className="mt-4 pt-4 border-t border-[#1a1a2e]">
+                                                <h4 className="text-sm font-medium text-gray-300 mb-2 flex items-center gap-2">
+                                                    <Package className="w-4 h-4" />
+                                                    What's Included:
+                                                </h4>
+                                                <ul className="space-y-1">
+                                                    {subscription.agreement_details.includes.map((item: string, index: number) => (
+                                                        <li key={index} className="flex items-center gap-2 text-gray-400 text-sm">
+                                                            <CheckCircle className="w-4 h-4 text-green-400" />
+                                                            {item.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+                                        )}
+
+                                        {subscription.status === 'past_due' && (
+                                            <div className="p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+                                                <p className="text-yellow-400 text-sm">
+                                                    ⚠️ Your payment is past due. Please update your payment method.
+                                                </p>
+                                            </div>
+                                        )}
+
+                                        {/* Action Buttons */}
+                                        <div className="flex flex-wrap gap-3 pt-4 border-t border-[#1a1a2e]">
+                                            {isCustomAgreement ? (
+                                                // Custom Agreement - Contact Support
+                                                <div className="w-full">
+                                                    <p className="text-gray-400 text-sm mb-3">
+                                                        You have a custom agreement. To make changes, please contact us:
+                                                    </p>
+                                                    <div className="flex flex-wrap gap-3">
+                                                        <a
+                                                            href="mailto:oasisaisolutions@gmail.com"
+                                                            className="flex items-center gap-2 px-4 py-2 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 rounded-lg transition border border-cyan-500/30"
+                                                        >
+                                                            <Mail className="w-4 h-4" />
+                                                            Email Support
+                                                        </a>
+                                                        <a
+                                                            href="tel:+12403325062"
+                                                            className="flex items-center gap-2 px-4 py-2 bg-[#1a1a2e] hover:bg-[#2a2a3e] text-white rounded-lg transition border border-[#2a2a3e]"
+                                                        >
+                                                            <Phone className="w-4 h-4" />
+                                                            +1 (240) 332-5062
+                                                        </a>
+                                                        <Link
+                                                            to="/portal/support"
+                                                            className="flex items-center gap-2 px-4 py-2 bg-[#1a1a2e] hover:bg-[#2a2a3e] text-white rounded-lg transition border border-[#2a2a3e]"
+                                                        >
+                                                            <MessageCircle className="w-4 h-4" />
+                                                            Open Ticket
+                                                        </Link>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                // Standard Stripe Subscription
+                                                <button
+                                                    onClick={openStripePortal}
+                                                    disabled={portalLoading}
+                                                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-500 to-cyan-400 hover:from-cyan-400 hover:to-cyan-300 text-black font-semibold rounded-lg transition disabled:opacity-50"
                                                 >
-                                                    <ExternalLink className="w-4 h-4" />
-                                                </a>
+                                                    {portalLoading ? (
+                                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                                    ) : (
+                                                        <Settings className="w-4 h-4" />
+                                                    )}
+                                                    Manage Subscription
+                                                </button>
                                             )}
                                         </div>
                                     </div>
+                                ) : (
+                                    <div className="text-center py-8">
+                                        <div className="w-16 h-16 bg-[#151520] rounded-full flex items-center justify-center mx-auto mb-4 border border-[#2a2a3e]">
+                                            <CreditCard className="w-8 h-8 text-gray-500" />
+                                        </div>
+                                        <h3 className="text-white font-bold mb-2">No Active Subscription</h3>
+                                        <p className="text-gray-500 text-sm mb-4">
+                                            Contact us to set up your billing preferences.
+                                        </p>
+                                        <Link
+                                            to="/portal/support"
+                                            className="inline-flex items-center gap-2 text-cyan-400 hover:text-cyan-300 font-medium"
+                                        >
+                                            Contact Support →
+                                        </Link>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Quick Actions */}
+                            <div className="bg-[#0a0a0f] border border-[#1a1a2e] p-6 rounded-2xl">
+                                <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                                    <Shield className="w-5 h-5 text-purple-500" />
+                                    Quick Actions
+                                </h2>
+
+                                <div className="space-y-3">
+                                    {isCustomAgreement ? (
+                                        // Custom Agreement Actions
+                                        <>
+                                            <a
+                                                href="mailto:oasisaisolutions@gmail.com?subject=Billing%20Inquiry"
+                                                className="w-full flex items-center justify-between p-4 bg-[#151520] hover:bg-[#1a1a2e] rounded-xl border border-[#2a2a3e] transition group"
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-10 h-10 bg-blue-500/10 rounded-lg flex items-center justify-center">
+                                                        <Mail className="w-5 h-5 text-blue-400" />
+                                                    </div>
+                                                    <div className="text-left">
+                                                        <p className="text-white font-medium">Request Invoice</p>
+                                                        <p className="text-gray-500 text-sm">Get a copy of your latest invoice</p>
+                                                    </div>
+                                                </div>
+                                                <ExternalLink className="w-4 h-4 text-gray-500 group-hover:text-cyan-400" />
+                                            </a>
+
+                                            <a
+                                                href="mailto:oasisaisolutions@gmail.com?subject=Update%20Payment%20Method"
+                                                className="w-full flex items-center justify-between p-4 bg-[#151520] hover:bg-[#1a1a2e] rounded-xl border border-[#2a2a3e] transition group"
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-10 h-10 bg-green-500/10 rounded-lg flex items-center justify-center">
+                                                        <CreditCard className="w-5 h-5 text-green-400" />
+                                                    </div>
+                                                    <div className="text-left">
+                                                        <p className="text-white font-medium">Update Payment Method</p>
+                                                        <p className="text-gray-500 text-sm">Change how you pay</p>
+                                                    </div>
+                                                </div>
+                                                <ExternalLink className="w-4 h-4 text-gray-500 group-hover:text-cyan-400" />
+                                            </a>
+
+                                            <Link
+                                                to="/portal/support"
+                                                className="w-full flex items-center justify-between p-4 bg-[#151520] hover:bg-[#1a1a2e] rounded-xl border border-[#2a2a3e] transition group"
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-10 h-10 bg-purple-500/10 rounded-lg flex items-center justify-center">
+                                                        <MessageCircle className="w-5 h-5 text-purple-400" />
+                                                    </div>
+                                                    <div className="text-left">
+                                                        <p className="text-white font-medium">Billing Support</p>
+                                                        <p className="text-gray-500 text-sm">Questions about your agreement</p>
+                                                    </div>
+                                                </div>
+                                                <ExternalLink className="w-4 h-4 text-gray-500 group-hover:text-cyan-400" />
+                                            </Link>
+                                        </>
+                                    ) : subscription?.stripe_customer_id && (
+                                        // Standard Stripe Actions
+                                        <>
+                                            <button
+                                                onClick={openStripePortal}
+                                                disabled={portalLoading}
+                                                className="w-full flex items-center justify-between p-4 bg-[#151520] hover:bg-[#1a1a2e] rounded-xl border border-[#2a2a3e] transition group"
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-10 h-10 bg-blue-500/10 rounded-lg flex items-center justify-center">
+                                                        <CreditCard className="w-5 h-5 text-blue-400" />
+                                                    </div>
+                                                    <div className="text-left">
+                                                        <p className="text-white font-medium">Update Payment Method</p>
+                                                        <p className="text-gray-500 text-sm">Change your card or payment details</p>
+                                                    </div>
+                                                </div>
+                                                <ExternalLink className="w-4 h-4 text-gray-500 group-hover:text-cyan-400" />
+                                            </button>
+
+                                            <button
+                                                onClick={openStripePortal}
+                                                disabled={portalLoading}
+                                                className="w-full flex items-center justify-between p-4 bg-[#151520] hover:bg-[#1a1a2e] rounded-xl border border-[#2a2a3e] transition group"
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-10 h-10 bg-green-500/10 rounded-lg flex items-center justify-center">
+                                                        <FileText className="w-5 h-5 text-green-400" />
+                                                    </div>
+                                                    <div className="text-left">
+                                                        <p className="text-white font-medium">View All Invoices</p>
+                                                        <p className="text-gray-500 text-sm">Download receipts and invoices</p>
+                                                    </div>
+                                                </div>
+                                                <ExternalLink className="w-4 h-4 text-gray-500 group-hover:text-cyan-400" />
+                                            </button>
+                                        </>
+                                    )}
+
+                                    <div className="border-t border-[#1a1a2e] pt-4 mt-4">
+                                        <div className="flex items-center gap-2 mb-3 text-sm">
+                                            <div className="w-6 h-6 rounded bg-gradient-to-r from-[#635BFF] to-[#7A73FF] flex items-center justify-center">
+                                                <span className="text-white text-[10px] font-bold">S</span>
+                                            </div>
+                                            <span className="text-gray-400">Secure payments by <span className="text-white font-medium">Stripe</span></span>
+                                        </div>
+                                        <p className="text-gray-500 text-sm">
+                                            Your payment information is encrypted and secure. We never store your card details.
+                                        </p>
+                                    </div>
                                 </div>
-                            ))}
+                            </div>
                         </div>
-                    )}
-                </div>
+
+                        {/* Billing History */}
+                        <div className="mt-8 bg-[#0a0a0f] border border-[#1a1a2e] p-6 rounded-2xl">
+                            <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                                <FileText className="w-5 h-5 text-green-500" />
+                                Recent Invoices
+                            </h2>
+
+                            {billingHistory.length === 0 ? (
+                                <div className="text-center py-8">
+                                    <div className="w-12 h-12 bg-[#151520] rounded-full flex items-center justify-center mx-auto mb-3 border border-[#2a2a3e]">
+                                        <FileText className="w-6 h-6 text-gray-500" />
+                                    </div>
+                                    <p className="text-gray-500 text-sm">
+                                        {isCustomAgreement
+                                            ? "Contact us to receive invoice copies via email."
+                                            : "No billing history available yet. Invoices will appear here after your first payment."
+                                        }
+                                    </p>
+                                    {isCustomAgreement && (
+                                        <a
+                                            href="mailto:oasisaisolutions@gmail.com?subject=Invoice%20Request"
+                                            className="inline-flex items-center gap-2 text-cyan-400 hover:text-cyan-300 text-sm mt-3"
+                                        >
+                                            <Mail className="w-4 h-4" />
+                                            Request Invoice →
+                                        </a>
+                                    )}
+                                </div>
+                            ) : (
+                                <div className="space-y-3">
+                                    {billingHistory.slice(0, 5).map((item) => (
+                                        <div
+                                            key={item.id}
+                                            className="flex items-center justify-between p-4 bg-[#151520] rounded-xl border border-[#2a2a3e] hover:border-[#3a3a4e] transition"
+                                        >
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-10 h-10 bg-[#1a1a2e] rounded-lg flex items-center justify-center">
+                                                    <FileText className="w-5 h-5 text-gray-400" />
+                                                </div>
+                                                <div>
+                                                    <p className="text-white font-medium">{item.description}</p>
+                                                    <p className="text-gray-500 text-sm">{formatDate(item.invoice_date)}</p>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-4">
+                                                <div className="text-right">
+                                                    <p className="text-white font-medium">{formatCurrency(item.amount_paid_cents || item.amount_cents)}</p>
+                                                    <span className={`text-xs px-2 py-0.5 rounded border ${getStatusBadge(item.status)}`}>
+                                                        {item.status}
+                                                    </span>
+                                                </div>
+                                                <div className="flex gap-2">
+                                                    {item.invoice_pdf_url && (
+                                                        <a
+                                                            href={item.invoice_pdf_url}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="p-2 text-gray-400 hover:text-cyan-400 hover:bg-cyan-500/10 rounded-lg transition"
+                                                            title="Download PDF"
+                                                        >
+                                                            <Download className="w-4 h-4" />
+                                                        </a>
+                                                    )}
+                                                    {item.hosted_invoice_url && (
+                                                        <a
+                                                            href={item.hosted_invoice_url}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="p-2 text-gray-400 hover:text-cyan-400 hover:bg-cyan-500/10 rounded-lg transition"
+                                                            title="View Invoice"
+                                                        >
+                                                            <ExternalLink className="w-4 h-4" />
+                                                        </a>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </>
+                )}
 
                 {/* Support Section */}
                 <div className="mt-8 bg-gradient-to-r from-cyan-500/5 to-purple-500/5 border border-cyan-500/20 p-6 rounded-2xl">
