@@ -139,8 +139,8 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
     return (
         <DashboardThemeProvider>
             <div id="dashboard-root" className={`min-h-screen bg-[var(--bg-main)] flex selection:bg-cyan-500/20 text-[var(--text-primary)] font-sans relative overflow-x-hidden max-w-full transition-colors duration-300 ${theme}`}>
-                {/* Real StarField background - only visible in dark mode */}
-                {theme === 'dark' && <StarField />}
+                {/* StarField background - theme-aware (white stars in dark mode, colored in light mode) */}
+                <StarField />
 
                 {/* Sidebar (Desktop) */}
                 <aside className="w-72 bg-[var(--bg-primary)] border-r border-[var(--bg-tertiary)] p-6 flex flex-col hidden lg:flex shadow-2xl z-20 fixed top-0 left-0 h-screen transition-colors duration-300">

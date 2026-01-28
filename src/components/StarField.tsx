@@ -26,6 +26,8 @@ export default function StarField({ paused = false, forceTheme }: StarFieldProps
             opacity: number;
             twinkleSpeed: number;
             phase: number;
+            color: { r: number; g: number; b: number };
+            type: 'normal' | 'accent';
         }
 
         let stars: Star[] = [];
@@ -36,8 +38,25 @@ export default function StarField({ paused = false, forceTheme }: StarFieldProps
 
         // Theme-aware colors
         const isLightMode = effectiveTheme === 'light';
-        const bgColor = isLightMode ? '#FFFFFF' : '#050508';
-        const starColor = isLightMode ? { r: 30, g: 30, b: 40 } : { r: 255, g: 255, b: 255 };
+        const bgColor = isLightMode ? '#F8FAFC' : '#050508';
+
+        // Star color palettes
+        const darkModeColors = [
+            { r: 255, g: 255, b: 255 },  // White (primary)
+            { r: 100, g: 200, b: 255 },  // Cyan/Blue
+            { r: 168, g: 85, b: 247 },   // Purple
+            { r: 6, g: 182, b: 212 },    // Teal/Cyan
+        ];
+
+        const lightModeColors = [
+            { r: 30, g: 40, b: 60 },     // Dark blue-gray (primary)
+            { r: 59, g: 130, b: 246 },   // Blue
+            { r: 139, g: 92, b: 246 },   // Purple
+            { r: 14, g: 165, b: 233 },   // Sky blue
+            { r: 79, g: 70, b: 229 },    // Indigo
+        ];
+
+        const colorPalette = isLightMode ? lightModeColors : darkModeColors;
 
         // Update canvas background
         canvas.style.background = bgColor;
@@ -51,35 +70,62 @@ export default function StarField({ paused = false, forceTheme }: StarFieldProps
 
         function generateStars() {
             stars = [];
-            // Dense star field - approximately 150-200 stars
-            const count = Math.max(150, Math.floor((currentCanvas.width * currentCanvas.height) / 6000));
+            // Dense star field - approximately 180-250 stars
+            const count = Math.max(180, Math.floor((currentCanvas.width * currentCanvas.height) / 5000));
 
             for (let i = 0; i < count; i++) {
+                // 60% normal stars, 40% accent colored stars
+                const isAccent = Math.random() < 0.4;
+                const colorIndex = isAccent
+                    ? Math.floor(Math.random() * (colorPalette.length - 1)) + 1
+                    : 0;
+
                 stars.push({
                     x: Math.random() * currentCanvas.width,
                     y: Math.random() * currentCanvas.height,
-                    size: Math.random() * 2 + 0.5,
-                    opacity: Math.random() * 0.7 + 0.3,
-                    twinkleSpeed: Math.random() * 0.02 + 0.01,
-                    phase: Math.random() * Math.PI * 2
+                    size: Math.random() * 2.5 + 0.5,
+                    opacity: Math.random() * 0.8 + 0.2,
+                    twinkleSpeed: Math.random() * 0.03 + 0.008,
+                    phase: Math.random() * Math.PI * 2,
+                    color: colorPalette[colorIndex],
+                    type: isAccent ? 'accent' : 'normal'
                 });
             }
         }
 
         function draw() {
-            if (paused) return; // Stop if paused
+            if (paused) return;
 
             ctx!.clearRect(0, 0, canvas!.width, canvas!.height);
 
             stars.forEach(star => {
-                // Twinkle effect
+                // Enhanced twinkle effect with fade in/out
                 const twinkle = Math.sin(time * star.twinkleSpeed + star.phase);
-                const currentOpacity = star.opacity * (0.5 + twinkle * 0.5);
 
-                // Draw star with theme-aware color
+                // Accent stars have more dramatic fading
+                const fadeMultiplier = star.type === 'accent' ? 0.6 : 0.4;
+                const currentOpacity = star.opacity * (0.5 + twinkle * fadeMultiplier);
+
+                // Draw star with glow effect for accent stars
+                if (star.type === 'accent' && currentOpacity > 0.4) {
+                    // Subtle glow
+                    const gradient = ctx!.createRadialGradient(
+                        star.x, star.y, 0,
+                        star.x, star.y, star.size * 3
+                    );
+                    gradient.addColorStop(0, `rgba(${star.color.r}, ${star.color.g}, ${star.color.b}, ${currentOpacity * 0.4})`);
+                    gradient.addColorStop(1, `rgba(${star.color.r}, ${star.color.g}, ${star.color.b}, 0)`);
+
+                    ctx!.beginPath();
+                    ctx!.arc(star.x, star.y, star.size * 3, 0, Math.PI * 2);
+                    ctx!.fillStyle = gradient;
+                    ctx!.fill();
+                }
+
+                // Draw the star core
                 ctx!.beginPath();
                 ctx!.arc(star.x, star.y, star.size, 0, Math.PI * 2);
-                ctx!.fillStyle = `rgba(${starColor.r}, ${starColor.g}, ${starColor.b}, ${currentOpacity})`;
+                ctx!.fillStyle = `rgba(${star.color.r}, ${star.color.g}, ${star.color.b}, ${currentOpacity})`;
                 ctx!.fill();
             });
 
@@ -98,10 +144,10 @@ export default function StarField({ paused = false, forceTheme }: StarFieldProps
             window.removeEventListener('resize', resize);
             cancelAnimationFrame(animationId);
         };
-    }, [paused, effectiveTheme]); // Re-run effect when paused or theme changes
+    }, [paused, effectiveTheme]);
 
     // Theme-aware background color
-    const bgColor = effectiveTheme === 'light' ? '#FFFFFF' : '#050508';
+    const bgColor = effectiveTheme === 'light' ? '#F8FAFC' : '#050508';
 
     return (
         <canvas
