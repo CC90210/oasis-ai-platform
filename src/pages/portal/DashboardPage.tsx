@@ -162,15 +162,15 @@ export default function DashboardPage() {
                 {/* Header */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4">
                     <div>
-                        <div className="flex items-center gap-3 mb-2">
-                            <h1 className="text-3xl md:text-4xl font-bold text-[var(--text-primary)]">
+                        <div className="flex flex-wrap items-center gap-3 mb-2">
+                            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[var(--text-primary)]">
                                 {getGreeting()}, {profile?.full_name?.split(' ')[0] || 'Client'}
                             </h1>
-                            {/* Owner Badge */}
+                            {/* Owner Badge - NEVER truncate */}
                             {profile?.is_owner && (
-                                <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-500/30 rounded-full">
-                                    <Crown className="w-4 h-4 text-yellow-500" />
-                                    <span className="text-yellow-500 text-sm font-bold">Owner</span>
+                                <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-500/30 rounded-full whitespace-nowrap flex-shrink-0" style={{ minWidth: 'fit-content' }}>
+                                    <Crown className="w-4 h-4 text-yellow-500 flex-shrink-0" />
+                                    <span className="text-yellow-500 text-sm font-bold whitespace-nowrap">Owner</span>
                                 </span>
                             )}
                             {profile?.is_admin && !profile?.is_owner && (

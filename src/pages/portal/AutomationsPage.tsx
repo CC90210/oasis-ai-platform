@@ -438,8 +438,8 @@ export default function AutomationsPage() {
                                     <div className="grid grid-cols-3 gap-3 sm:gap-4">
                                         <div className="bg-gradient-to-br from-green-500/10 to-green-500/5 border border-green-500/20 p-3 sm:p-4 rounded-xl">
                                             <div className="flex items-center gap-2 mb-2">
-                                                <TrendingUp className="w-4 h-4 text-green-400" />
-                                                <p className="text-[10px] sm:text-xs text-green-400 uppercase tracking-wider">Successful</p>
+                                                <TrendingUp className="w-4 h-4 text-green-400 flex-shrink-0" />
+                                                <p className="text-[10px] sm:text-xs text-green-400 font-medium whitespace-nowrap">Success</p>
                                             </div>
                                             <p className="text-[var(--text-primary)] text-lg sm:text-xl font-bold">
                                                 {automationMetrics?.successfulRuns || 0}
@@ -447,8 +447,8 @@ export default function AutomationsPage() {
                                         </div>
                                         <div className="bg-gradient-to-br from-orange-500/10 to-orange-500/5 border border-orange-500/20 p-3 sm:p-4 rounded-xl">
                                             <div className="flex items-center gap-2 mb-2">
-                                                <Activity className="w-4 h-4 text-orange-400" />
-                                                <p className="text-[10px] sm:text-xs text-orange-400 uppercase tracking-wider">This Week</p>
+                                                <Activity className="w-4 h-4 text-orange-400 flex-shrink-0" />
+                                                <p className="text-[10px] sm:text-xs text-orange-400 font-medium whitespace-nowrap">This Week</p>
                                             </div>
                                             <p className="text-[var(--text-primary)] text-lg sm:text-xl font-bold">
                                                 {automationMetrics?.runsThisWeek || 0}
@@ -456,8 +456,8 @@ export default function AutomationsPage() {
                                         </div>
                                         <div className="bg-gradient-to-br from-red-500/10 to-red-500/5 border border-red-500/20 p-3 sm:p-4 rounded-xl">
                                             <div className="flex items-center gap-2 mb-2">
-                                                <Sparkles className="w-4 h-4 text-red-400" />
-                                                <p className="text-[10px] sm:text-xs text-red-400 uppercase tracking-wider">Failed</p>
+                                                <Sparkles className="w-4 h-4 text-red-400 flex-shrink-0" />
+                                                <p className="text-[10px] sm:text-xs text-red-400 font-medium whitespace-nowrap">Failed</p>
                                             </div>
                                             <p className="text-[var(--text-primary)] text-lg sm:text-xl font-bold">
                                                 {automationMetrics?.failedRuns || 0}

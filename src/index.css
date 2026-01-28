@@ -773,3 +773,446 @@ body {
     font-size: 1.5rem !important;
   }
 }
+
+/* =============================================================================
+   CRITICAL UI/UX FIXES - PRODUCTION GRADE
+   ============================================================================= */
+
+/* =============================================================================
+   FIX #1: Dashboard Theme Isolation - NEVER affect main website
+   ============================================================================= */
+
+/* Dashboard-specific theme variables (scoped to #dashboard-root) */
+#dashboard-root.dark {
+  --bg-main: #050505;
+  --bg-primary: #0a0a0f;
+  --bg-secondary: #0f0f14;
+  --bg-tertiary: #151520;
+  --bg-card: rgba(15, 15, 20, 0.8);
+  --bg-card-strong: rgba(10, 10, 15, 0.95);
+  --border: rgba(255, 255, 255, 0.08);
+  --text-primary: #ffffff;
+  --text-secondary: #a0a0b0;
+  --text-muted: #6b6b7b;
+}
+
+#dashboard-root.light {
+  --bg-main: #f8fafc;
+  --bg-primary: #ffffff;
+  --bg-secondary: #f1f5f9;
+  --bg-tertiary: #e2e8f0;
+  --bg-card: rgba(255, 255, 255, 0.9);
+  --bg-card-strong: rgba(255, 255, 255, 0.98);
+  --border: rgba(0, 0, 0, 0.1);
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+}
+
+/* Main website ALWAYS stays dark (unaffected by dashboard theme) */
+body:not(:has(#dashboard-root)) {
+  --bg-main: #050505;
+  --bg-primary: #0a0a0f;
+  --bg-secondary: #0f0f14;
+  --bg-tertiary: #151520;
+  --bg-card: rgba(15, 15, 20, 0.8);
+  --bg-card-strong: rgba(10, 10, 15, 0.95);
+  --border: rgba(255, 255, 255, 0.08);
+  --text-primary: #ffffff;
+  --text-secondary: #a0a0b0;
+  --text-muted: #6b6b7b;
+}
+
+/* =============================================================================
+   FIX #2: Owner Badge - NEVER truncate
+   ============================================================================= */
+.owner-badge,
+[class*="owner-badge"],
+.user-badge,
+.role-badge {
+  white-space: nowrap !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  min-width: fit-content !important;
+  flex-shrink: 0 !important;
+}
+
+/* Container adjustments for badges */
+.header-user-section,
+.user-info-container,
+[class*="user-header"] {
+  min-width: 120px;
+  flex-shrink: 0;
+  overflow: visible;
+}
+
+/* =============================================================================
+   FIX #3: Floating Icons - Hide on Mobile
+   ============================================================================= */
+@media (max-width: 768px) {
+
+  .floating-icons,
+  .floating-particles,
+  .floating-element,
+  [class*="floating-"],
+  .decoration-particles,
+  .hero-decoration {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+  }
+}
+
+/* Desktop: Ensure visibility and proper z-index */
+@media (min-width: 769px) {
+
+  .floating-icons,
+  .floating-particles {
+    pointer-events: none;
+    z-index: 1;
+  }
+}
+
+/* =============================================================================
+   FIX #4: Mobile Menu - Clean, Spacious, Professional
+   ============================================================================= */
+.mobile-menu,
+.mobile-nav-drawer {
+  position: fixed !important;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  max-width: 320px;
+  background: var(--bg-primary, #0a0a0f) !important;
+  backdrop-filter: blur(20px);
+  z-index: 9999;
+  padding: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+}
+
+.mobile-menu-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+}
+
+.mobile-menu-items {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+}
+
+.mobile-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  margin-bottom: 0.5rem;
+  border-radius: 0.75rem;
+  color: var(--text-secondary, #a0a0b0);
+  transition: all 0.2s ease;
+  text-decoration: none;
+  min-height: 48px;
+}
+
+.mobile-menu-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary, #ffffff);
+}
+
+.mobile-menu-item.active {
+  background: rgba(6, 182, 212, 0.1);
+  color: #06b6d4;
+  border: 1px solid rgba(6, 182, 212, 0.2);
+}
+
+.mobile-menu-footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+}
+
+.mobile-menu-cta {
+  display: block;
+  width: 100%;
+  padding: 1rem;
+  background: linear-gradient(135deg, #06b6d4 0%, #22d3ee 100%);
+  color: #000000;
+  font-weight: 600;
+  text-align: center;
+  border-radius: 0.75rem;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.mobile-menu-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(6, 182, 212, 0.3);
+}
+
+/* =============================================================================
+   FIX #5: Text Truncation Prevention
+   ============================================================================= */
+.automation-title,
+.card-title,
+.agent-name,
+.metric-label,
+.stat-label {
+  word-break: break-word !important;
+  overflow-wrap: break-word !important;
+  hyphens: auto !important;
+  white-space: normal !important;
+}
+
+/* Proper truncation with ellipsis when needed */
+.truncate-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+/* Multi-line truncation */
+.truncate-multiline {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* =============================================================================
+   FIX #6: Dashboard Pages - Prevent Horizontal Scroll
+   ============================================================================= */
+#dashboard-root {
+  overflow-x: hidden !important;
+  width: 100% !important;
+  max-width: 100vw !important;
+}
+
+#dashboard-root * {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  #dashboard-root {
+    padding: 0 !important;
+  }
+
+  /* Stack stats cards on mobile */
+  .stats-grid {
+    grid-template-columns: 1fr !important;
+    gap: 0.75rem !important;
+  }
+
+  /* Full-width cards on mobile */
+  .dashboard-card,
+  .stat-card,
+  .metric-card,
+  .glass-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  /* Tables scroll horizontally */
+  .table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    max-width: 100%;
+  }
+}
+
+/* =============================================================================
+   FIX #7: Activity Log and Execution Details - Scrollable
+   ============================================================================= */
+.activity-log {
+  max-height: 600px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.execution-details {
+  max-height: 400px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Mobile: Execution Details Modal */
+@media (max-width: 768px) {
+  .execution-details-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: var(--bg-primary, #0a0a0f);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .execution-details-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    flex-shrink: 0;
+  }
+
+  .execution-details-modal-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* =============================================================================
+   ENHANCEMENT #1: Dashboard Cards - Glassmorphism
+   ============================================================================= */
+.dashboard-card,
+.stat-card,
+.metric-card {
+  background: rgba(15, 15, 20, 0.6);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.dashboard-card:hover,
+.stat-card:hover,
+.metric-card:hover {
+  border-color: rgba(6, 182, 212, 0.3);
+  box-shadow: 0 8px 32px rgba(6, 182, 212, 0.1);
+  transform: translateY(-2px);
+}
+
+/* Gradient text for metrics */
+.metric-value,
+.stat-value {
+  background: linear-gradient(135deg, #ffffff 0%, #06b6d4 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* =============================================================================
+   ENHANCEMENT #2: Status Badges - Professional Polish
+   ============================================================================= */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.status-badge.active,
+.status-badge.success {
+  background: rgba(34, 197, 94, 0.15);
+  color: #22c55e;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.status-badge.pending {
+  background: rgba(234, 179, 8, 0.15);
+  color: #eab308;
+  border: 1px solid rgba(234, 179, 8, 0.3);
+}
+
+.status-badge.error,
+.status-badge.failed {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+/* Active status pulse animation */
+.status-badge.active::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #22c55e;
+  animation: pulse-glow 2s infinite;
+}
+
+@keyframes pulse-glow {
+
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4);
+  }
+
+  50% {
+    box-shadow: 0 0 0 8px rgba(34, 197, 94, 0);
+  }
+}
+
+/* =============================================================================
+   MOBILE-FIRST RESPONSIVE FOUNDATION
+   ============================================================================= */
+:root {
+  --mobile-padding: 1rem;
+  --mobile-gap: 0.75rem;
+  --mobile-font-sm: 0.875rem;
+  --mobile-font-base: 1rem;
+  --mobile-border-radius: 0.75rem;
+}
+
+@media (max-width: 768px) {
+
+  /* Typography adjustments */
+  h1 {
+    font-size: 1.75rem !important;
+    line-height: 1.2;
+  }
+
+  h2 {
+    font-size: 1.5rem !important;
+    line-height: 1.25;
+  }
+
+  h3 {
+    font-size: 1.25rem !important;
+    line-height: 1.3;
+  }
+
+  /* Touch targets - minimum 44px */
+  button,
+  a {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Hide decorative elements on mobile */
+  .decorative-only,
+  [aria-hidden="true"].decoration {
+    display: none !important;
+  }
+
+  /* Ensure no overflow */
+  body,
+  html {
+    overflow-x: hidden !important;
+    max-width: 100vw !important;
+  }
+}
