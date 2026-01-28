@@ -237,7 +237,7 @@ This agreement was digitally signed and is legally binding.
 
 OASIS AI Solutions
 Email: oasisaisolutions@gmail.com
-Phone: 705-440-3117
+Phone: +1 (240) 332-5062
 Website: https://oasisai.work
   `.trim();
 }

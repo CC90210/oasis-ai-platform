@@ -425,11 +425,11 @@ export default function BillingPage() {
                                     oasisaisolutions@gmail.com
                                 </a>
                                 <a
-                                    href="tel:+17054403117"
+                                    href="tel:+12403325062"
                                     className="inline-flex items-center gap-2 text-cyan-400 hover:text-cyan-300"
                                 >
                                     <Phone className="w-4 h-4" />
-                                    705-440-3117
+                                    +1 (240) 332-5062
                                 </a>
                             </div>
                         )}
@@ -924,11 +924,11 @@ export default function BillingPage() {
                             Contact Support
                         </a>
                         <a
-                            href="tel:+17054403117"
+                            href="tel:+12403325062"
                             className="inline-flex items-center gap-2 px-4 py-2 bg-[#1a1a2e] text-white rounded-lg hover:bg-[#2a2a3e] transition border border-[#2a2a3e]"
                         >
                             <Phone className="w-4 h-4" />
-                            705-440-3117
+                            +1 (240) 332-5062
                         </a>
                     </div>
                 </div>
