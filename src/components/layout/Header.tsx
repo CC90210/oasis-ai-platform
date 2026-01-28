@@ -61,24 +61,24 @@ export const Header = () => {
             {/* Header Bar */}
             <header
                 className={`fixed top-0 left-0 right-0 transition-all duration-300 ${isScrolled || isMobileMenuOpen
-                    ? 'bg-[#050508]/95 backdrop-blur-xl border-b border-white/10 pt-10 pb-3 sm:pt-3 sm:pb-3 lg:py-4'
-                    : 'bg-transparent pt-12 pb-4 sm:pt-4 sm:pb-4 lg:py-6'
+                        ? 'bg-[#050508]/95 backdrop-blur-xl border-b border-white/10 py-3'
+                        : 'bg-transparent py-4 sm:py-6'
                     }`}
                 style={{ zIndex: 9999 }}
             >
                 <div className="section-container flex items-center justify-between">
-                    {/* Logo - Always visible, shrinks on mobile */}
+                    {/* Logo - Fixed spacing for mobile */}
                     <Link
                         to="/"
-                        className="flex items-center gap-2 group flex-shrink-0"
+                        className="flex items-center gap-2 sm:gap-3 group flex-shrink-0"
                         onClick={handleNavClick}
                     >
                         <img
                             src="/images/oasis-logo.jpg"
                             alt="OASIS AI"
-                            className="w-8 h-8 lg:w-10 lg:h-10 rounded-xl object-cover shadow-lg shadow-oasis-cyan/20 group-hover:shadow-oasis-cyan/40 transition-all"
+                            className="w-8 h-8 sm:w-9 sm:h-9 lg:w-10 lg:h-10 rounded-lg sm:rounded-xl object-cover shadow-lg shadow-oasis-cyan/20 group-hover:shadow-oasis-cyan/40 transition-all flex-shrink-0"
                         />
-                        <span className="font-display font-bold text-lg lg:text-xl tracking-tight text-white">
+                        <span className="font-display font-bold text-base sm:text-lg lg:text-xl tracking-tight text-white whitespace-nowrap">
                             OASIS <span className="text-oasis-cyan">AI</span>
                         </span>
                     </Link>
@@ -128,25 +128,24 @@ export const Header = () => {
                         </Link>
                     </div>
 
-                    {/* Mobile Actions - Only essential buttons */}
-                    <div className="flex items-center gap-2 lg:hidden">
+                    {/* Mobile Actions - Proper spacing */}
+                    <div className="flex items-center gap-1 sm:gap-2 lg:hidden">
                         <button
                             onClick={toggleCart}
-                            className="relative p-2 text-text-secondary hover:text-white transition-colors"
+                            className="relative p-2 text-text-secondary hover:text-white transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
                             type="button"
                             aria-label="Shopping cart"
                         >
                             <ShoppingCart className="w-5 h-5" />
                             {items.length > 0 && (
-                                <span className="absolute -top-1 -right-1 w-5 h-5 bg-oasis-cyan text-bg-primary text-xs font-bold rounded-full flex items-center justify-center">
+                                <span className="absolute top-1 right-1 w-4 h-4 bg-oasis-cyan text-bg-primary text-[10px] font-bold rounded-full flex items-center justify-center">
                                     {items.length}
                                 </span>
                             )}
                         </button>
                         <button
                             onClick={toggleMobileMenu}
-                            className="text-white p-2 rounded-lg hover:bg-white/5 transition-colors"
-                            style={{ minHeight: '44px', minWidth: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                            className="text-white p-2 rounded-lg hover:bg-white/5 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
                             type="button"
                             aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
                             aria-expanded={isMobileMenuOpen}
@@ -170,13 +169,10 @@ export const Header = () => {
                         onClick={handleNavClick}
                     />
 
-                    {/* Slide-in Menu Panel */}
+                    {/* Slide-in Menu Panel - Fixed positioning from top */}
                     <div
-                        className="absolute top-0 right-0 w-full max-w-sm h-full bg-[#0a0a0f] border-l border-gray-800 overflow-y-auto animate-slide-in-right"
-                        style={{
-                            marginTop: isScrolled ? '56px' : '64px',
-                            height: isScrolled ? 'calc(100% - 56px)' : 'calc(100% - 64px)'
-                        }}
+                        className="absolute top-0 right-0 w-[85vw] max-w-[320px] h-full bg-[#0a0a0f] border-l border-gray-800 overflow-y-auto animate-slide-in-right flex flex-col"
+                        style={{ paddingTop: '60px' }}
                     >
                         {/* Menu Header */}
                         <div className="flex items-center justify-between p-4 border-b border-gray-800/50">

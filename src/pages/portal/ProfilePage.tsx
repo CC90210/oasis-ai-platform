@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { supabase, Profile } from '@/lib/supabase';
 import { User, Shield, Bell, Loader2, AlertCircle, Save, CheckCircle, Camera, Upload, Eye, EyeOff, X, Sun, Moon } from 'lucide-react';
-import { useDashboardTheme } from '@/contexts/DashboardThemeContext';
+import { useTheme } from '@/store/themeStore';
 import PortalLayout from '@/components/portal/PortalLayout';
 import { formatDate } from '@/lib/formatters';
 
@@ -39,8 +39,8 @@ export default function ProfilePage() {
         push_enabled: false
     });
     const [savingNotifications, setSavingNotifications] = useState(false);
-    // Use dashboard-specific theme (isolated from main website)
-    const { dashboardTheme: theme, toggleDashboardTheme: toggleTheme } = useDashboardTheme();
+    // Theme toggle for dashboard appearance
+    const { theme, toggleTheme } = useTheme();
 
     useEffect(() => {
         loadProfile();
