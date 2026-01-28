@@ -40,6 +40,8 @@ export interface Profile {
     is_owner?: boolean;
     is_admin?: boolean;
     billing_exempt?: boolean;
+    onboarding_completed?: boolean;
+    onboarding_steps?: number[];
 }
 
 // Helper functions for owner/admin checks

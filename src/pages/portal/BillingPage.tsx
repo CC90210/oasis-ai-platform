@@ -233,12 +233,12 @@ export default function BillingPage() {
             trialing: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
             past_due: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
             cancelled: 'bg-red-500/20 text-red-400 border-red-500/30',
-            paused: 'bg-gray-500/20 text-gray-400 border-gray-500/30',
+            paused: 'bg-gray-500/20 text-[var(--text-secondary)] border-gray-500/30',
             paid: 'bg-green-500/20 text-green-400 border-green-500/30',
             pending: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
             failed: 'bg-red-500/20 text-red-400 border-red-500/30',
         };
-        return styles[status] || 'bg-gray-500/20 text-gray-400 border-gray-500/30';
+        return styles[status] || 'bg-gray-500/20 text-[var(--text-secondary)] border-gray-500/30';
     };
 
     // Get the display price (custom price takes priority)
@@ -261,42 +261,42 @@ export default function BillingPage() {
             <PortalLayout>
                 <div className="p-8 max-w-5xl mx-auto page-transition">
                     <header className="mb-10">
-                        <h1 className="text-3xl font-bold text-white flex items-center gap-3">
+                        <h1 className="text-3xl font-bold text-[var(--text-primary)] flex items-center gap-3">
                             <Crown className="w-8 h-8 text-yellow-500" />
                             Owner Account
                         </h1>
-                        <p className="text-gray-400 mt-2">Your account status and automation tracking.</p>
+                        <p className="text-[var(--text-secondary)] mt-2">Your account status and automation tracking.</p>
                     </header>
 
                     {/* Owner Account Status Card */}
                     <div className="bg-gradient-to-br from-purple-500/10 to-cyan-500/10 border border-purple-500/30 rounded-2xl p-8 mb-8">
                         <div className="flex items-start gap-6">
                             <div className="w-16 h-16 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-2xl flex items-center justify-center shadow-lg shadow-yellow-500/20">
-                                <Crown className="w-8 h-8 text-white" />
+                                <Crown className="w-8 h-8 text-[var(--text-primary)]" />
                             </div>
                             <div className="flex-1">
                                 <div className="flex items-center gap-3 mb-2">
-                                    <h2 className="text-2xl font-bold text-white">Billing Exempt</h2>
+                                    <h2 className="text-2xl font-bold text-[var(--text-primary)]">Billing Exempt</h2>
                                     <span className="px-3 py-1 bg-green-500/20 text-green-400 text-xs font-bold rounded-full border border-green-500/30">
                                         ACTIVE
                                     </span>
                                 </div>
-                                <p className="text-gray-400 mb-4 max-w-2xl">
+                                <p className="text-[var(--text-secondary)] mb-4 max-w-2xl">
                                     As the owner of OASIS AI, your account is exempt from billing. All automations
                                     are tracked for internal case studies and ROI documentation. Your usage helps
                                     demonstrate the value of our services to potential clients.
                                 </p>
                                 <div className="grid sm:grid-cols-3 gap-4 mt-6">
-                                    <div className="bg-[#0a0a0f]/50 border border-[#1a1a2e] rounded-xl p-4">
-                                        <p className="text-gray-500 text-sm">Account Type</p>
-                                        <p className="text-white font-bold text-lg">Owner / Admin</p>
+                                    <div className="bg-[var(--bg-card-strong)]/50 border border-[var(--bg-tertiary)] rounded-xl p-4">
+                                        <p className="text-[var(--text-muted)] text-sm">Account Type</p>
+                                        <p className="text-[var(--text-primary)] font-bold text-lg">Owner / Admin</p>
                                     </div>
-                                    <div className="bg-[#0a0a0f]/50 border border-[#1a1a2e] rounded-xl p-4">
-                                        <p className="text-gray-500 text-sm">Billing Status</p>
+                                    <div className="bg-[var(--bg-card-strong)]/50 border border-[var(--bg-tertiary)] rounded-xl p-4">
+                                        <p className="text-[var(--text-muted)] text-sm">Billing Status</p>
                                         <p className="text-green-400 font-bold text-lg">Exempt</p>
                                     </div>
-                                    <div className="bg-[#0a0a0f]/50 border border-[#1a1a2e] rounded-xl p-4">
-                                        <p className="text-gray-500 text-sm">Access Level</p>
+                                    <div className="bg-[var(--bg-card-strong)]/50 border border-[var(--bg-tertiary)] rounded-xl p-4">
+                                        <p className="text-[var(--text-muted)] text-sm">Access Level</p>
                                         <p className="text-purple-400 font-bold text-lg">Full Access</p>
                                     </div>
                                 </div>
@@ -306,35 +306,35 @@ export default function BillingPage() {
 
                     {/* Quick Links for Owner */}
                     <div className="grid md:grid-cols-2 gap-6">
-                        <div className="bg-[#0a0a0f] border border-[#1a1a2e] rounded-2xl p-6">
-                            <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                        <div className="bg-[var(--bg-card-strong)] border border-[var(--bg-tertiary)] rounded-2xl p-6">
+                            <h3 className="text-lg font-bold text-[var(--text-primary)] mb-4 flex items-center gap-2">
                                 <Shield className="w-5 h-5 text-cyan-500" />
                                 Admin Actions
                             </h3>
                             <div className="space-y-3">
                                 <Link
                                     to="/portal/automations"
-                                    className="flex items-center justify-between p-4 bg-[#151520] hover:bg-[#1a1a2e] rounded-xl border border-[#2a2a3e] transition group"
+                                    className="flex items-center justify-between p-4 bg-[var(--bg-tertiary)] hover:bg-[#1a1a2e] rounded-xl border border-[var(--border)] transition group"
                                 >
-                                    <span className="text-gray-300 group-hover:text-white">View My Automations</span>
-                                    <ExternalLink className="w-4 h-4 text-gray-500 group-hover:text-cyan-400" />
+                                    <span className="text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]">View My Automations</span>
+                                    <ExternalLink className="w-4 h-4 text-[var(--text-muted)] group-hover:text-cyan-400" />
                                 </Link>
                                 <Link
                                     to="/portal/reports"
-                                    className="flex items-center justify-between p-4 bg-[#151520] hover:bg-[#1a1a2e] rounded-xl border border-[#2a2a3e] transition group"
+                                    className="flex items-center justify-between p-4 bg-[var(--bg-tertiary)] hover:bg-[#1a1a2e] rounded-xl border border-[var(--border)] transition group"
                                 >
-                                    <span className="text-gray-300 group-hover:text-white">ROI Reports & Case Studies</span>
-                                    <ExternalLink className="w-4 h-4 text-gray-500 group-hover:text-cyan-400" />
+                                    <span className="text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]">ROI Reports & Case Studies</span>
+                                    <ExternalLink className="w-4 h-4 text-[var(--text-muted)] group-hover:text-cyan-400" />
                                 </Link>
                             </div>
                         </div>
 
-                        <div className="bg-[#0a0a0f] border border-[#1a1a2e] rounded-2xl p-6">
-                            <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                        <div className="bg-[var(--bg-card-strong)] border border-[var(--bg-tertiary)] rounded-2xl p-6">
+                            <h3 className="text-lg font-bold text-[var(--text-primary)] mb-4 flex items-center gap-2">
                                 <Package className="w-5 h-5 text-purple-500" />
                                 Usage Tracking
                             </h3>
-                            <p className="text-gray-400 text-sm mb-4">
+                            <p className="text-[var(--text-secondary)] text-sm mb-4">
                                 Your automation usage is being tracked for internal case studies.
                                 This data helps demonstrate ROI to potential clients.
                             </p>
@@ -354,12 +354,12 @@ export default function BillingPage() {
         return (
             <PortalLayout>
                 <div className="p-8 max-w-3xl mx-auto">
-                    <div className="bg-[#0a0a0f] border border-[#1a1a2e] p-8 rounded-2xl text-center">
+                    <div className="bg-[var(--bg-card-strong)] border border-[var(--bg-tertiary)] p-8 rounded-2xl text-center">
                         <div className="w-20 h-20 bg-yellow-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
                             <AlertTriangle className="w-10 h-10 text-yellow-500" />
                         </div>
-                        <h1 className="text-2xl font-bold text-white mb-3">No Active Subscription</h1>
-                        <p className="text-gray-400 mb-6 max-w-md mx-auto">
+                        <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-3">No Active Subscription</h1>
+                        <p className="text-[var(--text-secondary)] mb-6 max-w-md mx-auto">
                             You don't have an active subscription linked to your account.
                             Please contact our team to get started or resolve any billing issues.
                         </p>
@@ -372,7 +372,7 @@ export default function BillingPage() {
                             </Link>
                             <Link
                                 to="/portal/support"
-                                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#1a1a2e] text-white font-medium rounded-xl hover:bg-[#2a2a3e] transition border border-[#2a2a3e]"
+                                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#1a1a2e] text-[var(--text-primary)] font-medium rounded-xl hover:bg-[#2a2a3e] transition border border-[var(--border)]"
                             >
                                 Contact Support
                             </Link>
@@ -388,22 +388,22 @@ export default function BillingPage() {
         <PortalLayout>
             <div className="p-8 max-w-5xl mx-auto page-transition">
                 <header className="mb-6">
-                    <h1 className="text-3xl font-bold text-white flex items-center gap-3">
+                    <h1 className="text-3xl font-bold text-[var(--text-primary)] flex items-center gap-3">
                         <CreditCard className="w-8 h-8 text-cyan-500" />
                         Billing & Agreements
                     </h1>
-                    <p className="text-gray-400 mt-2">Manage your plan, view agreements, and access invoices.</p>
+                    <p className="text-[var(--text-secondary)] mt-2">Manage your plan, view agreements, and access invoices.</p>
                 </header>
 
                 {/* Tab Navigation */}
-                <div className="flex gap-1 mb-6 border-b border-gray-800">
+                <div className="flex gap-1 mb-6 border-b border-[var(--bg-tertiary)]">
                     {(['overview', 'agreements', 'invoices'] as const).map(tab => (
                         <button
                             key={tab}
                             onClick={() => setActiveTab(tab)}
                             className={`px-4 py-3 text-sm font-medium capitalize border-b-2 transition ${activeTab === tab
                                 ? 'border-cyan-500 text-cyan-400'
-                                : 'border-transparent text-gray-400 hover:text-white'
+                                : 'border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
                                 }`}
                         >
                             {tab === 'agreements' ? 'Agreements & NDAs' : tab}
@@ -440,24 +440,24 @@ export default function BillingPage() {
                 {activeTab === 'agreements' && (
                     <div className="space-y-4">
                         {agreements.length === 0 ? (
-                            <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-8 text-center">
+                            <div className="bg-[var(--bg-card-strong)]/50 border border-[var(--bg-tertiary)] rounded-xl p-8 text-center">
                                 <FileText className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-                                <p className="text-gray-400">No agreements found</p>
-                                <p className="text-sm text-gray-500 mt-2">Your signed agreements and NDAs will appear here.</p>
+                                <p className="text-[var(--text-secondary)]">No agreements found</p>
+                                <p className="text-sm text-[var(--text-muted)] mt-2">Your signed agreements and NDAs will appear here.</p>
                             </div>
                         ) : (
                             agreements.map((agreement: any) => (
-                                <div key={agreement.id} className="bg-gray-900/50 border border-gray-800 rounded-xl p-6">
+                                <div key={agreement.id} className="bg-[var(--bg-card-strong)]/50 border border-[var(--bg-tertiary)] rounded-xl p-6">
                                     <div className="flex items-start justify-between mb-4">
                                         <div className="flex items-center gap-3">
                                             <div className="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center">
                                                 <FileText className="w-5 h-5 text-purple-400" />
                                             </div>
                                             <div>
-                                                <h3 className="text-white font-semibold capitalize">
+                                                <h3 className="text-[var(--text-primary)] font-semibold capitalize">
                                                     {agreement.automation_type?.replace(/-/g, ' ')} Agreement
                                                 </h3>
-                                                <p className="text-sm text-gray-500">
+                                                <p className="text-sm text-[var(--text-muted)]">
                                                     {agreement.agreement_reference || `#${agreement.id.slice(0, 8)}`}
                                                 </p>
                                             </div>
@@ -474,38 +474,38 @@ export default function BillingPage() {
 
                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-4">
                                         <div>
-                                            <p className="text-gray-500">Setup Cost</p>
-                                            <p className="text-white">{formatCurrency(agreement.upfront_cost_cents || 0)} {agreement.currency?.toUpperCase()}</p>
+                                            <p className="text-[var(--text-muted)]">Setup Cost</p>
+                                            <p className="text-[var(--text-primary)]">{formatCurrency(agreement.upfront_cost_cents || 0)} {agreement.currency?.toUpperCase()}</p>
                                         </div>
                                         <div>
-                                            <p className="text-gray-500">Monthly</p>
-                                            <p className="text-white">{formatCurrency(agreement.monthly_cost_cents || 0)}/mo</p>
+                                            <p className="text-[var(--text-muted)]">Monthly</p>
+                                            <p className="text-[var(--text-primary)]">{formatCurrency(agreement.monthly_cost_cents || 0)}/mo</p>
                                         </div>
                                         <div>
-                                            <p className="text-gray-500">Date</p>
-                                            <p className="text-white">{formatDate(agreement.created_at)}</p>
+                                            <p className="text-[var(--text-muted)]">Date</p>
+                                            <p className="text-[var(--text-primary)]">{formatDate(agreement.created_at)}</p>
                                         </div>
                                         <div>
-                                            <p className="text-gray-500">Currency</p>
-                                            <p className="text-white uppercase">{agreement.currency || 'USD'}</p>
+                                            <p className="text-[var(--text-muted)]">Currency</p>
+                                            <p className="text-[var(--text-primary)] uppercase">{agreement.currency || 'USD'}</p>
                                         </div>
                                     </div>
 
                                     {/* NDA Info */}
                                     {agreement.nda_signed && (
-                                        <div className="bg-gray-800/50 rounded-lg p-4 flex items-center justify-between">
+                                        <div className="bg-[var(--bg-card)]/50 rounded-lg p-4 flex items-center justify-between">
                                             <div className="flex items-center gap-3">
                                                 <Shield className="w-5 h-5 text-green-400" />
                                                 <div>
-                                                    <p className="text-white text-sm font-medium">NDA Signed</p>
-                                                    <p className="text-gray-500 text-xs">
+                                                    <p className="text-[var(--text-primary)] text-sm font-medium">NDA Signed</p>
+                                                    <p className="text-[var(--text-muted)] text-xs">
                                                         By {agreement.nda_signature_name} on {formatDate(agreement.nda_signed_at)}
                                                     </p>
                                                 </div>
                                             </div>
                                             <button
                                                 onClick={() => setViewingNDA(agreement)}
-                                                className="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-white text-sm rounded-lg flex items-center gap-2 transition"
+                                                className="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-[var(--text-primary)] text-sm rounded-lg flex items-center gap-2 transition"
                                             >
                                                 <Eye className="w-4 h-4" />
                                                 View
@@ -522,29 +522,29 @@ export default function BillingPage() {
                 {activeTab === 'invoices' && (
                     <div>
                         {billingHistory.length === 0 ? (
-                            <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-8 text-center">
+                            <div className="bg-[var(--bg-card-strong)]/50 border border-[var(--bg-tertiary)] rounded-xl p-8 text-center">
                                 <FileText className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-                                <p className="text-gray-400 mb-2">No invoices yet</p>
-                                <p className="text-sm text-gray-500">
+                                <p className="text-[var(--text-secondary)] mb-2">No invoices yet</p>
+                                <p className="text-sm text-[var(--text-muted)]">
                                     Contact <a href="mailto:oasisaisolutions@gmail.com" className="text-cyan-400 hover:underline">oasisaisolutions@gmail.com</a> for invoice requests.
                                 </p>
                             </div>
                         ) : (
                             <div className="space-y-3">
                                 {billingHistory.map(invoice => (
-                                    <div key={invoice.id} className="bg-gray-900/50 border border-gray-800 rounded-xl p-4 flex items-center justify-between">
+                                    <div key={invoice.id} className="bg-[var(--bg-card-strong)]/50 border border-[var(--bg-tertiary)] rounded-xl p-4 flex items-center justify-between">
                                         <div className="flex items-center gap-4">
                                             <div className="w-10 h-10 bg-cyan-500/20 rounded-lg flex items-center justify-center">
                                                 <FileText className="w-5 h-5 text-cyan-400" />
                                             </div>
                                             <div>
-                                                <p className="text-white font-medium">{invoice.description}</p>
-                                                <p className="text-sm text-gray-500">{formatDate(invoice.invoice_date)}</p>
+                                                <p className="text-[var(--text-primary)] font-medium">{invoice.description}</p>
+                                                <p className="text-sm text-[var(--text-muted)]">{formatDate(invoice.invoice_date)}</p>
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-4">
                                             <div className="text-right">
-                                                <p className="text-white font-bold">{formatCurrency(invoice.amount_cents)}</p>
+                                                <p className="text-[var(--text-primary)] font-bold">{formatCurrency(invoice.amount_cents)}</p>
                                                 <span className={`text-xs px-2 py-0.5 rounded ${invoice.status === 'paid' ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'
                                                     }`}>
                                                     {invoice.status?.toUpperCase()}
@@ -555,9 +555,9 @@ export default function BillingPage() {
                                                     href={invoice.invoice_pdf_url}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
-                                                    className="p-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition"
+                                                    className="p-2 bg-[var(--bg-card)] hover:bg-[var(--bg-tertiary)] rounded-lg transition"
                                                 >
-                                                    <Download className="w-4 h-4 text-gray-400" />
+                                                    <Download className="w-4 h-4 text-[var(--text-secondary)]" />
                                                 </a>
                                             )}
                                         </div>
@@ -573,31 +573,31 @@ export default function BillingPage() {
                     <>
                         <div className="grid lg:grid-cols-2 gap-8">
                             {/* Current Plan */}
-                            <div className="bg-[#0a0a0f] border border-[#1a1a2e] p-6 rounded-2xl">
-                                <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                            <div className="bg-[var(--bg-card-strong)] border border-[var(--bg-tertiary)] p-6 rounded-2xl">
+                                <h2 className="text-lg font-bold text-[var(--text-primary)] mb-4 flex items-center gap-2">
                                     <DollarSign className="w-5 h-5 text-cyan-500" />
                                     Current Plan
                                 </h2>
 
                                 {subscription ? (
                                     <div className="space-y-4">
-                                        <div className="flex items-center justify-between p-4 bg-[#151520] rounded-xl border border-[#2a2a3e]">
+                                        <div className="flex items-center justify-between p-4 bg-[var(--bg-tertiary)] rounded-xl border border-[var(--border)]">
                                             <div>
-                                                <h3 className="text-white font-bold text-lg">{displayName}</h3>
+                                                <h3 className="text-[var(--text-primary)] font-bold text-lg">{displayName}</h3>
                                                 <div className="flex items-center gap-2 mt-1">
                                                     {isCustomAgreement && (
                                                         <span className="text-xs bg-purple-500/20 text-purple-400 px-2 py-0.5 rounded-full border border-purple-500/30">
                                                             Custom Agreement
                                                         </span>
                                                     )}
-                                                    <p className="text-gray-400 text-sm capitalize">{subscription.tier || 'Professional'} Tier</p>
+                                                    <p className="text-[var(--text-secondary)] text-sm capitalize">{subscription.tier || 'Professional'} Tier</p>
                                                 </div>
                                             </div>
                                             <div className="text-right">
                                                 <p className="text-2xl font-bold text-cyan-400">
                                                     {formatCurrency(displayPrice)}
                                                 </p>
-                                                <p className="text-gray-500 text-sm">/{subscription.billing_interval || 'month'}</p>
+                                                <p className="text-[var(--text-muted)] text-sm">/{subscription.billing_interval || 'month'}</p>
                                             </div>
                                         </div>
 
@@ -612,7 +612,7 @@ export default function BillingPage() {
                                         </div>
 
                                         {subscription.current_period_end && (
-                                            <p className="text-gray-500 text-sm flex items-center gap-2">
+                                            <p className="text-[var(--text-muted)] text-sm flex items-center gap-2">
                                                 <Calendar className="w-4 h-4" />
                                                 Next billing: {formatDate(subscription.current_period_end)}
                                             </p>
@@ -620,14 +620,14 @@ export default function BillingPage() {
 
                                         {/* What's Included - for custom agreements */}
                                         {isCustomAgreement && subscription.agreement_details?.includes && (
-                                            <div className="mt-4 pt-4 border-t border-[#1a1a2e]">
-                                                <h4 className="text-sm font-medium text-gray-300 mb-2 flex items-center gap-2">
+                                            <div className="mt-4 pt-4 border-t border-[var(--bg-tertiary)]">
+                                                <h4 className="text-sm font-medium text-[var(--text-secondary)] mb-2 flex items-center gap-2">
                                                     <Package className="w-4 h-4" />
                                                     What's Included:
                                                 </h4>
                                                 <ul className="space-y-1">
                                                     {subscription.agreement_details.includes.map((item: string, index: number) => (
-                                                        <li key={index} className="flex items-center gap-2 text-gray-400 text-sm">
+                                                        <li key={index} className="flex items-center gap-2 text-[var(--text-secondary)] text-sm">
                                                             <CheckCircle className="w-4 h-4 text-green-400" />
                                                             {item.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
                                                         </li>
@@ -645,11 +645,11 @@ export default function BillingPage() {
                                         )}
 
                                         {/* Action Buttons */}
-                                        <div className="flex flex-wrap gap-3 pt-4 border-t border-[#1a1a2e]">
+                                        <div className="flex flex-wrap gap-3 pt-4 border-t border-[var(--bg-tertiary)]">
                                             {isCustomAgreement ? (
                                                 // Custom Agreement - Contact Support
                                                 <div className="w-full">
-                                                    <p className="text-gray-400 text-sm mb-3">
+                                                    <p className="text-[var(--text-secondary)] text-sm mb-3">
                                                         You have a custom agreement. To make changes, please contact us:
                                                     </p>
                                                     <div className="flex flex-wrap gap-3">
@@ -662,14 +662,14 @@ export default function BillingPage() {
                                                         </a>
                                                         <a
                                                             href="tel:+12403325062"
-                                                            className="flex items-center gap-2 px-4 py-2 bg-[#1a1a2e] hover:bg-[#2a2a3e] text-white rounded-lg transition border border-[#2a2a3e]"
+                                                            className="flex items-center gap-2 px-4 py-2 bg-[#1a1a2e] hover:bg-[#2a2a3e] text-[var(--text-primary)] rounded-lg transition border border-[var(--border)]"
                                                         >
                                                             <Phone className="w-4 h-4" />
                                                             +1 (240) 332-5062
                                                         </a>
                                                         <Link
                                                             to="/portal/support"
-                                                            className="flex items-center gap-2 px-4 py-2 bg-[#1a1a2e] hover:bg-[#2a2a3e] text-white rounded-lg transition border border-[#2a2a3e]"
+                                                            className="flex items-center gap-2 px-4 py-2 bg-[#1a1a2e] hover:bg-[#2a2a3e] text-[var(--text-primary)] rounded-lg transition border border-[var(--border)]"
                                                         >
                                                             <MessageCircle className="w-4 h-4" />
                                                             Open Ticket
@@ -695,11 +695,11 @@ export default function BillingPage() {
                                     </div>
                                 ) : (
                                     <div className="text-center py-8">
-                                        <div className="w-16 h-16 bg-[#151520] rounded-full flex items-center justify-center mx-auto mb-4 border border-[#2a2a3e]">
-                                            <CreditCard className="w-8 h-8 text-gray-500" />
+                                        <div className="w-16 h-16 bg-[var(--bg-tertiary)] rounded-full flex items-center justify-center mx-auto mb-4 border border-[var(--border)]">
+                                            <CreditCard className="w-8 h-8 text-[var(--text-muted)]" />
                                         </div>
-                                        <h3 className="text-white font-bold mb-2">No Active Subscription</h3>
-                                        <p className="text-gray-500 text-sm mb-4">
+                                        <h3 className="text-[var(--text-primary)] font-bold mb-2">No Active Subscription</h3>
+                                        <p className="text-[var(--text-muted)] text-sm mb-4">
                                             Contact us to set up your billing preferences.
                                         </p>
                                         <Link
@@ -713,8 +713,8 @@ export default function BillingPage() {
                             </div>
 
                             {/* Quick Actions */}
-                            <div className="bg-[#0a0a0f] border border-[#1a1a2e] p-6 rounded-2xl">
-                                <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                            <div className="bg-[var(--bg-card-strong)] border border-[var(--bg-tertiary)] p-6 rounded-2xl">
+                                <h2 className="text-lg font-bold text-[var(--text-primary)] mb-4 flex items-center gap-2">
                                     <Shield className="w-5 h-5 text-purple-500" />
                                     Quick Actions
                                 </h2>
@@ -725,50 +725,50 @@ export default function BillingPage() {
                                         <>
                                             <a
                                                 href="mailto:oasisaisolutions@gmail.com?subject=Billing%20Inquiry"
-                                                className="w-full flex items-center justify-between p-4 bg-[#151520] hover:bg-[#1a1a2e] rounded-xl border border-[#2a2a3e] transition group"
+                                                className="w-full flex items-center justify-between p-4 bg-[var(--bg-tertiary)] hover:bg-[#1a1a2e] rounded-xl border border-[var(--border)] transition group"
                                             >
                                                 <div className="flex items-center gap-3">
                                                     <div className="w-10 h-10 bg-blue-500/10 rounded-lg flex items-center justify-center">
                                                         <Mail className="w-5 h-5 text-blue-400" />
                                                     </div>
                                                     <div className="text-left">
-                                                        <p className="text-white font-medium">Request Invoice</p>
-                                                        <p className="text-gray-500 text-sm">Get a copy of your latest invoice</p>
+                                                        <p className="text-[var(--text-primary)] font-medium">Request Invoice</p>
+                                                        <p className="text-[var(--text-muted)] text-sm">Get a copy of your latest invoice</p>
                                                     </div>
                                                 </div>
-                                                <ExternalLink className="w-4 h-4 text-gray-500 group-hover:text-cyan-400" />
+                                                <ExternalLink className="w-4 h-4 text-[var(--text-muted)] group-hover:text-cyan-400" />
                                             </a>
 
                                             <a
                                                 href="mailto:oasisaisolutions@gmail.com?subject=Update%20Payment%20Method"
-                                                className="w-full flex items-center justify-between p-4 bg-[#151520] hover:bg-[#1a1a2e] rounded-xl border border-[#2a2a3e] transition group"
+                                                className="w-full flex items-center justify-between p-4 bg-[var(--bg-tertiary)] hover:bg-[#1a1a2e] rounded-xl border border-[var(--border)] transition group"
                                             >
                                                 <div className="flex items-center gap-3">
                                                     <div className="w-10 h-10 bg-green-500/10 rounded-lg flex items-center justify-center">
                                                         <CreditCard className="w-5 h-5 text-green-400" />
                                                     </div>
                                                     <div className="text-left">
-                                                        <p className="text-white font-medium">Update Payment Method</p>
-                                                        <p className="text-gray-500 text-sm">Change how you pay</p>
+                                                        <p className="text-[var(--text-primary)] font-medium">Update Payment Method</p>
+                                                        <p className="text-[var(--text-muted)] text-sm">Change how you pay</p>
                                                     </div>
                                                 </div>
-                                                <ExternalLink className="w-4 h-4 text-gray-500 group-hover:text-cyan-400" />
+                                                <ExternalLink className="w-4 h-4 text-[var(--text-muted)] group-hover:text-cyan-400" />
                                             </a>
 
                                             <Link
                                                 to="/portal/support"
-                                                className="w-full flex items-center justify-between p-4 bg-[#151520] hover:bg-[#1a1a2e] rounded-xl border border-[#2a2a3e] transition group"
+                                                className="w-full flex items-center justify-between p-4 bg-[var(--bg-tertiary)] hover:bg-[#1a1a2e] rounded-xl border border-[var(--border)] transition group"
                                             >
                                                 <div className="flex items-center gap-3">
                                                     <div className="w-10 h-10 bg-purple-500/10 rounded-lg flex items-center justify-center">
                                                         <MessageCircle className="w-5 h-5 text-purple-400" />
                                                     </div>
                                                     <div className="text-left">
-                                                        <p className="text-white font-medium">Billing Support</p>
-                                                        <p className="text-gray-500 text-sm">Questions about your agreement</p>
+                                                        <p className="text-[var(--text-primary)] font-medium">Billing Support</p>
+                                                        <p className="text-[var(--text-muted)] text-sm">Questions about your agreement</p>
                                                     </div>
                                                 </div>
-                                                <ExternalLink className="w-4 h-4 text-gray-500 group-hover:text-cyan-400" />
+                                                <ExternalLink className="w-4 h-4 text-[var(--text-muted)] group-hover:text-cyan-400" />
                                             </Link>
                                         </>
                                     ) : subscription?.stripe_customer_id && (
@@ -777,47 +777,47 @@ export default function BillingPage() {
                                             <button
                                                 onClick={openStripePortal}
                                                 disabled={portalLoading}
-                                                className="w-full flex items-center justify-between p-4 bg-[#151520] hover:bg-[#1a1a2e] rounded-xl border border-[#2a2a3e] transition group"
+                                                className="w-full flex items-center justify-between p-4 bg-[var(--bg-tertiary)] hover:bg-[#1a1a2e] rounded-xl border border-[var(--border)] transition group"
                                             >
                                                 <div className="flex items-center gap-3">
                                                     <div className="w-10 h-10 bg-blue-500/10 rounded-lg flex items-center justify-center">
                                                         <CreditCard className="w-5 h-5 text-blue-400" />
                                                     </div>
                                                     <div className="text-left">
-                                                        <p className="text-white font-medium">Update Payment Method</p>
-                                                        <p className="text-gray-500 text-sm">Change your card or payment details</p>
+                                                        <p className="text-[var(--text-primary)] font-medium">Update Payment Method</p>
+                                                        <p className="text-[var(--text-muted)] text-sm">Change your card or payment details</p>
                                                     </div>
                                                 </div>
-                                                <ExternalLink className="w-4 h-4 text-gray-500 group-hover:text-cyan-400" />
+                                                <ExternalLink className="w-4 h-4 text-[var(--text-muted)] group-hover:text-cyan-400" />
                                             </button>
 
                                             <button
                                                 onClick={openStripePortal}
                                                 disabled={portalLoading}
-                                                className="w-full flex items-center justify-between p-4 bg-[#151520] hover:bg-[#1a1a2e] rounded-xl border border-[#2a2a3e] transition group"
+                                                className="w-full flex items-center justify-between p-4 bg-[var(--bg-tertiary)] hover:bg-[#1a1a2e] rounded-xl border border-[var(--border)] transition group"
                                             >
                                                 <div className="flex items-center gap-3">
                                                     <div className="w-10 h-10 bg-green-500/10 rounded-lg flex items-center justify-center">
                                                         <FileText className="w-5 h-5 text-green-400" />
                                                     </div>
                                                     <div className="text-left">
-                                                        <p className="text-white font-medium">View All Invoices</p>
-                                                        <p className="text-gray-500 text-sm">Download receipts and invoices</p>
+                                                        <p className="text-[var(--text-primary)] font-medium">View All Invoices</p>
+                                                        <p className="text-[var(--text-muted)] text-sm">Download receipts and invoices</p>
                                                     </div>
                                                 </div>
-                                                <ExternalLink className="w-4 h-4 text-gray-500 group-hover:text-cyan-400" />
+                                                <ExternalLink className="w-4 h-4 text-[var(--text-muted)] group-hover:text-cyan-400" />
                                             </button>
                                         </>
                                     )}
 
-                                    <div className="border-t border-[#1a1a2e] pt-4 mt-4">
+                                    <div className="border-t border-[var(--bg-tertiary)] pt-4 mt-4">
                                         <div className="flex items-center gap-2 mb-3 text-sm">
                                             <div className="w-6 h-6 rounded bg-gradient-to-r from-[#635BFF] to-[#7A73FF] flex items-center justify-center">
-                                                <span className="text-white text-[10px] font-bold">S</span>
+                                                <span className="text-[var(--text-primary)] text-[10px] font-bold">S</span>
                                             </div>
-                                            <span className="text-gray-400">Secure payments by <span className="text-white font-medium">Stripe</span></span>
+                                            <span className="text-[var(--text-secondary)]">Secure payments by <span className="text-[var(--text-primary)] font-medium">Stripe</span></span>
                                         </div>
-                                        <p className="text-gray-500 text-sm">
+                                        <p className="text-[var(--text-muted)] text-sm">
                                             Your payment information is encrypted and secure. We never store your card details.
                                         </p>
                                     </div>
@@ -826,18 +826,18 @@ export default function BillingPage() {
                         </div>
 
                         {/* Billing History */}
-                        <div className="mt-8 bg-[#0a0a0f] border border-[#1a1a2e] p-6 rounded-2xl">
-                            <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                        <div className="mt-8 bg-[var(--bg-card-strong)] border border-[var(--bg-tertiary)] p-6 rounded-2xl">
+                            <h2 className="text-lg font-bold text-[var(--text-primary)] mb-4 flex items-center gap-2">
                                 <FileText className="w-5 h-5 text-green-500" />
                                 Recent Invoices
                             </h2>
 
                             {billingHistory.length === 0 ? (
                                 <div className="text-center py-8">
-                                    <div className="w-12 h-12 bg-[#151520] rounded-full flex items-center justify-center mx-auto mb-3 border border-[#2a2a3e]">
-                                        <FileText className="w-6 h-6 text-gray-500" />
+                                    <div className="w-12 h-12 bg-[var(--bg-tertiary)] rounded-full flex items-center justify-center mx-auto mb-3 border border-[var(--border)]">
+                                        <FileText className="w-6 h-6 text-[var(--text-muted)]" />
                                     </div>
-                                    <p className="text-gray-500 text-sm">
+                                    <p className="text-[var(--text-muted)] text-sm">
                                         {isCustomAgreement
                                             ? "Contact us to receive invoice copies via email."
                                             : "No billing history available yet. Invoices will appear here after your first payment."
@@ -858,20 +858,20 @@ export default function BillingPage() {
                                     {billingHistory.slice(0, 5).map((item) => (
                                         <div
                                             key={item.id}
-                                            className="flex items-center justify-between p-4 bg-[#151520] rounded-xl border border-[#2a2a3e] hover:border-[#3a3a4e] transition"
+                                            className="flex items-center justify-between p-4 bg-[var(--bg-tertiary)] rounded-xl border border-[var(--border)] hover:border-[#3a3a4e] transition"
                                         >
                                             <div className="flex items-center gap-4">
                                                 <div className="w-10 h-10 bg-[#1a1a2e] rounded-lg flex items-center justify-center">
-                                                    <FileText className="w-5 h-5 text-gray-400" />
+                                                    <FileText className="w-5 h-5 text-[var(--text-secondary)]" />
                                                 </div>
                                                 <div>
-                                                    <p className="text-white font-medium">{item.description}</p>
-                                                    <p className="text-gray-500 text-sm">{formatDate(item.invoice_date)}</p>
+                                                    <p className="text-[var(--text-primary)] font-medium">{item.description}</p>
+                                                    <p className="text-[var(--text-muted)] text-sm">{formatDate(item.invoice_date)}</p>
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-4">
                                                 <div className="text-right">
-                                                    <p className="text-white font-medium">{formatCurrency(item.amount_paid_cents || item.amount_cents)}</p>
+                                                    <p className="text-[var(--text-primary)] font-medium">{formatCurrency(item.amount_paid_cents || item.amount_cents)}</p>
                                                     <span className={`text-xs px-2 py-0.5 rounded border ${getStatusBadge(item.status)}`}>
                                                         {item.status}
                                                     </span>
@@ -882,7 +882,7 @@ export default function BillingPage() {
                                                             href={item.invoice_pdf_url}
                                                             target="_blank"
                                                             rel="noopener noreferrer"
-                                                            className="p-2 text-gray-400 hover:text-cyan-400 hover:bg-cyan-500/10 rounded-lg transition"
+                                                            className="p-2 text-[var(--text-secondary)] hover:text-cyan-400 hover:bg-cyan-500/10 rounded-lg transition"
                                                             title="Download PDF"
                                                         >
                                                             <Download className="w-4 h-4" />
@@ -893,7 +893,7 @@ export default function BillingPage() {
                                                             href={item.hosted_invoice_url}
                                                             target="_blank"
                                                             rel="noopener noreferrer"
-                                                            className="p-2 text-gray-400 hover:text-cyan-400 hover:bg-cyan-500/10 rounded-lg transition"
+                                                            className="p-2 text-[var(--text-secondary)] hover:text-cyan-400 hover:bg-cyan-500/10 rounded-lg transition"
                                                             title="View Invoice"
                                                         >
                                                             <ExternalLink className="w-4 h-4" />
@@ -911,8 +911,8 @@ export default function BillingPage() {
 
                 {/* Support Section */}
                 <div className="mt-8 bg-gradient-to-r from-cyan-500/5 to-purple-500/5 border border-cyan-500/20 p-6 rounded-2xl">
-                    <h2 className="text-lg font-bold text-white mb-2">Need Help?</h2>
-                    <p className="text-gray-400 mb-4">
+                    <h2 className="text-lg font-bold text-[var(--text-primary)] mb-2">Need Help?</h2>
+                    <p className="text-[var(--text-secondary)] mb-4">
                         Questions about your subscription or billing? We're here to help.
                     </p>
                     <div className="flex flex-wrap gap-3">
@@ -925,7 +925,7 @@ export default function BillingPage() {
                         </a>
                         <a
                             href="tel:+12403325062"
-                            className="inline-flex items-center gap-2 px-4 py-2 bg-[#1a1a2e] text-white rounded-lg hover:bg-[#2a2a3e] transition border border-[#2a2a3e]"
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-[#1a1a2e] text-[var(--text-primary)] rounded-lg hover:bg-[#2a2a3e] transition border border-[var(--border)]"
                         >
                             <Phone className="w-4 h-4" />
                             +1 (240) 332-5062

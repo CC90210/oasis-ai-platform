@@ -103,7 +103,7 @@ export default function DashboardPage() {
         switch (status) {
             case 'active': return 'bg-green-500/10 text-green-400 border-green-500/20';
             case 'pending_setup': return 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20';
-            default: return 'bg-gray-500/10 text-gray-400 border-gray-500/20';
+            default: return 'bg-gray-500/10 text-[var(--text-secondary)] border-gray-500/20';
         }
     };
 
@@ -163,7 +163,7 @@ export default function DashboardPage() {
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4">
                     <div>
                         <div className="flex items-center gap-3 mb-2">
-                            <h1 className="text-3xl md:text-4xl font-bold text-white">
+                            <h1 className="text-3xl md:text-4xl font-bold text-[var(--text-primary)]">
                                 {getGreeting()}, {profile?.full_name?.split(' ')[0] || 'Client'}
                             </h1>
                             {/* Owner Badge */}
@@ -180,12 +180,12 @@ export default function DashboardPage() {
                                 </span>
                             )}
                         </div>
-                        <p className="text-gray-400">Here's what's happening with your AI workforce.</p>
+                        <p className="text-[var(--text-secondary)]">Here's what's happening with your AI workforce.</p>
                     </div>
                     <button
                         onClick={loadDashboardData}
                         disabled={loading}
-                        className="p-2.5 rounded-lg bg-[#151520] hover:bg-[#252535] text-gray-400 hover:text-white border border-[#2a2a3e] transition disabled:opacity-50"
+                        className="p-2.5 rounded-lg bg-[var(--bg-tertiary)] hover:bg-[var(--bg-tertiary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border)] transition disabled:opacity-50"
                     >
                         <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
                     </button>
@@ -243,13 +243,13 @@ export default function DashboardPage() {
                             glow: 'shadow-[0_0_20px_rgba(34,197,94,0.1)]'
                         }
                     ].map((stat, i) => (
-                        <div key={i} className={`bg-[#0a0a0f] border border-[#1a1a2e] p-4 md:p-5 rounded-2xl hover:border-[#2a2a3e] transition ${stat.glow} ${i === 4 ? 'col-span-2 md:col-span-1' : ''}`}>
+                        <div key={i} className={`bg-[var(--bg-card-strong)] border border-[var(--bg-tertiary)] p-4 md:p-5 rounded-2xl hover:border-[var(--border)] transition ${stat.glow} ${i === 4 ? 'col-span-2 md:col-span-1' : ''}`}>
                             <div className="flex justify-between items-start mb-3">
-                                <span className="text-gray-400 font-medium text-xs">{stat.label}</span>
+                                <span className="text-[var(--text-secondary)] font-medium text-xs">{stat.label}</span>
                                 <stat.icon className={`w-4 h-4 ${stat.color}`} />
                             </div>
-                            <h3 className="text-2xl md:text-3xl font-bold text-white mb-1">{stat.value}</h3>
-                            <p className="text-xs text-gray-600">{stat.sub}</p>
+                            <h3 className="text-2xl md:text-3xl font-bold text-[var(--text-primary)] mb-1">{stat.value}</h3>
+                            <p className="text-xs text-[var(--text-muted)]">{stat.sub}</p>
                         </div>
                     ))}
                 </div>
@@ -258,18 +258,18 @@ export default function DashboardPage() {
                 <div className="grid lg:grid-cols-3 gap-6 md:gap-8 mb-8">
                     {/* Automations Column */}
                     <div className="lg:col-span-2 space-y-6">
-                        <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                        <h2 className="text-lg font-bold text-[var(--text-primary)] flex items-center gap-2">
                             <Bot className="w-5 h-5 text-cyan-500" />
                             Your Automations
                         </h2>
 
                         {automations.length === 0 ? (
-                            <div className="bg-[#0a0a0f] border border-[#1a1a2e] rounded-2xl p-8 text-center border-dashed">
-                                <div className="w-16 h-16 bg-[#151520] rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <Bot className="w-8 h-8 text-gray-600" />
+                            <div className="bg-[var(--bg-card-strong)] border border-[var(--bg-tertiary)] rounded-2xl p-8 text-center border-dashed">
+                                <div className="w-16 h-16 bg-[var(--bg-tertiary)] rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <Bot className="w-8 h-8 text-[var(--text-muted)]" />
                                 </div>
-                                <h3 className="text-lg font-bold text-white mb-2">No Active Automations</h3>
-                                <p className="text-gray-500 mb-6 max-w-sm mx-auto text-sm">
+                                <h3 className="text-lg font-bold text-[var(--text-primary)] mb-2">No Active Automations</h3>
+                                <p className="text-[var(--text-muted)] mb-6 max-w-sm mx-auto text-sm">
                                     Your AI agents will appear here once configured.
                                 </p>
                                 <Link to="/portal/support" className="text-cyan-400 hover:text-cyan-300 font-medium">Contact Support →</Link>
@@ -279,16 +279,16 @@ export default function DashboardPage() {
                                 {automations.map(auto => {
                                     const config = getAutomationTypeConfig(auto.automation_type);
                                     return (
-                                        <Link key={auto.id} to="/portal/automations" className="bg-[#0a0a0f] border border-[#1a1a2e] p-4 md:p-5 rounded-xl hover:border-cyan-500/30 transition-all group relative overflow-hidden block">
+                                        <Link key={auto.id} to="/portal/automations" className="bg-[var(--bg-card-strong)] border border-[var(--bg-tertiary)] p-4 md:p-5 rounded-xl hover:border-cyan-500/30 transition-all group relative overflow-hidden block">
                                             <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 opacity-0 group-hover:opacity-100 transition duration-500"></div>
                                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 relative z-10">
                                                 <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
-                                                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[#151520] rounded-xl flex items-center justify-center border border-[#2a2a3e] group-hover:border-cyan-500/30 transition flex-shrink-0">
+                                                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[var(--bg-tertiary)] rounded-xl flex items-center justify-center border border-[var(--border)] group-hover:border-cyan-500/30 transition flex-shrink-0">
                                                         <Bot className={`w-5 h-5 sm:w-6 sm:h-6 text-${config.color}-400`} />
                                                     </div>
                                                     <div className="min-w-0 flex-1">
-                                                        <h3 className="font-bold text-white text-base sm:text-lg group-hover:text-cyan-400 transition truncate sm:whitespace-normal">{auto.display_name}</h3>
-                                                        <div className="flex flex-wrap items-center gap-1 sm:gap-2 text-xs sm:text-sm text-gray-500">
+                                                        <h3 className="font-bold text-[var(--text-primary)] text-base sm:text-lg group-hover:text-cyan-400 transition truncate sm:whitespace-normal">{auto.display_name}</h3>
+                                                        <div className="flex flex-wrap items-center gap-1 sm:gap-2 text-xs sm:text-sm text-[var(--text-muted)]">
                                                             <span className="capitalize">{auto.tier} Plan</span>
                                                             <span className="hidden sm:inline">•</span>
                                                             <span className="text-emerald-500">${config.hourlyRate}/hr saved</span>
@@ -308,28 +308,28 @@ export default function DashboardPage() {
 
                     {/* Recent Activity */}
                     <div className="space-y-6">
-                        <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                        <h2 className="text-lg font-bold text-[var(--text-primary)] flex items-center gap-2">
                             <Activity className="w-5 h-5 text-purple-500" />
                             Recent Activity
                         </h2>
 
-                        <div className="bg-[#0a0a0f] border border-[#1a1a2e] rounded-2xl p-2 min-h-[280px]">
+                        <div className="bg-[var(--bg-card-strong)] border border-[var(--bg-tertiary)] rounded-2xl p-2 min-h-[280px]">
                             {recentLogs.length === 0 ? (
-                                <div className="h-full flex flex-col items-center justify-center text-center p-8 text-gray-500">
+                                <div className="h-full flex flex-col items-center justify-center text-center p-8 text-[var(--text-muted)]">
                                     <Activity className="w-8 h-8 mb-3 opacity-20" />
                                     <p className="text-sm">Activity will appear here once your agents start working.</p>
                                 </div>
                             ) : (
                                 <div className="space-y-1 max-h-[280px] overflow-y-auto">
                                     {recentLogs.map((log) => (
-                                        <div key={log.id} className="p-3 hover:bg-[#151520] rounded-lg transition group">
+                                        <div key={log.id} className="p-3 hover:bg-[var(--bg-tertiary)] rounded-lg transition group">
                                             <div className="flex items-start gap-3">
                                                 <div className={`mt-1.5 w-2 h-2 rounded-full flex-shrink-0 ${getLogStatusColor(log.status)}`} />
                                                 <div className="min-w-0 flex-1">
-                                                    <p className="text-white text-sm font-medium truncate group-hover:text-cyan-400 transition">{log.event_name}</p>
-                                                    <p className="text-gray-500 text-xs truncate mt-0.5">{log.event_type}</p>
+                                                    <p className="text-[var(--text-primary)] text-sm font-medium truncate group-hover:text-cyan-400 transition">{log.event_name}</p>
+                                                    <p className="text-[var(--text-muted)] text-xs truncate mt-0.5">{log.event_type}</p>
                                                 </div>
-                                                <span className="text-gray-600 text-xs whitespace-nowrap">{formatRelativeTime(log.created_at)}</span>
+                                                <span className="text-[var(--text-muted)] text-xs whitespace-nowrap">{formatRelativeTime(log.created_at)}</span>
                                             </div>
                                         </div>
                                     ))}
@@ -342,28 +342,28 @@ export default function DashboardPage() {
                 {/* Bottom Section - Dynamic Performance Insights & Quick Actions */}
                 <div className="grid md:grid-cols-3 gap-6">
                     {/* Dynamic Performance Insights */}
-                    <div className="md:col-span-2 bg-gradient-to-br from-[#0a0a0f] to-[#0f0f18] border border-[#1a1a2e] rounded-2xl p-6">
-                        <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                    <div className="md:col-span-2 bg-gradient-to-br from-[var(--bg-card-strong)] to-[var(--bg-secondary)] border border-[var(--bg-tertiary)] rounded-2xl p-6">
+                        <h3 className="text-lg font-bold text-[var(--text-primary)] mb-4 flex items-center gap-2">
                             <BarChart3 className="w-5 h-5 text-cyan-500" />
                             AI Performance Insights
                             {automations.length > 0 && (
-                                <span className="text-xs text-gray-500 font-normal ml-2">
+                                <span className="text-xs text-[var(--text-muted)] font-normal ml-2">
                                     Based on {automations[0]?.display_name}
                                 </span>
                             )}
                         </h3>
                         <div className="grid sm:grid-cols-3 gap-4">
                             {primaryConfig.insights.map((insight, idx) => (
-                                <div key={idx} className="bg-[#080810] border border-[#151525] rounded-xl p-4 hover:border-[#252535] transition">
+                                <div key={idx} className="bg-[var(--bg-secondary)] border border-[var(--border)] rounded-xl p-4 hover:border-[#252535] transition">
                                     <div className="flex items-center gap-3 mb-3">
                                         <div className={`w-10 h-10 rounded-lg bg-${insight.color}-500/10 flex items-center justify-center`}>
                                             {idx === 0 && <Target className={`w-5 h-5 text-${insight.color}-400`} />}
                                             {idx === 1 && <Timer className={`w-5 h-5 text-${insight.color}-400`} />}
                                             {idx === 2 && <Percent className={`w-5 h-5 text-${insight.color}-400`} />}
                                         </div>
-                                        <span className="text-gray-400 text-sm">{insight.label}</span>
+                                        <span className="text-[var(--text-secondary)] text-sm">{insight.label}</span>
                                     </div>
-                                    <p className="text-2xl font-bold text-white">{getInsightValue(idx)}</p>
+                                    <p className="text-2xl font-bold text-[var(--text-primary)]">{getInsightValue(idx)}</p>
                                     <p className={`text-xs text-${insight.color}-400 mt-1`}>↑ {insight.unit}</p>
                                 </div>
                             ))}
@@ -373,11 +373,11 @@ export default function DashboardPage() {
                         <div className="mt-4 bg-gradient-to-r from-cyan-500/10 to-purple-500/10 border border-cyan-500/20 rounded-xl p-4">
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-purple-500 flex items-center justify-center flex-shrink-0">
-                                    <Sparkles className="w-5 h-5 text-white" />
+                                    <Sparkles className="w-5 h-5 text-[var(--text-primary)]" />
                                 </div>
                                 <div>
-                                    <p className="text-white font-medium">Your AI is working 24/7</p>
-                                    <p className="text-gray-400 text-sm">
+                                    <p className="text-[var(--text-primary)] font-medium">Your AI is working 24/7</p>
+                                    <p className="text-[var(--text-secondary)] text-sm">
                                         That's <span className="text-cyan-400 font-bold">{metrics?.hoursSaved || 0}+ hours</span> saved so far vs. hiring a human employee at ${METRICS_CONFIG.HOURLY_RATE}/hr
                                     </p>
                                 </div>
@@ -386,32 +386,32 @@ export default function DashboardPage() {
                     </div>
 
                     {/* Quick Actions */}
-                    <div className="bg-gradient-to-br from-[#0a0a0f] to-[#0f0f18] border border-[#1a1a2e] rounded-2xl p-6">
-                        <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                    <div className="bg-gradient-to-br from-[var(--bg-card-strong)] to-[var(--bg-secondary)] border border-[var(--bg-tertiary)] rounded-2xl p-6">
+                        <h3 className="text-lg font-bold text-[var(--text-primary)] mb-4 flex items-center gap-2">
                             <Sparkles className="w-5 h-5 text-yellow-500" />
                             Quick Actions
                         </h3>
                         <div className="space-y-3">
-                            <Link to="/portal/automations" className="flex items-center justify-between p-3 bg-[#080810] border border-[#151525] rounded-xl hover:border-cyan-500/30 transition group">
+                            <Link to="/portal/automations" className="flex items-center justify-between p-3 bg-[var(--bg-secondary)] border border-[var(--border)] rounded-xl hover:border-cyan-500/30 transition group">
                                 <div className="flex items-center gap-3">
                                     <Bot className="w-5 h-5 text-cyan-400" />
-                                    <span className="text-gray-300 group-hover:text-white transition">View Automations</span>
+                                    <span className="text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition">View Automations</span>
                                 </div>
-                                <ArrowRight className="w-4 h-4 text-gray-600 group-hover:text-cyan-400 transition" />
+                                <ArrowRight className="w-4 h-4 text-[var(--text-muted)] group-hover:text-cyan-400 transition" />
                             </Link>
-                            <Link to="/portal/reports" className="flex items-center justify-between p-3 bg-[#080810] border border-[#151525] rounded-xl hover:border-purple-500/30 transition group">
+                            <Link to="/portal/reports" className="flex items-center justify-between p-3 bg-[var(--bg-secondary)] border border-[var(--border)] rounded-xl hover:border-purple-500/30 transition group">
                                 <div className="flex items-center gap-3">
                                     <Calendar className="w-5 h-5 text-purple-400" />
-                                    <span className="text-gray-300 group-hover:text-white transition">View Reports</span>
+                                    <span className="text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition">View Reports</span>
                                 </div>
-                                <ArrowRight className="w-4 h-4 text-gray-600 group-hover:text-purple-400 transition" />
+                                <ArrowRight className="w-4 h-4 text-[var(--text-muted)] group-hover:text-purple-400 transition" />
                             </Link>
-                            <Link to="/portal/support" className="flex items-center justify-between p-3 bg-[#080810] border border-[#151525] rounded-xl hover:border-green-500/30 transition group">
+                            <Link to="/portal/support" className="flex items-center justify-between p-3 bg-[var(--bg-secondary)] border border-[var(--border)] rounded-xl hover:border-green-500/30 transition group">
                                 <div className="flex items-center gap-3">
                                     <HeadphonesIcon className="w-5 h-5 text-green-400" />
-                                    <span className="text-gray-300 group-hover:text-white transition">Get Support</span>
+                                    <span className="text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition">Get Support</span>
                                 </div>
-                                <ArrowRight className="w-4 h-4 text-gray-600 group-hover:text-green-400 transition" />
+                                <ArrowRight className="w-4 h-4 text-[var(--text-muted)] group-hover:text-green-400 transition" />
                             </Link>
                         </div>
                     </div>

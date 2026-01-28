@@ -216,7 +216,7 @@ const WelcomePage = () => {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-black flex items-center justify-center">
+            <div className="min-h-screen bg-[var(--bg-main)] flex items-center justify-center">
                 <Loader2 className="w-8 h-8 animate-spin text-cyan-500" />
             </div>
         );
@@ -227,14 +227,14 @@ const WelcomePage = () => {
     const allStepsComplete = completedSteps.length >= onboardingSteps.length;
 
     return (
-        <div className="min-h-screen bg-black text-white">
+        <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-primary)]">
             {/* Welcome Animation Overlay */}
             {showWelcomeAnimation && isNewUser && (
                 <motion.div
                     initial={{ opacity: 1 }}
                     animate={{ opacity: 0 }}
                     transition={{ delay: 1.5, duration: 0.5 }}
-                    className="fixed inset-0 z-50 bg-black flex items-center justify-center"
+                    className="fixed inset-0 z-50 bg-[var(--bg-main)] flex items-center justify-center"
                 >
                     <motion.div
                         initial={{ scale: 0.5, opacity: 0 }}
@@ -249,17 +249,17 @@ const WelcomePage = () => {
                             className="w-24 h-24 mx-auto mb-6"
                         >
                             <div className="w-full h-full rounded-full bg-gradient-to-r from-cyan-500 to-purple-500 flex items-center justify-center">
-                                <Sparkles className="w-12 h-12 text-white" />
+                                <Sparkles className="w-12 h-12 text-[var(--text-primary)]" />
                             </div>
                         </motion.div>
                         <h1 className="text-3xl font-bold mb-2">Welcome to OASIS AI!</h1>
-                        <p className="text-gray-400">Setting up your portal...</p>
+                        <p className="text-[var(--text-secondary)]">Setting up your portal...</p>
                     </motion.div>
                 </motion.div>
             )}
 
             {/* Header */}
-            <header className="bg-[#0a0a0f] border-b border-[#1a1a2e] sticky top-0 z-40">
+            <header className="bg-[var(--bg-primary)] border-b border-[var(--bg-tertiary)] sticky top-0 z-40">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-16">
                         <Link to="/" className="flex items-center gap-2">
@@ -276,25 +276,25 @@ const WelcomePage = () => {
                         <div className="flex items-center gap-4">
                             <Link
                                 to="/"
-                                className="flex items-center gap-2 text-gray-400 hover:text-white text-sm"
+                                className="flex items-center gap-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] text-sm"
                             >
                                 <Home className="w-4 h-4" />
                                 <span className="hidden sm:inline">Website</span>
                             </Link>
 
-                            <div className="flex items-center gap-3 pl-4 border-l border-[#1a1a2e]">
+                            <div className="flex items-center gap-3 pl-4 border-l border-[var(--bg-tertiary)]">
                                 <div className="w-8 h-8 rounded-full bg-cyan-500/20 flex items-center justify-center">
                                     <User className="w-4 h-4 text-cyan-400" />
                                 </div>
                                 <div className="hidden sm:block">
                                     <p className="text-sm font-medium">{profile?.full_name}</p>
-                                    <p className="text-xs text-gray-500">{profile?.email}</p>
+                                    <p className="text-xs text-[var(--text-muted)]">{profile?.email}</p>
                                 </div>
                             </div>
 
                             <button
                                 onClick={handleLogout}
-                                className="p-2 text-gray-400 hover:text-white"
+                                className="p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                                 title="Logout"
                             >
                                 <LogOut className="w-5 h-5" />
@@ -321,7 +321,7 @@ const WelcomePage = () => {
                             👋
                         </motion.span>
                     </h1>
-                    <p className="text-gray-400 text-lg">
+                    <p className="text-[var(--text-secondary)] text-lg">
                         {isNewUser
                             ? "Let's get you set up with your automation portal."
                             : "Your automations are ready and running."
@@ -343,11 +343,11 @@ const WelcomePage = () => {
                             </div>
                             <div>
                                 <h3 className="text-xl font-bold">Your 10% Welcome Discount</h3>
-                                <p className="text-gray-400">Use this code at checkout for 10% off your next purchase</p>
+                                <p className="text-[var(--text-secondary)]">Use this code at checkout for 10% off your next purchase</p>
                             </div>
                         </div>
                         <div className="flex items-center gap-3">
-                            <div className="bg-black/50 border border-cyan-500/50 px-6 py-3 rounded-lg font-mono text-cyan-400 font-bold text-xl tracking-wider">
+                            <div className="bg-[var(--bg-main)]/50 border border-cyan-500/50 px-6 py-3 rounded-lg font-mono text-cyan-400 font-bold text-xl tracking-wider">
                                 WELCOME10
                             </div>
                             <button
@@ -371,9 +371,9 @@ const WelcomePage = () => {
                         <div className="flex items-center justify-between mb-6">
                             <div>
                                 <h2 className="text-2xl font-bold">Getting Started</h2>
-                                <p className="text-gray-400">Complete these steps to get the most out of your portal</p>
+                                <p className="text-[var(--text-secondary)]">Complete these steps to get the most out of your portal</p>
                             </div>
-                            <div className="text-sm text-gray-400">
+                            <div className="text-sm text-[var(--text-secondary)]">
                                 {completedSteps.length} / {onboardingSteps.length} completed
                             </div>
                         </div>
@@ -394,14 +394,14 @@ const WelcomePage = () => {
                                             to={step.link}
                                             onClick={() => markStepComplete(step.id)}
                                             className={`block p-5 rounded-xl border transition-all ${isComplete
-                                                    ? 'bg-green-500/10 border-green-500/30'
-                                                    : 'bg-[#0a0a0f] border-[#1a1a2e] hover:border-[#2a2a3e]'
+                                                ? 'bg-green-500/10 border-green-500/30'
+                                                : 'bg-[var(--bg-primary)] border-[var(--bg-tertiary)] hover:border-[var(--border)]'
                                                 }`}
                                         >
                                             <div className="flex items-start gap-4">
                                                 <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${isComplete
-                                                        ? 'bg-green-500/20'
-                                                        : getColorClasses(step.color).split(' ')[0]
+                                                    ? 'bg-green-500/20'
+                                                    : getColorClasses(step.color).split(' ')[0]
                                                     }`}>
                                                     {isComplete ? (
                                                         <CheckCircle className="w-6 h-6 text-green-400" />
@@ -410,10 +410,10 @@ const WelcomePage = () => {
                                                     )}
                                                 </div>
                                                 <div className="flex-1">
-                                                    <h3 className={`font-bold ${isComplete ? 'text-green-400' : 'text-white'}`}>
+                                                    <h3 className={`font-bold ${isComplete ? 'text-green-400' : 'text-[var(--text-primary)]'}`}>
                                                         {step.title}
                                                     </h3>
-                                                    <p className="text-gray-500 text-sm">{step.description}</p>
+                                                    <p className="text-[var(--text-muted)] text-sm">{step.description}</p>
                                                 </div>
                                                 <ArrowRight className={`w-5 h-5 ${isComplete ? 'text-green-400' : 'text-gray-600'}`} />
                                             </div>
@@ -430,8 +430,8 @@ const WelcomePage = () => {
                             transition={{ delay: showWelcomeAnimation ? 2.7 : 0.7 }}
                             onClick={completeOnboarding}
                             className={`w-full py-4 rounded-xl font-bold text-lg transition flex items-center justify-center gap-2 ${allStepsComplete
-                                    ? 'bg-gradient-to-r from-cyan-500 to-cyan-400 text-black hover:from-cyan-400 hover:to-cyan-300'
-                                    : 'bg-[#1a1a2e] text-gray-400 hover:bg-[#2a2a3e]'
+                                ? 'bg-gradient-to-r from-cyan-500 to-cyan-400 text-black hover:from-cyan-400 hover:to-cyan-300'
+                                : 'bg-[var(--bg-tertiary)] text-[var(--text-secondary)] hover:bg-[var(--bg-main)]'
                                 }`}
                         >
                             <Rocket className="w-5 h-5" />
@@ -448,22 +448,22 @@ const WelcomePage = () => {
                         transition={{ delay: 0.2 }}
                         className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-12"
                     >
-                        <Link to="/portal/dashboard" className="p-6 bg-[#0a0a0f] border border-[#1a1a2e] rounded-xl hover:border-cyan-500/50 transition group">
+                        <Link to="/portal/dashboard" className="p-6 bg-[var(--bg-primary)] border border-[var(--bg-tertiary)] rounded-xl hover:border-cyan-500/50 transition group">
                             <LayoutDashboard className="w-8 h-8 text-cyan-400 mb-4 group-hover:scale-110 transition" />
                             <h3 className="text-lg font-bold mb-2">Dashboard</h3>
-                            <p className="text-gray-400 text-sm">View your automation metrics</p>
+                            <p className="text-[var(--text-secondary)] text-sm">View your automation metrics</p>
                         </Link>
 
-                        <Link to="/portal/billing" className="p-6 bg-[#0a0a0f] border border-[#1a1a2e] rounded-xl hover:border-green-500/50 transition group">
+                        <Link to="/portal/billing" className="p-6 bg-[var(--bg-primary)] border border-[var(--bg-tertiary)] rounded-xl hover:border-green-500/50 transition group">
                             <CreditCard className="w-8 h-8 text-green-400 mb-4 group-hover:scale-110 transition" />
                             <h3 className="text-lg font-bold mb-2">Billing</h3>
-                            <p className="text-gray-400 text-sm">Manage your subscription</p>
+                            <p className="text-[var(--text-secondary)] text-sm">Manage your subscription</p>
                         </Link>
 
-                        <Link to="/portal/support" className="p-6 bg-[#0a0a0f] border border-[#1a1a2e] rounded-xl hover:border-purple-500/50 transition group">
+                        <Link to="/portal/support" className="p-6 bg-[var(--bg-primary)] border border-[var(--bg-tertiary)] rounded-xl hover:border-purple-500/50 transition group">
                             <Headphones className="w-8 h-8 text-purple-400 mb-4 group-hover:scale-110 transition" />
                             <h3 className="text-lg font-bold mb-2">Support</h3>
-                            <p className="text-gray-400 text-sm">Get help from our team</p>
+                            <p className="text-[var(--text-secondary)] text-sm">Get help from our team</p>
                         </Link>
                     </motion.div>
                 )}
@@ -477,9 +477,9 @@ const WelcomePage = () => {
                     <div className="flex items-center justify-between mb-6">
                         <div>
                             <h2 className="text-2xl font-bold">Add More Automations</h2>
-                            <p className="text-gray-400">Expand your automation capabilities</p>
+                            <p className="text-[var(--text-secondary)]">Expand your automation capabilities</p>
                         </div>
-                        <Link to="/pricing" className="text-cyan-400 hover:text-white flex items-center gap-1 text-sm font-medium">
+                        <Link to="/pricing" className="text-cyan-400 hover:text-[var(--text-primary)] flex items-center gap-1 text-sm font-medium">
                             View all <ArrowRight className="w-4 h-4" />
                         </Link>
                     </div>
@@ -491,7 +491,7 @@ const WelcomePage = () => {
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: (showWelcomeAnimation && isNewUser ? 2.9 : 0.4) + index * 0.1 }}
-                                className="p-6 bg-[#0a0a0f] border border-[#1a1a2e] rounded-xl hover:border-cyan-500/50 transition relative"
+                                className="p-6 bg-[var(--bg-primary)] border border-[var(--bg-tertiary)] rounded-xl hover:border-cyan-500/50 transition relative"
                             >
                                 {agent.popular && (
                                     <span className="absolute -top-3 left-4 bg-cyan-500 text-black text-xs font-bold px-3 py-1 rounded-full">
@@ -504,12 +504,12 @@ const WelcomePage = () => {
                                 </div>
 
                                 <h3 className="text-lg font-bold mb-2">{agent.name}</h3>
-                                <p className="text-gray-400 text-sm mb-4">{agent.description}</p>
+                                <p className="text-[var(--text-secondary)] text-sm mb-4">{agent.description}</p>
 
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <span className="text-2xl font-bold text-cyan-400">${agent.price}</span>
-                                        <span className="text-gray-500 text-sm"> one-time</span>
+                                        <span className="text-[var(--text-muted)] text-sm"> one-time</span>
                                     </div>
                                     <Link
                                         to={`/pricing/${agent.id}`}
@@ -525,12 +525,12 @@ const WelcomePage = () => {
             </main>
 
             {/* Footer */}
-            <footer className="border-t border-[#1a1a2e] mt-16 py-8">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-gray-500 text-sm">
+            <footer className="border-t border-[var(--bg-tertiary)] mt-16 py-8">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-[var(--text-muted)] text-sm">
                     <p>© 2026 OASIS AI Solutions. All rights reserved.</p>
                     <div className="flex items-center justify-center gap-4 mt-2">
-                        <Link to="/privacy" className="hover:text-white transition">Privacy Policy</Link>
-                        <Link to="/terms" className="hover:text-white transition">Terms of Service</Link>
+                        <Link to="/privacy" className="hover:text-[var(--text-primary)] transition">Privacy Policy</Link>
+                        <Link to="/terms" className="hover:text-[var(--text-primary)] transition">Terms of Service</Link>
                     </div>
                 </div>
             </footer>

@@ -31,7 +31,7 @@ const getFieldConfig = (key: string) => {
     return AI_LABELS[normalizedKey] || {
         label: key.replace(/[_-]/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
         icon: FileText,
-        color: 'text-gray-400'
+        color: 'text-[var(--text-secondary)]'
     };
 };
 
@@ -165,7 +165,7 @@ export default function AutomationsPage() {
         switch (status) {
             case 'active': return 'bg-green-500/10 text-green-400 border-green-500/20';
             case 'pending_setup': return 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20';
-            default: return 'bg-gray-500/10 text-gray-400 border-gray-500/20';
+            default: return 'bg-gray-500/10 text-[var(--text-secondary)] border-gray-500/20';
         }
     };
 
@@ -292,9 +292,9 @@ export default function AutomationsPage() {
             <div className="h-[calc(100vh-80px)] lg:h-screen flex flex-col lg:flex-row overflow-hidden max-w-full">
 
                 {/* Left Panel: List */}
-                <div className={`w-full lg:w-1/3 border-r border-[#1a1a2e] flex flex-col bg-[#0a0a0f] overflow-hidden ${selectedAuto ? 'hidden lg:flex' : 'flex'}`}>
-                    <div className="p-4 sm:p-6 border-b border-[#1a1a2e] bg-[#0a0a0f] flex-shrink-0">
-                        <h1 className="text-xl sm:text-2xl font-bold text-white flex items-center gap-3">
+                <div className={`w-full lg:w-1/3 border-r border-[var(--bg-tertiary)] flex flex-col bg-[var(--bg-primary)] overflow-hidden ${selectedAuto ? 'hidden lg:flex' : 'flex'}`}>
+                    <div className="p-4 sm:p-6 border-b border-[var(--bg-tertiary)] bg-[var(--bg-primary)] flex-shrink-0">
+                        <h1 className="text-xl sm:text-2xl font-bold text-[var(--text-primary)] flex items-center gap-3">
                             <Bot className="w-5 h-5 sm:w-6 sm:h-6 text-cyan-500 flex-shrink-0" />
                             <span className="truncate">My Automations</span>
                         </h1>
@@ -303,7 +303,7 @@ export default function AutomationsPage() {
                     <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3">
                         {automations.length === 0 ? (
                             <div className="text-center py-10">
-                                <p className="text-gray-500">No automations found.</p>
+                                <p className="text-[var(--text-muted)]">No automations found.</p>
                             </div>
                         ) : (
                             automations.map(auto => (
@@ -312,18 +312,18 @@ export default function AutomationsPage() {
                                     onClick={() => setSelectedAuto(auto)}
                                     className={`w-full text-left p-3 sm:p-4 rounded-xl border cursor-pointer transition-all duration-200 group ${selectedAuto?.id === auto.id
                                         ? 'bg-cyan-500/10 border-cyan-500/30 shadow-[0_0_15px_rgba(6,182,212,0.1)]'
-                                        : 'bg-[#0a0a0f] border-[#1a1a2e] hover:border-gray-700'
+                                        : 'bg-[var(--bg-primary)] border-[var(--bg-tertiary)] hover:border-[var(--border)]'
                                         }`}
                                 >
                                     <div className="flex justify-between items-start gap-2 mb-2">
-                                        <h3 className={`font-bold text-sm sm:text-base break-words ${selectedAuto?.id === auto.id ? 'text-white' : 'text-gray-300 group-hover:text-white'}`}>
+                                        <h3 className={`font-bold text-sm sm:text-base break-words ${selectedAuto?.id === auto.id ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]'}`}>
                                             {auto.display_name}
                                         </h3>
                                         <span className={`px-2 py-0.5 text-[10px] uppercase font-bold rounded-full border flex-shrink-0 ${getStatusColor(auto.status)}`}>
                                             {auto.status}
                                         </span>
                                     </div>
-                                    <div className="flex justify-between items-center text-xs text-gray-500">
+                                    <div className="flex justify-between items-center text-xs text-[var(--text-muted)]">
                                         <span className="capitalize">{auto.tier} Plan</span>
                                         <span>{formatRelativeTime(auto.last_run_at || new Date().toISOString())}</span>
                                     </div>
@@ -334,34 +334,34 @@ export default function AutomationsPage() {
                 </div>
 
                 {/* Right Panel: Details */}
-                <div className={`flex-1 flex flex-col bg-[#050508] overflow-hidden ${!selectedAuto ? 'hidden lg:flex items-center justify-center' : 'flex'}`}>
+                <div className={`flex-1 flex flex-col bg-[var(--bg-main)] overflow-hidden ${!selectedAuto ? 'hidden lg:flex items-center justify-center' : 'flex'}`}>
                     {!selectedAuto ? (
-                        <div className="text-center text-gray-500">
+                        <div className="text-center text-[var(--text-muted)]">
                             <Bot className="w-16 h-16 mx-auto mb-4 opacity-20" />
                             <p>Select an automation to view details</p>
                         </div>
                     ) : (
                         <>
                             {/* Header with Settings Menu */}
-                            <div className="p-4 sm:p-6 border-b border-[#1a1a2e] bg-[#0a0a0f] flex items-center justify-between shadow-lg z-10 flex-shrink-0">
+                            <div className="p-4 sm:p-6 border-b border-[var(--bg-tertiary)] bg-[var(--bg-primary)] flex items-center justify-between shadow-lg z-10 flex-shrink-0">
                                 <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
                                     <button
                                         onClick={() => setSelectedAuto(null)}
-                                        className="lg:hidden p-2 -ml-2 text-gray-400 hover:text-white flex-shrink-0"
+                                        className="lg:hidden p-2 -ml-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] flex-shrink-0"
                                     >
                                         ←
                                     </button>
-                                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-[#151520] border border-[#2a2a3e] flex items-center justify-center flex-shrink-0">
+                                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-[var(--bg-tertiary)] border border-[var(--border)] flex items-center justify-center flex-shrink-0">
                                         <Bot className="w-5 h-5 sm:w-6 sm:h-6 text-cyan-400" />
                                     </div>
                                     <div className="min-w-0 flex-1">
-                                        <h2 className="text-base sm:text-xl font-bold text-white break-words leading-tight">
+                                        <h2 className="text-base sm:text-xl font-bold text-[var(--text-primary)] break-words leading-tight">
                                             {selectedAuto.display_name}
                                         </h2>
-                                        <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-400 mt-1">
+                                        <div className="flex items-center gap-2 text-xs sm:text-sm text-[var(--text-secondary)] mt-1">
                                             <span className={`w-2 h-2 rounded-full flex-shrink-0 ${selectedAuto.status === 'active' ? 'bg-green-500 shadow-[0_0_8px_rgb(34,197,94)]' : 'bg-gray-500'}`}></span>
                                             <span className="capitalize truncate">{selectedAuto.status.replace('_', ' ')}</span>
-                                            <span className="text-gray-600">•</span>
+                                            <span className="text-[var(--text-muted)]">•</span>
                                             <span className="capitalize truncate">{selectedAuto.tier} Plan</span>
                                         </div>
                                     </div>
@@ -371,7 +371,7 @@ export default function AutomationsPage() {
                                 <div className="relative">
                                     <button
                                         onClick={() => setShowSettingsMenu(!showSettingsMenu)}
-                                        className="p-2 text-gray-400 hover:text-white rounded-lg hover:bg-gray-800 transition"
+                                        className="p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] rounded-lg hover:bg-[var(--bg-card)] transition"
                                     >
                                         <MoreVertical className="w-5 h-5" />
                                     </button>
@@ -382,17 +382,17 @@ export default function AutomationsPage() {
                                                 className="fixed inset-0 z-10"
                                                 onClick={() => setShowSettingsMenu(false)}
                                             />
-                                            <div className="absolute right-0 top-full mt-2 w-48 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-20">
+                                            <div className="absolute right-0 top-full mt-2 w-48 bg-[var(--bg-card)] border border-[var(--border)] rounded-lg shadow-xl z-20">
                                                 <button
                                                     onClick={() => { setEditingName(true); setShowSettingsMenu(false); }}
-                                                    className="w-full px-4 py-3 text-left text-gray-300 hover:bg-gray-700 flex items-center gap-2 rounded-t-lg transition"
+                                                    className="w-full px-4 py-3 text-left text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] flex items-center gap-2 rounded-t-lg transition"
                                                 >
                                                     <Edit className="w-4 h-4" />
                                                     Rename
                                                 </button>
                                                 <button
                                                     onClick={() => { exportLogsToCSV(); setShowSettingsMenu(false); }}
-                                                    className="w-full px-4 py-3 text-left text-gray-300 hover:bg-gray-700 flex items-center gap-2 rounded-b-lg transition"
+                                                    className="w-full px-4 py-3 text-left text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] flex items-center gap-2 rounded-b-lg transition"
                                                     disabled={logs.length === 0}
                                                 >
                                                     <Download className="w-4 h-4" />
@@ -410,23 +410,23 @@ export default function AutomationsPage() {
 
                                     {/* Stats - Using CENTRALIZED METRICS for consistency */}
                                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-                                        <div className="bg-[#0a0a0f] border border-[#1a1a2e] p-3 sm:p-4 rounded-xl">
-                                            <p className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-wider mb-1">Type</p>
-                                            <p className="text-white text-sm sm:text-base font-medium truncate">{selectedAuto.automation_type}</p>
+                                        <div className="bg-[var(--bg-primary)] border border-[var(--bg-tertiary)] p-3 sm:p-4 rounded-xl">
+                                            <p className="text-[10px] sm:text-xs text-[var(--text-muted)] uppercase tracking-wider mb-1">Type</p>
+                                            <p className="text-[var(--text-primary)] text-sm sm:text-base font-medium truncate">{selectedAuto.automation_type}</p>
                                         </div>
-                                        <div className="bg-[#0a0a0f] border border-[#1a1a2e] p-3 sm:p-4 rounded-xl">
-                                            <p className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-wider mb-1">Created</p>
-                                            <p className="text-white text-sm sm:text-base font-medium truncate">{formatDate(selectedAuto.created_at)}</p>
+                                        <div className="bg-[var(--bg-primary)] border border-[var(--bg-tertiary)] p-3 sm:p-4 rounded-xl">
+                                            <p className="text-[10px] sm:text-xs text-[var(--text-muted)] uppercase tracking-wider mb-1">Created</p>
+                                            <p className="text-[var(--text-primary)] text-sm sm:text-base font-medium truncate">{formatDate(selectedAuto.created_at)}</p>
                                         </div>
-                                        <div className="bg-[#0a0a0f] border border-[#1a1a2e] p-3 sm:p-4 rounded-xl">
-                                            <p className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-wider mb-1">Total Runs</p>
+                                        <div className="bg-[var(--bg-primary)] border border-[var(--bg-tertiary)] p-3 sm:p-4 rounded-xl">
+                                            <p className="text-[10px] sm:text-xs text-[var(--text-muted)] uppercase tracking-wider mb-1">Total Runs</p>
                                             {/* CRITICAL: Use centralized metrics for consistency with Dashboard */}
-                                            <p className="text-white text-sm sm:text-base font-medium">
+                                            <p className="text-[var(--text-primary)] text-sm sm:text-base font-medium">
                                                 {loadingLogs ? '...' : automationMetrics?.totalRuns || 0}
                                             </p>
                                         </div>
-                                        <div className="bg-[#0a0a0f] border border-[#1a1a2e] p-3 sm:p-4 rounded-xl">
-                                            <p className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-wider mb-1">Reliability</p>
+                                        <div className="bg-[var(--bg-primary)] border border-[var(--bg-tertiary)] p-3 sm:p-4 rounded-xl">
+                                            <p className="text-[10px] sm:text-xs text-[var(--text-muted)] uppercase tracking-wider mb-1">Reliability</p>
                                             {/* CRITICAL: Use centralized metrics for consistency */}
                                             <p className="text-green-400 text-sm sm:text-base font-medium">
                                                 {loadingLogs ? '...' : formatPercentage(automationMetrics?.reliability || 100)}
@@ -441,7 +441,7 @@ export default function AutomationsPage() {
                                                 <TrendingUp className="w-4 h-4 text-green-400" />
                                                 <p className="text-[10px] sm:text-xs text-green-400 uppercase tracking-wider">Successful</p>
                                             </div>
-                                            <p className="text-white text-lg sm:text-xl font-bold">
+                                            <p className="text-[var(--text-primary)] text-lg sm:text-xl font-bold">
                                                 {automationMetrics?.successfulRuns || 0}
                                             </p>
                                         </div>
@@ -450,7 +450,7 @@ export default function AutomationsPage() {
                                                 <Activity className="w-4 h-4 text-orange-400" />
                                                 <p className="text-[10px] sm:text-xs text-orange-400 uppercase tracking-wider">This Week</p>
                                             </div>
-                                            <p className="text-white text-lg sm:text-xl font-bold">
+                                            <p className="text-[var(--text-primary)] text-lg sm:text-xl font-bold">
                                                 {automationMetrics?.runsThisWeek || 0}
                                             </p>
                                         </div>
@@ -459,7 +459,7 @@ export default function AutomationsPage() {
                                                 <Sparkles className="w-4 h-4 text-red-400" />
                                                 <p className="text-[10px] sm:text-xs text-red-400 uppercase tracking-wider">Failed</p>
                                             </div>
-                                            <p className="text-white text-lg sm:text-xl font-bold">
+                                            <p className="text-[var(--text-primary)] text-lg sm:text-xl font-bold">
                                                 {automationMetrics?.failedRuns || 0}
                                             </p>
                                         </div>
@@ -468,17 +468,17 @@ export default function AutomationsPage() {
                                     {/* Activity Log Header with Clear All */}
                                     <div>
                                         <div className="flex items-center justify-between mb-4">
-                                            <h3 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+                                            <h3 className="text-base sm:text-lg font-bold text-[var(--text-primary)] flex items-center gap-2">
                                                 <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-purple-500 flex-shrink-0" />
                                                 Activity Log
-                                                <span className="text-xs text-gray-500 font-normal">
+                                                <span className="text-xs text-[var(--text-muted)] font-normal">
                                                     ({logs.length} entries)
                                                 </span>
                                             </h3>
                                             {logs.length > 0 && (
                                                 <button
                                                     onClick={() => setShowClearAllLogs(true)}
-                                                    className="text-sm text-gray-400 hover:text-red-400 transition"
+                                                    className="text-sm text-[var(--text-secondary)] hover:text-red-400 transition"
                                                 >
                                                     Clear All
                                                 </button>
@@ -488,8 +488,8 @@ export default function AutomationsPage() {
                                         {loadingLogs ? (
                                             <div className="py-10 text-center"><Loader2 className="animate-spin w-8 h-8 text-cyan-500 mx-auto" /></div>
                                         ) : logs.length === 0 ? (
-                                            <div className="bg-[#0a0a0f] border border-[#1a1a2e] rounded-xl p-6 sm:p-8 text-center">
-                                                <p className="text-gray-500 text-sm sm:text-base">No activity recorded for this automation yet.</p>
+                                            <div className="bg-[var(--bg-primary)] border border-[var(--bg-tertiary)] rounded-xl p-6 sm:p-8 text-center">
+                                                <p className="text-[var(--text-muted)] text-sm sm:text-base">No activity recorded for this automation yet.</p>
                                             </div>
                                         ) : (
                                             <div className="space-y-4">
@@ -499,15 +499,15 @@ export default function AutomationsPage() {
                                                     const hasMetadata = parsedMetadata && Object.keys(parsedMetadata).length > 0;
 
                                                     return (
-                                                        <div key={log.id} className="relative pl-4 sm:pl-6 pb-4 border-l border-[#1a1a2e] last:border-0 last:pb-0 group/log">
+                                                        <div key={log.id} className="relative pl-4 sm:pl-6 pb-4 border-l border-[var(--bg-tertiary)] last:border-0 last:pb-0 group/log">
                                                             <div className={`absolute -left-[5px] top-1.5 w-2.5 h-2.5 rounded-full border-2 border-[#050505] ${log.status === 'success' ? 'bg-green-500' : 'bg-red-500'}`}></div>
 
-                                                            <div className="bg-[#0a0a0f] border border-[#1a1a2e] rounded-xl group-hover/log:border-[#2a2a3e] transition overflow-hidden">
+                                                            <div className="bg-[var(--bg-primary)] border border-[var(--bg-tertiary)] rounded-xl group-hover/log:border-[var(--border)] transition overflow-hidden">
                                                                 <div className="p-3 sm:p-4">
                                                                     <div className="flex justify-between items-start gap-2 mb-2">
                                                                         <div className="min-w-0 flex-1">
-                                                                            <h4 className="font-bold text-white text-sm sm:text-base break-words">{log.event_name}</h4>
-                                                                            <p className="text-gray-500 text-xs sm:text-sm break-words">{log.event_type}</p>
+                                                                            <h4 className="font-bold text-[var(--text-primary)] text-sm sm:text-base break-words">{log.event_name}</h4>
+                                                                            <p className="text-[var(--text-muted)] text-xs sm:text-sm break-words">{log.event_type}</p>
                                                                         </div>
                                                                         <div className="flex items-center gap-2 flex-shrink-0">
                                                                             <span className={`px-2 py-0.5 rounded-full text-[10px] uppercase font-bold ${log.status === 'success' ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'}`}>
@@ -516,7 +516,7 @@ export default function AutomationsPage() {
                                                                             {/* Delete button - shows on hover */}
                                                                             <button
                                                                                 onClick={() => setDeleteLogId(log.id)}
-                                                                                className="p-1.5 text-gray-600 hover:text-red-400 opacity-0 group-hover/log:opacity-100 transition rounded hover:bg-red-500/10"
+                                                                                className="p-1.5 text-[var(--text-muted)] hover:text-red-400 opacity-0 group-hover/log:opacity-100 transition rounded hover:bg-red-500/10"
                                                                                 title="Delete log"
                                                                             >
                                                                                 <Trash2 className="w-4 h-4" />
@@ -524,7 +524,7 @@ export default function AutomationsPage() {
                                                                         </div>
                                                                     </div>
                                                                     <div className="flex justify-between items-center">
-                                                                        <span className="text-gray-600 text-xs">{formatRelativeTime(log.created_at)}</span>
+                                                                        <span className="text-[var(--text-muted)] text-xs">{formatRelativeTime(log.created_at)}</span>
                                                                         {hasMetadata && (
                                                                             <button
                                                                                 onClick={() => toggleLogExpanded(log.id)}
@@ -539,8 +539,8 @@ export default function AutomationsPage() {
 
                                                                 {/* Execution Details - SCROLLABLE */}
                                                                 {isExpanded && parsedMetadata && (
-                                                                    <div className="border-t border-[#1a1a2e] p-3 sm:p-4 bg-[#080810]">
-                                                                        <p className="text-xs text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+                                                                    <div className="border-t border-[var(--bg-tertiary)] p-3 sm:p-4 bg-[var(--bg-secondary)]">
+                                                                        <p className="text-xs text-[var(--text-muted)] uppercase tracking-wider mb-3 flex items-center gap-2">
                                                                             <Sparkles className="w-3 h-3" />
                                                                             Execution Details
                                                                         </p>
@@ -551,7 +551,7 @@ export default function AutomationsPage() {
                                                                                 const IconComponent = config.icon;
 
                                                                                 return (
-                                                                                    <div key={key} className="bg-[#0a0a0f] border border-[#1a1a2e] rounded-lg p-3">
+                                                                                    <div key={key} className="bg-[var(--bg-primary)] border border-[var(--bg-tertiary)] rounded-lg p-3">
                                                                                         <div className={`flex items-center gap-2 mb-2 ${config.color}`}>
                                                                                             <IconComponent className="w-4 h-4 flex-shrink-0" />
                                                                                             <span className="text-xs uppercase tracking-wider font-medium">{config.label}</span>
@@ -582,10 +582,10 @@ export default function AutomationsPage() {
             {/* MODAL: Rename Automation */}
             {editingName && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                    <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 max-w-sm w-full shadow-2xl">
+                    <div className="bg-[var(--bg-card-strong)] border border-[var(--bg-tertiary)] rounded-xl p-6 max-w-sm w-full shadow-2xl">
                         <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-lg font-semibold text-white">Rename Automation</h3>
-                            <button onClick={() => setEditingName(false)} className="text-gray-400 hover:text-white">
+                            <h3 className="text-lg font-semibold text-[var(--text-primary)]">Rename Automation</h3>
+                            <button onClick={() => setEditingName(false)} className="text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
@@ -593,14 +593,14 @@ export default function AutomationsPage() {
                             type="text"
                             value={newName}
                             onChange={(e) => setNewName(e.target.value)}
-                            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white mb-4 focus:border-cyan-500 focus:outline-none transition"
+                            className="w-full bg-[var(--bg-card)] border border-[var(--border)] rounded-lg px-4 py-3 text-[var(--text-primary)] mb-4 focus:border-cyan-500 focus:outline-none transition"
                             placeholder="Automation name"
                             autoFocus
                         />
                         <div className="flex gap-3">
                             <button
                                 onClick={() => setEditingName(false)}
-                                className="flex-1 py-2.5 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition"
+                                className="flex-1 py-2.5 bg-[var(--bg-card)] text-[var(--text-primary)] rounded-lg hover:bg-[var(--bg-tertiary)] transition"
                             >
                                 Cancel
                             </button>
@@ -619,25 +619,25 @@ export default function AutomationsPage() {
             {/* MODAL: Delete Log Confirmation */}
             {deleteLogId && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                    <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 max-w-sm w-full shadow-2xl">
+                    <div className="bg-[var(--bg-card-strong)] border border-[var(--bg-tertiary)] rounded-xl p-6 max-w-sm w-full shadow-2xl">
                         <div className="flex items-center gap-3 mb-4">
                             <div className="w-10 h-10 bg-red-500/20 rounded-full flex items-center justify-center">
                                 <AlertTriangle className="w-5 h-5 text-red-400" />
                             </div>
-                            <h3 className="text-lg font-semibold text-white">Delete Log Entry?</h3>
+                            <h3 className="text-lg font-semibold text-[var(--text-primary)]">Delete Log Entry?</h3>
                         </div>
-                        <p className="text-gray-400 mb-6">This action cannot be undone.</p>
+                        <p className="text-[var(--text-secondary)] mb-6">This action cannot be undone.</p>
                         <div className="flex gap-3">
                             <button
                                 onClick={() => setDeleteLogId(null)}
-                                className="flex-1 py-2.5 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition"
+                                className="flex-1 py-2.5 bg-[var(--bg-card)] text-[var(--text-primary)] rounded-lg hover:bg-[var(--bg-tertiary)] transition"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={() => handleDeleteLog(deleteLogId)}
                                 disabled={deletingLog}
-                                className="flex-1 py-2.5 bg-red-500 text-white font-semibold rounded-lg hover:bg-red-400 transition disabled:opacity-50"
+                                className="flex-1 py-2.5 bg-red-500 text-[var(--text-primary)] font-semibold rounded-lg hover:bg-red-400 transition disabled:opacity-50"
                             >
                                 {deletingLog ? 'Deleting...' : 'Delete'}
                             </button>
@@ -649,28 +649,28 @@ export default function AutomationsPage() {
             {/* MODAL: Clear All Logs Confirmation */}
             {showClearAllLogs && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                    <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 max-w-sm w-full shadow-2xl">
+                    <div className="bg-[var(--bg-card-strong)] border border-[var(--bg-tertiary)] rounded-xl p-6 max-w-sm w-full shadow-2xl">
                         <div className="flex items-center gap-3 mb-4">
                             <div className="w-10 h-10 bg-red-500/20 rounded-full flex items-center justify-center">
                                 <AlertTriangle className="w-5 h-5 text-red-400" />
                             </div>
-                            <h3 className="text-lg font-semibold text-white">Clear All Logs?</h3>
+                            <h3 className="text-lg font-semibold text-[var(--text-primary)]">Clear All Logs?</h3>
                         </div>
-                        <p className="text-gray-400 mb-2">
-                            This will permanently delete <span className="text-white font-bold">{logs.length}</span> log entries.
+                        <p className="text-[var(--text-secondary)] mb-2">
+                            This will permanently delete <span className="text-[var(--text-primary)] font-bold">{logs.length}</span> log entries.
                         </p>
-                        <p className="text-gray-500 text-sm mb-6">This action cannot be undone.</p>
+                        <p className="text-[var(--text-muted)] text-sm mb-6">This action cannot be undone.</p>
                         <div className="flex gap-3">
                             <button
                                 onClick={() => setShowClearAllLogs(false)}
-                                className="flex-1 py-2.5 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition"
+                                className="flex-1 py-2.5 bg-[var(--bg-card)] text-[var(--text-primary)] rounded-lg hover:bg-[var(--bg-tertiary)] transition"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={handleClearAllLogs}
                                 disabled={clearingAllLogs}
-                                className="flex-1 py-2.5 bg-red-500 text-white font-semibold rounded-lg hover:bg-red-400 transition disabled:opacity-50"
+                                className="flex-1 py-2.5 bg-red-500 text-[var(--text-primary)] font-semibold rounded-lg hover:bg-red-400 transition disabled:opacity-50"
                             >
                                 {clearingAllLogs ? 'Clearing...' : 'Clear All'}
                             </button>
