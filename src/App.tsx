@@ -67,7 +67,7 @@ function App() {
 
     return (
         <ErrorBoundary>
-            <StarField paused={showSplash} />
+            <StarField paused={showSplash} forceTheme="dark" />
             {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
 
             {/* Main content is always rendered behind the splash screen for seamless transition */}

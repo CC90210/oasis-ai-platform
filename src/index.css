@@ -9,10 +9,12 @@
   --oasis-cyan-glow: rgba(0, 212, 255, 0.3);
 
   /* Background */
+  --bg-main: #050505;
   --bg-primary: #0A0A0F;
   --bg-secondary: #0F1419;
   --bg-tertiary: #1A1F2E;
   --bg-card: rgba(15, 20, 25, 0.6);
+  --bg-card-strong: rgba(10, 10, 15, 0.9);
 
   /* Text */
   --text-primary: #FFFFFF;
@@ -52,6 +54,52 @@
   --input: 240 3.7% 15.9%;
   --ring: 190 100% 50%;
   --radius: 0.5rem;
+
+  /* Theme transition */
+  --theme-transition: background-color 0.5s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Light Mode Theme */
+:root.light-mode {
+  /* Background - Light theme */
+  --bg-main: #F1F5F9;
+  --bg-primary: #FFFFFF;
+  --bg-secondary: #F8FAFC;
+  --bg-tertiary: #E2E8F0;
+  --bg-card: rgba(255, 255, 255, 0.8);
+  --bg-card-strong: rgba(255, 255, 255, 0.95);
+
+  /* Text - Dark on light */
+  --text-primary: #0F172A;
+  --text-secondary: #334155;
+  --text-tertiary: #64748B;
+  --text-muted: #94A3B8;
+
+  /* Primary stays cyan for brand consistency */
+  --oasis-cyan: #00B8D9;
+  --oasis-cyan-dark: #0097A7;
+  --oasis-cyan-glow: rgba(0, 184, 217, 0.25);
+
+  /* shadcn/ui light mode mappings */
+  --background: 0 0% 100%;
+  --foreground: 222 84% 5%;
+  --card: 0 0% 100%;
+  --card-foreground: 222 84% 5%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 84% 5%;
+  --primary: 190 100% 43%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 210 40% 96%;
+  --secondary-foreground: 222 47% 11%;
+  --muted: 210 40% 96%;
+  --muted-foreground: 215 16% 47%;
+  --accent: 210 40% 96%;
+  --accent-foreground: 222 47% 11%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 214 32% 91%;
+  --input: 214 32% 91%;
+  --ring: 190 100% 43%;
 }
 
 @layer base {
@@ -78,7 +126,7 @@
     background: transparent;
   }
 
-  /* Subtle vignette overlay for depth */
+  /* Subtle vignette overlay for depth - only in dark mode */
   body::before {
     content: '';
     position: fixed;
@@ -89,6 +137,12 @@
     background: radial-gradient(ellipse at center, transparent 0%, rgba(0, 0, 0, 0.4) 100%);
     pointer-events: none;
     z-index: 0;
+    transition: opacity 0.5s ease;
+  }
+
+  /* Hide vignette in light mode */
+  .light-mode body::before {
+    opacity: 0;
   }
 
   /* FIX: Ensure StarField is always visible */
@@ -98,8 +152,7 @@
     left: 0 !important;
     z-index: 0 !important;
     pointer-events: none !important;
-    background: #050508;
-    /* Fallback background color */
+    transition: background 0.5s ease;
   }
 
   h1,

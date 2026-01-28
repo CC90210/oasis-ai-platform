@@ -124,31 +124,31 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
     // Show minimal loading only on initial load
     if (loading && !profile) {
         return (
-            <div className="min-h-screen bg-[#050505] flex items-center justify-center">
+            <div className="min-h-screen bg-[var(--bg-main)] flex items-center justify-center transition-colors duration-300">
                 <div className="text-center">
                     <div className="w-12 h-12 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                    <p className="text-gray-500 text-sm">Loading portal...</p>
+                    <p className="text-[var(--text-secondary)] text-sm">Loading portal...</p>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-[#050505] flex selection:bg-cyan-500/20 text-white font-sans relative overflow-x-hidden max-w-full">
+        <div className="min-h-screen bg-[var(--bg-main)] flex selection:bg-cyan-500/20 text-[var(--text-primary)] font-sans relative overflow-x-hidden max-w-full transition-colors duration-300">
             {/* Real StarField background - same as main site */}
             <StarField />
 
             {/* Sidebar (Desktop) */}
-            <aside className="w-72 bg-[#0a0a0f] border-r border-[#1a1a2e] p-6 flex flex-col hidden lg:flex shadow-2xl z-20 fixed top-0 left-0 h-screen">
+            <aside className="w-72 bg-[var(--bg-primary)] border-r border-[var(--bg-tertiary)] p-6 flex flex-col hidden lg:flex shadow-2xl z-20 fixed top-0 left-0 h-screen transition-colors duration-300">
                 {/* Logo - Clickable to go home */}
                 <Link to="/" className="flex items-center gap-4 mb-10 pl-2 group/logo hover:opacity-90 transition">
                     <div className="relative">
                         <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500 to-purple-600 rounded-xl blur opacity-25 group-hover/logo:opacity-50 transition duration-500"></div>
-                        <div className="relative h-12 w-12 bg-[#0a0a14] rounded-xl flex items-center justify-center border border-[#2a2a3e] shadow-xl">
+                        <div className="relative h-12 w-12 bg-[var(--bg-tertiary)] rounded-xl flex items-center justify-center border border-[var(--border)] shadow-xl">
                             <Bot className="w-7 h-7 text-cyan-400" />
                         </div>
                     </div>
-                    <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
+                    <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[var(--text-primary)] to-[var(--text-muted)]">
                         OASIS AI
                     </span>
                 </Link>
@@ -158,7 +158,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
                     {navItems.map((item, index) => {
                         // Handle divider
                         if (item.type === 'divider') {
-                            return <div key={`divider-${index}`} className="border-t border-[#1a1a2e] my-3" />;
+                            return <div key={`divider-${index}`} className="border-t border-[var(--bg-tertiary)] my-3" />;
                         }
 
                         // TypeScript now knows item.type === 'link'
@@ -172,16 +172,16 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
                                 key={linkItem.path}
                                 to={linkItem.path}
                                 className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group relative overflow-hidden ${isExternal
-                                    ? 'text-gray-500 hover:bg-[#151520] hover:text-white border border-transparent'
+                                    ? 'text-[var(--text-muted)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] border border-transparent'
                                     : isActive
                                         ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 shadow-[0_0_20px_rgba(6,182,212,0.15)]'
-                                        : 'text-gray-400 hover:bg-[#151520] hover:text-white border border-transparent'
+                                        : 'text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] border border-transparent'
                                     }`}
                             >
                                 {isActive && !isExternal && (
                                     <div className="absolute left-0 top-0 bottom-0 w-1 bg-cyan-500 rounded-l-xl"></div>
                                 )}
-                                <IconComponent className={`w-5 h-5 ${isActive && !isExternal ? 'text-cyan-400' : 'text-gray-500 group-hover:text-cyan-400 transition-colors'}`} />
+                                <IconComponent className={`w-5 h-5 ${isActive && !isExternal ? 'text-cyan-400' : 'text-[var(--text-muted)] group-hover:text-cyan-400 transition-colors'}`} />
                                 <span className="font-medium">{linkItem.label}</span>
                                 {isExternal && <ExternalLink className="w-3 h-3 ml-auto opacity-50" />}
                             </Link>
@@ -190,7 +190,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
                 </nav>
 
                 {/* User Info */}
-                <div className="border-t border-[#1a1a2e] pt-6 mt-4">
+                <div className="border-t border-[var(--bg-tertiary)] pt-6 mt-4">
                     <div className="flex items-center gap-3 mb-4">
                         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-purple-600 flex items-center justify-center text-white font-bold shadow-lg overflow-hidden flex-shrink-0">
                             {profile?.avatar_url ? (
@@ -200,13 +200,13 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
                             )}
                         </div>
                         <div className="flex-1 min-w-0">
-                            <p className="font-medium text-white truncate">{profile?.full_name || 'Client'}</p>
-                            <p className="text-xs text-gray-500 truncate">{profile?.email}</p>
+                            <p className="font-medium text-[var(--text-primary)] truncate">{profile?.full_name || 'Client'}</p>
+                            <p className="text-xs text-[var(--text-muted)] truncate">{profile?.email}</p>
                         </div>
                     </div>
                     <button
                         onClick={handleLogout}
-                        className="flex items-center gap-2 w-full px-4 py-2.5 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition text-sm font-medium border border-transparent hover:border-red-500/20"
+                        className="flex items-center gap-2 w-full px-4 py-2.5 text-[var(--text-secondary)] hover:text-red-400 hover:bg-red-500/10 rounded-lg transition text-sm font-medium border border-transparent hover:border-red-500/20"
                     >
                         <LogOut className="w-4 h-4" />
                         Sign Out
@@ -215,12 +215,12 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
             </aside>
 
             {/* Mobile Header */}
-            <div className="lg:hidden fixed top-0 left-0 right-0 z-30 bg-[#0a0a0f] border-b border-[#1a1a2e] px-4 py-3 max-w-full">
+            <div className="lg:hidden fixed top-0 left-0 right-0 z-30 bg-[var(--bg-primary)] border-b border-[var(--bg-tertiary)] px-4 py-3 max-w-full transition-colors duration-300">
                 <div className="flex items-center justify-between">
                     {/* Home button */}
                     <Link
                         to="/"
-                        className="p-2 -ml-2 text-gray-400 hover:text-cyan-400 transition min-h-[44px] min-w-[44px] flex items-center justify-center"
+                        className="p-2 -ml-2 text-[var(--text-secondary)] hover:text-cyan-400 transition min-h-[44px] min-w-[44px] flex items-center justify-center"
                         aria-label="Back to website"
                     >
                         <Home className="w-5 h-5" />
@@ -228,16 +228,16 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
 
                     {/* Logo */}
                     <Link to="/" className="flex items-center gap-2">
-                        <div className="h-8 w-8 bg-[#0a0a14] rounded-lg flex items-center justify-center border border-[#2a2a3e] flex-shrink-0">
+                        <div className="h-8 w-8 bg-[var(--bg-tertiary)] rounded-lg flex items-center justify-center border border-[var(--border)] flex-shrink-0">
                             <Bot className="w-4 h-4 text-cyan-400" />
                         </div>
-                        <span className="font-bold text-white">OASIS AI</span>
+                        <span className="font-bold text-[var(--text-primary)]">OASIS AI</span>
                     </Link>
 
                     {/* Menu button */}
                     <button
                         onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                        className="p-2 -mr-2 text-gray-400 hover:text-white min-h-[44px] min-w-[44px] flex items-center justify-center"
+                        className="p-2 -mr-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] min-h-[44px] min-w-[44px] flex items-center justify-center"
                         aria-label="Toggle menu"
                     >
                         {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -249,17 +249,17 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
             {mobileMenuOpen && (
                 <div className="lg:hidden fixed inset-0 z-40">
                     <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setMobileMenuOpen(false)}></div>
-                    <div className="absolute top-0 left-0 bottom-0 w-72 max-w-[80vw] bg-[#0a0a0f] p-6 flex flex-col overflow-y-auto">
+                    <div className="absolute top-0 left-0 bottom-0 w-72 max-w-[80vw] bg-[var(--bg-primary)] p-6 flex flex-col overflow-y-auto">
                         <div className="flex items-center justify-between mb-8">
                             <div className="flex items-center gap-3">
-                                <div className="h-10 w-10 bg-[#0a0a14] rounded-xl flex items-center justify-center border border-[#2a2a3e]">
+                                <div className="h-10 w-10 bg-[var(--bg-tertiary)] rounded-xl flex items-center justify-center border border-[var(--border)]">
                                     <Bot className="w-5 h-5 text-cyan-400" />
                                 </div>
-                                <span className="font-bold text-white">OASIS AI</span>
+                                <span className="font-bold text-[var(--text-primary)]">OASIS AI</span>
                             </div>
                             <button
                                 onClick={() => setMobileMenuOpen(false)}
-                                className="p-2 text-gray-400 hover:text-white"
+                                className="p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                                 aria-label="Close menu"
                             >
                                 <X className="w-5 h-5" />
@@ -270,7 +270,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
                             {navItems.map((item, index) => {
                                 // Handle divider
                                 if (item.type === 'divider') {
-                                    return <div key={`mobile-divider-${index}`} className="border-t border-[#1a1a2e] my-3" />;
+                                    return <div key={`mobile-divider-${index}`} className="border-t border-[var(--bg-tertiary)] my-3" />;
                                 }
 
                                 // TypeScript now knows item.type === 'link'
@@ -285,10 +285,10 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
                                         to={linkItem.path}
                                         onClick={() => setMobileMenuOpen(false)}
                                         className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all min-h-[48px] ${isExternal
-                                            ? 'text-gray-500 hover:bg-[#151520] hover:text-white'
+                                            ? 'text-[var(--text-muted)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]'
                                             : isActive
                                                 ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20'
-                                                : 'text-gray-400 hover:bg-[#151520] hover:text-white'
+                                                : 'text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]'
                                             }`}
                                     >
                                         <IconComponent className="w-5 h-5 flex-shrink-0" />
@@ -299,7 +299,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
                             })}
                         </nav>
 
-                        <div className="border-t border-[#1a1a2e] pt-4 mt-4">
+                        <div className="border-t border-[var(--bg-tertiary)] pt-4 mt-4">
                             <div className="flex items-center gap-3 mb-4 px-2">
                                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-purple-600 flex items-center justify-center text-white font-bold shadow-lg overflow-hidden flex-shrink-0">
                                     {profile?.avatar_url ? (
@@ -309,13 +309,13 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
                                     )}
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                    <p className="font-medium text-white truncate text-sm">{profile?.full_name || 'Client'}</p>
-                                    <p className="text-xs text-gray-500 truncate">{profile?.email}</p>
+                                    <p className="font-medium text-[var(--text-primary)] truncate text-sm">{profile?.full_name || 'Client'}</p>
+                                    <p className="text-xs text-[var(--text-muted)] truncate">{profile?.email}</p>
                                 </div>
                             </div>
                             <button
                                 onClick={handleLogout}
-                                className="flex items-center gap-2 w-full px-4 py-3 text-gray-400 hover:text-red-400 rounded-lg transition min-h-[48px]"
+                                className="flex items-center gap-2 w-full px-4 py-3 text-[var(--text-secondary)] hover:text-red-400 rounded-lg transition min-h-[48px]"
                             >
                                 <LogOut className="w-4 h-4" />
                                 Sign Out

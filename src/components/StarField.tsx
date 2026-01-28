@@ -1,11 +1,16 @@
 import { useEffect, useRef } from 'react';
+import { useTheme } from '@/store/themeStore';
 
 interface StarFieldProps {
     paused?: boolean;
+    forceTheme?: 'dark' | 'light';
 }
 
-export default function StarField({ paused = false }: StarFieldProps) {
+export default function StarField({ paused = false, forceTheme }: StarFieldProps) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
+    const { theme } = useTheme();
+
+    const effectiveTheme = forceTheme || theme;
 
     useEffect(() => {
         const canvas = canvasRef.current;
@@ -28,6 +33,14 @@ export default function StarField({ paused = false }: StarFieldProps) {
         let time = 0;
 
         const currentCanvas = canvas;
+
+        // Theme-aware colors
+        const isLightMode = effectiveTheme === 'light';
+        const bgColor = isLightMode ? '#FFFFFF' : '#050508';
+        const starColor = isLightMode ? { r: 30, g: 30, b: 40 } : { r: 255, g: 255, b: 255 };
+
+        // Update canvas background
+        canvas.style.background = bgColor;
 
         function resize() {
             // Full viewport size
@@ -63,10 +76,10 @@ export default function StarField({ paused = false }: StarFieldProps) {
                 const twinkle = Math.sin(time * star.twinkleSpeed + star.phase);
                 const currentOpacity = star.opacity * (0.5 + twinkle * 0.5);
 
-                // Draw star
+                // Draw star with theme-aware color
                 ctx!.beginPath();
                 ctx!.arc(star.x, star.y, star.size, 0, Math.PI * 2);
-                ctx!.fillStyle = `rgba(255, 255, 255, ${currentOpacity})`;
+                ctx!.fillStyle = `rgba(${starColor.r}, ${starColor.g}, ${starColor.b}, ${currentOpacity})`;
                 ctx!.fill();
             });
 
@@ -85,7 +98,10 @@ export default function StarField({ paused = false }: StarFieldProps) {
             window.removeEventListener('resize', resize);
             cancelAnimationFrame(animationId);
         };
-    }, [paused]); // Re-run effect when paused changes
+    }, [paused, effectiveTheme]); // Re-run effect when paused or theme changes
+
+    // Theme-aware background color
+    const bgColor = effectiveTheme === 'light' ? '#FFFFFF' : '#050508';
 
     return (
         <canvas
@@ -99,7 +115,8 @@ export default function StarField({ paused = false }: StarFieldProps) {
                 height: '100vh',
                 pointerEvents: 'none',
                 zIndex: 0,
-                background: '#050508'  // Dark background color
+                background: bgColor,
+                transition: 'background 0.5s ease'
             }}
         />
     );

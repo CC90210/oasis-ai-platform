@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { supabase, Profile } from '@/lib/supabase';
-import { User, Shield, Bell, Loader2, AlertCircle, Save, CheckCircle, Camera, Upload, Eye, EyeOff, X } from 'lucide-react';
+import { User, Shield, Bell, Loader2, AlertCircle, Save, CheckCircle, Camera, Upload, Eye, EyeOff, X, Sun, Moon } from 'lucide-react';
+import { useTheme } from '@/store/themeStore';
 import PortalLayout from '@/components/portal/PortalLayout';
 import { formatDate } from '@/lib/formatters';
 
@@ -38,6 +39,7 @@ export default function ProfilePage() {
         push_enabled: false
     });
     const [savingNotifications, setSavingNotifications] = useState(false);
+    const { theme, toggleTheme } = useTheme();
 
     useEffect(() => {
         loadProfile();
@@ -299,11 +301,11 @@ export default function ProfilePage() {
             <div className="p-6 md:p-8 max-w-4xl mx-auto">
                 {/* Header */}
                 <div className="mb-8">
-                    <h1 className="text-2xl md:text-3xl font-bold text-white flex items-center gap-3 mb-2">
+                    <h1 className="text-2xl md:text-3xl font-bold text-[var(--text-primary)] flex items-center gap-3 mb-2">
                         <User className="w-7 h-7 text-cyan-500" />
                         Account Settings
                     </h1>
-                    <p className="text-gray-400">Manage your personal information and security preferences.</p>
+                    <p className="text-[var(--text-secondary)]">Manage your personal information and security preferences.</p>
                 </div>
 
                 {/* Success/Error Messages */}
@@ -323,7 +325,7 @@ export default function ProfilePage() {
                 )}
 
                 {/* Profile Card with Avatar */}
-                <div className="bg-[#0a0a0f]/90 backdrop-blur-sm border border-[#1a1a2e] rounded-2xl p-6 mb-6">
+                <div className="bg-[var(--bg-card-strong)] backdrop-blur-sm border border-[var(--bg-tertiary)] rounded-2xl p-6 mb-6 transition-colors duration-300">
                     <div className="flex flex-col sm:flex-row items-center gap-6">
                         {/* Avatar Section */}
                         <div className="relative group">
@@ -354,14 +356,14 @@ export default function ProfilePage() {
                                     <Camera className="w-6 h-6 text-white" />
                                 </div>
                             </div>
-                            <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-cyan-500 rounded-full flex items-center justify-center border-4 border-[#0a0a0f] cursor-pointer hover:bg-cyan-400 transition" onClick={handleAvatarClick}>
+                            <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-cyan-500 rounded-full flex items-center justify-center border-4 border-[var(--bg-card-strong)] cursor-pointer hover:bg-cyan-400 transition" onClick={handleAvatarClick}>
                                 <Upload className="w-3.5 h-3.5 text-white" />
                             </div>
                         </div>
 
                         <div className="text-center sm:text-left">
-                            <h2 className="text-xl font-bold text-white">{userEmail}</h2>
-                            <p className="text-gray-400 text-sm mt-1">Member since {formatDate(profile?.created_at || new Date().toISOString())}</p>
+                            <h2 className="text-xl font-bold text-[var(--text-primary)]">{userEmail}</h2>
+                            <p className="text-[var(--text-secondary)] text-sm mt-1">Member since {formatDate(profile?.created_at || new Date().toISOString())}</p>
                             <p className="text-cyan-400 text-xs mt-2">Click on your avatar to upload a new photo</p>
                         </div>
                     </div>
@@ -369,47 +371,47 @@ export default function ProfilePage() {
 
                 {/* Profile Form */}
                 <form onSubmit={updateProfile}>
-                    <div className="bg-[#0a0a0f]/90 backdrop-blur-sm border border-[#1a1a2e] rounded-2xl p-6 mb-6">
-                        <h3 className="text-lg font-bold text-white mb-6">Personal Information</h3>
+                    <div className="bg-[var(--bg-card-strong)] backdrop-blur-sm border border-[var(--bg-tertiary)] rounded-2xl p-6 mb-6 transition-colors duration-300">
+                        <h3 className="text-lg font-bold text-[var(--text-primary)] mb-6">Personal Information</h3>
 
                         <div className="grid md:grid-cols-2 gap-6">
                             <div>
-                                <label className="block text-sm text-gray-400 mb-2">Full Name</label>
+                                <label className="block text-sm text-[var(--text-secondary)] mb-2">Full Name</label>
                                 <input
                                     type="text"
                                     value={formData.full_name}
                                     onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-                                    className="w-full bg-[#151520] border border-[#2a2a3e] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyan-500/50 transition"
+                                    className="w-full bg-[var(--bg-tertiary)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--text-primary)] focus:outline-none focus:border-cyan-500/50 transition"
                                     placeholder="John Doe"
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm text-gray-400 mb-2">Company Name</label>
+                                <label className="block text-sm text-[var(--text-secondary)] mb-2">Company Name</label>
                                 <input
                                     type="text"
                                     value={formData.company_name}
                                     onChange={(e) => setFormData({ ...formData, company_name: e.target.value })}
-                                    className="w-full bg-[#151520] border border-[#2a2a3e] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyan-500/50 transition"
+                                    className="w-full bg-[var(--bg-tertiary)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--text-primary)] focus:outline-none focus:border-cyan-500/50 transition"
                                     placeholder="Acme Inc."
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm text-gray-400 mb-2">Phone Number</label>
+                                <label className="block text-sm text-[var(--text-secondary)] mb-2">Phone Number</label>
                                 <input
                                     type="tel"
                                     value={formData.phone}
                                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                                    className="w-full bg-[#151520] border border-[#2a2a3e] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyan-500/50 transition"
+                                    className="w-full bg-[var(--bg-tertiary)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--text-primary)] focus:outline-none focus:border-cyan-500/50 transition"
                                     placeholder="+1 (555) 000-0000"
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm text-gray-400 mb-2">Email Address</label>
+                                <label className="block text-sm text-[var(--text-secondary)] mb-2">Email Address</label>
                                 <input
                                     type="email"
                                     value={userEmail}
                                     disabled
-                                    className="w-full bg-[#101015] border border-[#1a1a2e] rounded-xl px-4 py-3 text-gray-500 cursor-not-allowed"
+                                    className="w-full bg-[var(--bg-tertiary)] opacity-60 border border-[var(--bg-tertiary)] rounded-xl px-4 py-3 text-[var(--text-secondary)] cursor-not-allowed"
                                 />
                             </div>
                         </div>
@@ -433,14 +435,14 @@ export default function ProfilePage() {
 
                 {/* Security & Notifications */}
                 <div className="grid md:grid-cols-2 gap-6">
-                    <div className="bg-[#0a0a0f]/90 backdrop-blur-sm border border-[#1a1a2e] rounded-2xl p-6">
+                    <div className="bg-[var(--bg-card-strong)] backdrop-blur-sm border border-[var(--bg-tertiary)] rounded-2xl p-6 transition-colors duration-300">
                         <div className="flex items-center gap-3 mb-4">
                             <div className="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
                                 <Shield className="w-5 h-5 text-purple-400" />
                             </div>
                             <div>
-                                <h3 className="font-bold text-white">Security</h3>
-                                <p className="text-xs text-gray-500">Manage your password and 2FA settings</p>
+                                <h3 className="font-bold text-[var(--text-primary)]">Security</h3>
+                                <p className="text-xs text-[var(--text-secondary)]">Manage your password and 2FA settings</p>
                             </div>
                         </div>
                         <button
@@ -451,14 +453,14 @@ export default function ProfilePage() {
                         </button>
                     </div>
 
-                    <div className="bg-[#0a0a0f]/90 backdrop-blur-sm border border-[#1a1a2e] rounded-2xl p-6">
+                    <div className="bg-[var(--bg-card-strong)] backdrop-blur-sm border border-[var(--bg-tertiary)] rounded-2xl p-6 transition-colors duration-300">
                         <div className="flex items-center gap-3 mb-4">
                             <div className="w-10 h-10 rounded-lg bg-yellow-500/10 flex items-center justify-center">
                                 <Bell className="w-5 h-5 text-yellow-400" />
                             </div>
                             <div>
-                                <h3 className="font-bold text-white">Notifications</h3>
-                                <p className="text-xs text-gray-500">Choose what updates and alerts you want</p>
+                                <h3 className="font-bold text-[var(--text-primary)]">Notifications</h3>
+                                <p className="text-xs text-[var(--text-secondary)]">Choose what updates and alerts you want</p>
                             </div>
                         </div>
                         <button
@@ -468,50 +470,83 @@ export default function ProfilePage() {
                             Manage Preferences →
                         </button>
                     </div>
+
+                    {/* Appearance - New Card */}
+                    <div className="bg-[var(--bg-card-strong)] backdrop-blur-sm border border-[var(--bg-tertiary)] rounded-2xl p-6 transition-colors duration-300">
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                                {theme === 'dark' ? <Moon className="w-5 h-5 text-blue-400" /> : <Sun className="w-5 h-5 text-blue-400" />}
+                            </div>
+                            <div>
+                                <h3 className="font-bold text-[var(--text-primary)]">Appearance</h3>
+                                <p className="text-xs text-[var(--text-secondary)]">Customize your interface theme</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center justify-between mt-auto">
+                            <span className="text-sm text-[var(--text-primary)]">
+                                {theme === 'dark' ? 'Dark Mode' : 'Light Mode'}
+                            </span>
+
+                            <button
+                                onClick={toggleTheme}
+                                className={`
+                                    relative inline-flex h-7 w-12 items-center rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2
+                                    ${theme === 'dark' ? 'bg-[#151520] border border-cyan-500/30' : 'bg-gray-200 border border-gray-300'}
+                                `}
+                            >
+                                <span
+                                    className={`
+                                        inline-block h-5 w-5 transform rounded-full bg-white transition-transform duration-300 shadow-md
+                                        ${theme === 'dark' ? 'translate-x-[22px] bg-cyan-400' : 'translate-x-1'}
+                                    `}
+                                />
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             {/* Password Change Modal */}
             {showPasswordModal && (
                 <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <div className="bg-[#0a0a0f] border border-[#1a1a2e] rounded-2xl p-6 w-full max-w-md">
+                    <div className="bg-[var(--bg-card-strong)] border border-[var(--bg-tertiary)] rounded-2xl p-6 w-full max-w-md">
                         <div className="flex justify-between items-center mb-6">
-                            <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                            <h3 className="text-xl font-bold text-[var(--text-primary)] flex items-center gap-2">
                                 <Shield className="w-5 h-5 text-purple-400" />
                                 Change Password
                             </h3>
-                            <button onClick={() => setShowPasswordModal(false)} className="text-gray-400 hover:text-white">
+                            <button onClick={() => setShowPasswordModal(false)} className="text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
 
                         <div className="space-y-4">
                             <div>
-                                <label className="block text-sm text-gray-400 mb-2">New Password</label>
+                                <label className="block text-sm text-[var(--text-secondary)] mb-2">New Password</label>
                                 <div className="relative">
                                     <input
                                         type={showPassword ? 'text' : 'password'}
                                         value={passwordData.newPassword}
                                         onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
-                                        className="w-full bg-[#151520] border border-[#2a2a3e] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyan-500/50 transition pr-12"
+                                        className="w-full bg-[var(--bg-tertiary)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--text-primary)] focus:outline-none focus:border-cyan-500/50 transition pr-12"
                                         placeholder="Enter new password"
                                     />
                                     <button
                                         type="button"
                                         onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
+                                        className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                                     >
                                         {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                                     </button>
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-sm text-gray-400 mb-2">Confirm Password</label>
+                                <label className="block text-sm text-[var(--text-secondary)] mb-2">Confirm Password</label>
                                 <input
                                     type={showPassword ? 'text' : 'password'}
                                     value={passwordData.confirmPassword}
                                     onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
-                                    className="w-full bg-[#151520] border border-[#2a2a3e] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyan-500/50 transition"
+                                    className="w-full bg-[var(--bg-tertiary)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--text-primary)] focus:outline-none focus:border-cyan-500/50 transition"
                                     placeholder="Confirm new password"
                                 />
                             </div>
@@ -520,14 +555,14 @@ export default function ProfilePage() {
                         <div className="flex gap-3 mt-6">
                             <button
                                 onClick={() => setShowPasswordModal(false)}
-                                className="flex-1 px-4 py-3 bg-[#151520] text-gray-400 rounded-xl hover:bg-[#252530] transition"
+                                className="flex-1 px-4 py-3 bg-[var(--bg-tertiary)] text-[var(--text-secondary)] rounded-xl hover:bg-[#252530] transition"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={handleChangePassword}
                                 disabled={changingPassword || !passwordData.newPassword || !passwordData.confirmPassword}
-                                className="flex-1 px-4 py-3 bg-gradient-to-r from-cyan-500 to-cyan-600 text-white font-medium rounded-xl hover:from-cyan-400 hover:to-cyan-500 transition disabled:opacity-50 flex items-center justify-center gap-2"
+                                className="flex-1 px-4 py-3 bg-gradient-to-r from-cyan-500 to-cyan-600 text-[var(--text-primary)] font-medium rounded-xl hover:from-cyan-400 hover:to-cyan-500 transition disabled:opacity-50 flex items-center justify-center gap-2"
                             >
                                 {changingPassword ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
                                 Update Password
@@ -540,22 +575,22 @@ export default function ProfilePage() {
             {/* Notification Preferences Modal */}
             {showNotificationModal && (
                 <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <div className="bg-[#0a0a0f] border border-[#1a1a2e] rounded-2xl p-6 w-full max-w-md">
+                    <div className="bg-[var(--bg-card-strong)] border border-[var(--bg-tertiary)] rounded-2xl p-6 w-full max-w-md">
                         <div className="flex justify-between items-center mb-6">
-                            <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                            <h3 className="text-xl font-bold text-[var(--text-primary)] flex items-center gap-2">
                                 <Bell className="w-5 h-5 text-yellow-400" />
                                 Notification Preferences
                             </h3>
-                            <button onClick={() => setShowNotificationModal(false)} className="text-gray-400 hover:text-white">
+                            <button onClick={() => setShowNotificationModal(false)} className="text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
 
                         <div className="space-y-4">
-                            <label className="flex items-center justify-between p-4 bg-[#151520] rounded-xl border border-[#2a2a3e] cursor-pointer hover:border-[#3a3a4e] transition">
+                            <label className="flex items-center justify-between p-4 bg-[var(--bg-tertiary)] rounded-xl border border-[var(--border)] cursor-pointer hover:border-[#3a3a4e] transition">
                                 <div>
-                                    <p className="text-white font-medium">Automation Alerts</p>
-                                    <p className="text-xs text-gray-500">Get notified when automations execute</p>
+                                    <p className="text-[var(--text-primary)] font-medium">Automation Alerts</p>
+                                    <p className="text-xs text-[var(--text-muted)]">Get notified when automations execute</p>
                                 </div>
                                 <input
                                     type="checkbox"
@@ -565,10 +600,10 @@ export default function ProfilePage() {
                                 />
                             </label>
 
-                            <label className="flex items-center justify-between p-4 bg-[#151520] rounded-xl border border-[#2a2a3e] cursor-pointer hover:border-[#3a3a4e] transition">
+                            <label className="flex items-center justify-between p-4 bg-[var(--bg-tertiary)] rounded-xl border border-[var(--border)] cursor-pointer hover:border-[#3a3a4e] transition">
                                 <div>
-                                    <p className="text-white font-medium">Weekly Summary</p>
-                                    <p className="text-xs text-gray-500">Receive weekly performance reports</p>
+                                    <p className="text-[var(--text-primary)] font-medium">Weekly Summary</p>
+                                    <p className="text-xs text-[var(--text-muted)]">Receive weekly performance reports</p>
                                 </div>
                                 <input
                                     type="checkbox"
@@ -578,10 +613,10 @@ export default function ProfilePage() {
                                 />
                             </label>
 
-                            <label className="flex items-center justify-between p-4 bg-[#151520] rounded-xl border border-[#2a2a3e] cursor-pointer hover:border-[#3a3a4e] transition">
+                            <label className="flex items-center justify-between p-4 bg-[var(--bg-tertiary)] rounded-xl border border-[var(--border)] cursor-pointer hover:border-[#3a3a4e] transition">
                                 <div>
-                                    <p className="text-white font-medium">Billing Updates</p>
-                                    <p className="text-xs text-gray-500">Get notified about billing and invoices</p>
+                                    <p className="text-[var(--text-primary)] font-medium">Billing Updates</p>
+                                    <p className="text-xs text-[var(--text-muted)]">Get notified about billing and invoices</p>
                                 </div>
                                 <input
                                     type="checkbox"
@@ -595,14 +630,14 @@ export default function ProfilePage() {
                         <div className="flex gap-3 mt-6">
                             <button
                                 onClick={() => setShowNotificationModal(false)}
-                                className="flex-1 px-4 py-3 bg-[#151520] text-gray-400 rounded-xl hover:bg-[#252530] transition"
+                                className="flex-1 px-4 py-3 bg-[var(--bg-tertiary)] text-[var(--text-secondary)] rounded-xl hover:bg-[#252530] transition"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={handleSaveNotifications}
                                 disabled={savingNotifications}
-                                className="flex-1 px-4 py-3 bg-gradient-to-r from-cyan-500 to-cyan-600 text-white font-medium rounded-xl hover:from-cyan-400 hover:to-cyan-500 transition disabled:opacity-50 flex items-center justify-center gap-2"
+                                className="flex-1 px-4 py-3 bg-gradient-to-r from-cyan-500 to-cyan-600 text-[var(--text-primary)] font-medium rounded-xl hover:from-cyan-400 hover:to-cyan-500 transition disabled:opacity-50 flex items-center justify-center gap-2"
                             >
                                 {savingNotifications ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
                                 Save Preferences
