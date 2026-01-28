@@ -12,7 +12,7 @@ import { Link } from 'react-router-dom';
 import {
     Activity, Clock, TrendingUp, Bot, AlertCircle, RefreshCw, DollarSign,
     Zap, Shield, HeadphonesIcon, Sparkles, ArrowRight, BarChart3, Calendar,
-    Mail, Phone, Users, Target, Timer, Flame, Award, Percent
+    Mail, Phone, Users, Target, Timer, Flame, Award, Percent, Crown
 } from 'lucide-react';
 import PortalLayout from '@/components/portal/PortalLayout';
 import { formatRelativeTime } from '@/lib/formatters';
@@ -158,13 +158,28 @@ export default function DashboardPage() {
 
     return (
         <PortalLayout>
-            <div className="p-6 md:p-8 max-w-7xl mx-auto">
+            <div className="p-6 md:p-8 max-w-7xl mx-auto page-transition">
                 {/* Header */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4">
                     <div>
-                        <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
-                            {getGreeting()}, {profile?.full_name?.split(' ')[0] || 'Client'}
-                        </h1>
+                        <div className="flex items-center gap-3 mb-2">
+                            <h1 className="text-3xl md:text-4xl font-bold text-white">
+                                {getGreeting()}, {profile?.full_name?.split(' ')[0] || 'Client'}
+                            </h1>
+                            {/* Owner Badge */}
+                            {profile?.is_owner && (
+                                <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-500/30 rounded-full">
+                                    <Crown className="w-4 h-4 text-yellow-500" />
+                                    <span className="text-yellow-500 text-sm font-bold">Owner</span>
+                                </span>
+                            )}
+                            {profile?.is_admin && !profile?.is_owner && (
+                                <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-purple-500/20 border border-purple-500/30 rounded-full">
+                                    <Shield className="w-4 h-4 text-purple-400" />
+                                    <span className="text-purple-400 text-sm font-bold">Admin</span>
+                                </span>
+                            )}
+                        </div>
                         <p className="text-gray-400">Here's what's happening with your AI workforce.</p>
                     </div>
                     <button

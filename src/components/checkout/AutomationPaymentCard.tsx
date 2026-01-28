@@ -42,8 +42,11 @@ export function AutomationPaymentCard({
         setupFee = Math.round(setupFee * EXCHANGE_RATE_CAD_TO_USD);
     }
 
+    // CRITICAL FIX: Discount ONLY applies to setup fee, NOT monthly retainer
+    // Monthly retainer should always be full price for standard promo codes
     const discountedSetup = setupFee * (1 - discountPercent / 100);
-    const discountedMonthly = selectedPrice * (1 - discountPercent / 100);
+    const discountedMonthly = selectedPrice; // NO DISCOUNT on monthly - this is the fix!
+    const setupDiscountAmount = setupFee - discountedSetup;
     const totalDueToday = discountedSetup + discountedMonthly;
 
     const handleAddToCart = () => {
@@ -54,24 +57,34 @@ export function AutomationPaymentCard({
     };
 
     const applyPromoCode = () => {
-        const validCodes: Record<string, number> = {
-            'OASISAI15': 15,
-            'WELCOME10': 10,
+        // Valid promo codes - all apply to SETUP ONLY
+        const validCodes: Record<string, { percent: number; appliesTo: 'setup' | 'monthly' | 'both' }> = {
+            'OASISAI15': { percent: 15, appliesTo: 'setup' },
+            'WELCOME10': { percent: 10, appliesTo: 'setup' },
+            'LAUNCH20': { percent: 20, appliesTo: 'setup' },
         };
 
         const upperCode = promoCode.toUpperCase().trim();
+        const codeData = validCodes[upperCode];
 
-        if (validCodes[upperCode]) {
-            setPromoApplied(true);
-            setPromoError('');
-            setDiscountPercent(validCodes[upperCode]);
+        if (codeData) {
+            // Only apply discount if code applies to setup (which all standard codes should)
+            if (codeData.appliesTo === 'setup' || codeData.appliesTo === 'both') {
+                setPromoApplied(true);
+                setPromoError('');
+                setDiscountPercent(codeData.percent);
+            } else {
+                // If code only applies to monthly (rare), show appropriate message
+                setPromoError('This code is for subscription discounts only');
+                setPromoApplied(false);
+                setDiscountPercent(0);
+            }
         } else {
             setPromoError('Invalid promo code');
             setPromoApplied(false);
             setDiscountPercent(0);
         }
     };
-
 
 
     return (
@@ -170,17 +183,16 @@ export function AutomationPaymentCard({
                     <div className="flex justify-between text-sm">
                         <span className="text-gray-400">{automation.tiers[tier].name} plan (monthly)</span>
                         <div className="text-right">
-                            {discountPercent > 0 && (
-                                <span className="text-gray-500 line-through mr-2 text-xs">{currencySymbol}{selectedPrice}</span>
-                            )}
-                            <span className="text-white">{currencySymbol}{discountedMonthly.toLocaleString(undefined, { maximumFractionDigits: 0 })}/mo</span>
+                            {/* NO strikethrough on monthly - promo only applies to setup */}
+                            <span className="text-white">{currencySymbol}{selectedPrice.toLocaleString(undefined, { maximumFractionDigits: 0 })}/mo</span>
                         </div>
                     </div>
 
                     {discountPercent > 0 && (
                         <div className="flex justify-between text-xs text-green-400 pt-1">
-                            <span>Discount ({discountPercent}% off)</span>
-                            <span>-{currencySymbol}{((setupFee + selectedPrice) * discountPercent / 100).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                            <span>{discountPercent}% off setup fee</span>
+                            {/* Only show setup discount, not combined */}
+                            <span>-{currencySymbol}{setupDiscountAmount.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
                         </div>
                     )}
 
@@ -192,9 +204,10 @@ export function AutomationPaymentCard({
                             </span>
                         </div>
                         <p className="text-xs text-gray-500 mt-1">
-                            Then {currencySymbol}{discountedMonthly.toLocaleString(undefined, { maximumFractionDigits: 0 })}/mo starting next month
+                            Then {currencySymbol}{selectedPrice.toLocaleString(undefined, { maximumFractionDigits: 0 })}/mo starting next month
                         </p>
                     </div>
+
                 </div>
 
                 <div className="flex flex-col gap-3">

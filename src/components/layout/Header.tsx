@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
-import { Menu, X, ShoppingCart } from 'lucide-react';
+import { Menu, X, ShoppingCart, User } from 'lucide-react';
 import { useCart } from '@/store/cartStore';
 
 export const Header = () => {
@@ -61,36 +61,36 @@ export const Header = () => {
             {/* Header Bar */}
             <header
                 className={`fixed top-0 left-0 right-0 transition-all duration-300 ${isScrolled || isMobileMenuOpen
-                        ? 'bg-[#050508]/95 backdrop-blur-xl border-b border-white/10 py-4'
-                        : 'bg-transparent py-6'
+                    ? 'bg-[#050508]/95 backdrop-blur-xl border-b border-white/10 py-3 lg:py-4'
+                    : 'bg-transparent py-4 lg:py-6'
                     }`}
                 style={{ zIndex: 9999 }}
             >
                 <div className="section-container flex items-center justify-between">
-                    {/* Logo */}
+                    {/* Logo - Always visible, shrinks on mobile */}
                     <Link
                         to="/"
-                        className="flex items-center gap-2 group"
+                        className="flex items-center gap-2 group flex-shrink-0"
                         onClick={handleNavClick}
                     >
                         <img
                             src="/images/oasis-logo.jpg"
                             alt="OASIS AI"
-                            className="w-10 h-10 rounded-xl object-cover shadow-lg shadow-oasis-cyan/20 group-hover:shadow-oasis-cyan/40 transition-all"
+                            className="w-8 h-8 lg:w-10 lg:h-10 rounded-xl object-cover shadow-lg shadow-oasis-cyan/20 group-hover:shadow-oasis-cyan/40 transition-all"
                         />
-                        <span className="font-display font-bold text-xl tracking-tight text-white">
+                        <span className="font-display font-bold text-lg lg:text-xl tracking-tight text-white">
                             OASIS <span className="text-oasis-cyan">AI</span>
                         </span>
                     </Link>
 
-                    {/* Desktop Nav */}
-                    <nav className="hidden md:flex items-center gap-8">
+                    {/* Desktop Nav - Hidden on mobile/tablet */}
+                    <nav className="hidden lg:flex items-center gap-1">
                         {navLinks.map((link) => (
                             <NavLink
                                 key={link.name}
                                 to={link.path}
                                 className={({ isActive }) =>
-                                    `text-sm font-medium transition-colors hover:text-oasis-cyan ${isActive ? 'text-oasis-cyan' : 'text-text-secondary'
+                                    `px-4 py-2 rounded-lg text-sm font-medium transition-colors hover:text-oasis-cyan hover:bg-white/5 ${isActive ? 'text-oasis-cyan' : 'text-text-secondary'
                                     }`
                                 }
                             >
@@ -99,13 +99,13 @@ export const Header = () => {
                         ))}
                     </nav>
 
-                    {/* Desktop Actions */}
-                    <div className="hidden md:flex items-center gap-4">
+                    {/* Desktop Actions - Hidden on mobile/tablet */}
+                    <div className="hidden lg:flex items-center gap-3">
                         <button
                             onClick={toggleCart}
-                            className="relative p-2 text-text-secondary hover:text-white transition-colors"
+                            className="relative p-2 text-text-secondary hover:text-white transition-colors rounded-lg hover:bg-white/5"
                         >
-                            <ShoppingCart className="w-6 h-6" />
+                            <ShoppingCart className="w-5 h-5" />
                             {items.length > 0 && (
                                 <span className="absolute -top-1 -right-1 w-5 h-5 bg-oasis-cyan text-bg-primary text-xs font-bold rounded-full flex items-center justify-center">
                                     {items.length}
@@ -115,27 +115,28 @@ export const Header = () => {
                         <NavLink
                             to="/portal/login"
                             className={({ isActive }) =>
-                                `text-sm font-medium transition-colors hover:text-oasis-cyan ${isActive ? 'text-oasis-cyan' : 'text-white'
+                                `px-4 py-2 text-sm font-medium transition-colors hover:text-oasis-cyan ${isActive ? 'text-oasis-cyan' : 'text-white'
                                 }`
                             }
                         >
                             Client Portal
                         </NavLink>
                         <Link to="/contact">
-                            <button className="btn-primary py-2 px-4 text-sm">
+                            <button className="btn-primary py-2 px-4 text-sm btn-lift">
                                 Get Started
                             </button>
                         </Link>
                     </div>
 
-                    {/* Mobile Menu Button */}
-                    <div className="flex items-center gap-3 md:hidden">
+                    {/* Mobile Actions - Only essential buttons */}
+                    <div className="flex items-center gap-2 lg:hidden">
                         <button
                             onClick={toggleCart}
                             className="relative p-2 text-text-secondary hover:text-white transition-colors"
                             type="button"
+                            aria-label="Shopping cart"
                         >
-                            <ShoppingCart className="w-6 h-6" />
+                            <ShoppingCart className="w-5 h-5" />
                             {items.length > 0 && (
                                 <span className="absolute -top-1 -right-1 w-5 h-5 bg-oasis-cyan text-bg-primary text-xs font-bold rounded-full flex items-center justify-center">
                                     {items.length}
@@ -144,30 +145,53 @@ export const Header = () => {
                         </button>
                         <button
                             onClick={toggleMobileMenu}
-                            className="text-white p-2 focus:outline-none"
+                            className="text-white p-2 rounded-lg hover:bg-white/5 transition-colors"
                             style={{ minHeight: '44px', minWidth: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                             type="button"
                             aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
                             aria-expanded={isMobileMenuOpen}
                         >
                             {isMobileMenuOpen ? (
-                                <X className="w-7 h-7" />
+                                <X className="w-6 h-6" />
                             ) : (
-                                <Menu className="w-7 h-7" />
+                                <Menu className="w-6 h-6" />
                             )}
                         </button>
                     </div>
                 </div>
             </header>
 
-            {/* Mobile Menu Overlay - Rendered outside header for proper stacking */}
+            {/* Mobile Menu Overlay - Full screen slide-in panel */}
             {isMobileMenuOpen && (
-                <div
-                    className="md:hidden fixed inset-0 bg-[#050508]"
-                    style={{ zIndex: 9998, top: '72px' }}
-                >
-                    <div className="h-full overflow-y-auto">
-                        <div className="px-6 py-8 flex flex-col gap-2">
+                <div className="lg:hidden fixed inset-0" style={{ zIndex: 9998 }}>
+                    {/* Backdrop with blur */}
+                    <div
+                        className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+                        onClick={handleNavClick}
+                    />
+
+                    {/* Slide-in Menu Panel */}
+                    <div
+                        className="absolute top-0 right-0 w-full max-w-sm h-full bg-[#0a0a0f] border-l border-gray-800 overflow-y-auto animate-slide-in-right"
+                        style={{
+                            marginTop: isScrolled ? '56px' : '64px',
+                            height: isScrolled ? 'calc(100% - 56px)' : 'calc(100% - 64px)'
+                        }}
+                    >
+                        {/* Menu Header */}
+                        <div className="flex items-center justify-between p-4 border-b border-gray-800/50">
+                            <span className="text-white font-bold text-lg">Menu</span>
+                            <button
+                                onClick={handleNavClick}
+                                className="p-2 text-gray-400 hover:text-white transition rounded-lg hover:bg-white/5"
+                                aria-label="Close menu"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        {/* Navigation Links */}
+                        <nav className="p-4 space-y-1">
                             {navLinks.map((link) => {
                                 const isActive = location.pathname === link.path;
                                 return (
@@ -175,40 +199,72 @@ export const Header = () => {
                                         key={link.name}
                                         to={link.path}
                                         onClick={handleNavClick}
-                                        className={`text-2xl font-display font-bold py-4 border-b border-white/5 transition-colors ${isActive
-                                                ? 'text-oasis-cyan'
-                                                : 'text-white hover:text-oasis-cyan'
+                                        className={`block px-4 py-3 rounded-xl text-base font-medium transition-all ${isActive
+                                                ? 'bg-oasis-cyan/10 text-oasis-cyan border border-oasis-cyan/20'
+                                                : 'text-gray-300 hover:bg-white/5 hover:text-white'
                                             }`}
                                     >
                                         {link.name}
                                     </Link>
                                 );
                             })}
+                        </nav>
 
-                            <div className="my-4" />
-
+                        {/* Action Buttons */}
+                        <div className="p-4 border-t border-gray-800/50 space-y-3">
                             <Link
                                 to="/portal/login"
                                 onClick={handleNavClick}
-                                className={`text-xl font-medium py-4 ${location.pathname === '/portal/login'
-                                        ? 'text-oasis-cyan'
-                                        : 'text-white/80 hover:text-white'
+                                className={`flex items-center justify-center gap-2 w-full px-4 py-3 rounded-xl text-base font-medium transition-all ${location.pathname === '/portal/login'
+                                        ? 'bg-gray-700 text-white'
+                                        : 'bg-gray-800/50 hover:bg-gray-800 text-gray-200 hover:text-white border border-gray-700/50'
                                     }`}
                             >
+                                <User className="w-5 h-5" />
                                 Client Portal
                             </Link>
 
                             <Link
                                 to="/contact"
                                 onClick={handleNavClick}
-                                className="btn-primary text-center py-4 text-lg mt-6"
+                                className="flex items-center justify-center w-full px-4 py-3 bg-gradient-to-r from-cyan-500 to-cyan-400 hover:from-cyan-400 hover:to-cyan-300 text-black font-semibold rounded-xl transition-all shadow-lg shadow-cyan-500/20"
                             >
                                 Get Started
                             </Link>
                         </div>
+
+                        {/* Contact Info at Bottom */}
+                        <div className="p-4 mt-auto">
+                            <div className="text-center text-sm text-gray-500">
+                                <p>Questions? Contact us</p>
+                                <a
+                                    href="mailto:oasisaisolutions@gmail.com"
+                                    className="text-oasis-cyan hover:text-cyan-300 transition"
+                                >
+                                    oasisaisolutions@gmail.com
+                                </a>
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}
+
+            {/* CSS for slide animation */}
+            <style>{`
+                @keyframes slideInRight {
+                    from {
+                        transform: translateX(100%);
+                        opacity: 0;
+                    }
+                    to {
+                        transform: translateX(0);
+                        opacity: 1;
+                    }
+                }
+                .animate-slide-in-right {
+                    animation: slideInRight 0.3s ease-out forwards;
+                }
+            `}</style>
         </>
     );
 };

@@ -36,6 +36,23 @@ export interface Profile {
     phone: string | null;
     avatar_url: string | null;
     created_at: string;
+    // Owner/Admin flags for special account handling
+    is_owner?: boolean;
+    is_admin?: boolean;
+    billing_exempt?: boolean;
+}
+
+// Helper functions for owner/admin checks
+export function isOwnerAccount(profile: Profile | null): boolean {
+    return profile?.is_owner === true;
+}
+
+export function isAdminAccount(profile: Profile | null): boolean {
+    return profile?.is_admin === true || profile?.is_owner === true;
+}
+
+export function isBillingExempt(profile: Profile | null): boolean {
+    return profile?.billing_exempt === true;
 }
 
 export interface Automation {

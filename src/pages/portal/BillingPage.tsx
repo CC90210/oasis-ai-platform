@@ -1,14 +1,15 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/lib/supabase';
+import { supabase, Profile, isBillingExempt, isOwnerAccount } from '@/lib/supabase';
 import {
     CreditCard, FileText, Loader2, DollarSign, Calendar, CheckCircle,
     AlertTriangle, ExternalLink, Download, Settings, Mail, Phone,
-    Shield, Package, MessageCircle
+    Shield, Package, MessageCircle, Crown
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import PortalLayout from '@/components/portal/PortalLayout';
 import { formatCurrency, formatDate } from '@/lib/formatters';
+
 
 interface Subscription {
     id: string;
@@ -60,6 +61,7 @@ export default function BillingPage() {
     const [hasAccess, setHasAccess] = useState(true);
     const [portalLoading, setPortalLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [profile, setProfile] = useState<Profile | null>(null);
 
     useEffect(() => {
         loadBillingData();
@@ -70,6 +72,24 @@ export default function BillingPage() {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) {
                 navigate('/portal/login');
+                return;
+            }
+
+            // Load profile to check for owner/billing exempt status
+            const { data: profileData } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', user.id)
+                .single();
+
+            if (profileData) {
+                setProfile(profileData);
+            }
+
+            // If user is billing exempt (owner account), skip subscription check
+            if (profileData?.billing_exempt || profileData?.is_owner) {
+                setHasAccess(true);
+                setLoading(false);
                 return;
             }
 
@@ -115,6 +135,7 @@ export default function BillingPage() {
             setLoading(false);
         }
     };
+
 
     const isCustomAgreement = subscription?.is_custom_agreement ||
         !subscription?.stripe_customer_id?.startsWith('cus_') ||
@@ -190,6 +211,100 @@ export default function BillingPage() {
         );
     }
 
+    // Special Owner Account Section - billing exempt
+    if (isBillingExempt(profile) || isOwnerAccount(profile)) {
+        return (
+            <PortalLayout>
+                <div className="p-8 max-w-5xl mx-auto page-transition">
+                    <header className="mb-10">
+                        <h1 className="text-3xl font-bold text-white flex items-center gap-3">
+                            <Crown className="w-8 h-8 text-yellow-500" />
+                            Owner Account
+                        </h1>
+                        <p className="text-gray-400 mt-2">Your account status and automation tracking.</p>
+                    </header>
+
+                    {/* Owner Account Status Card */}
+                    <div className="bg-gradient-to-br from-purple-500/10 to-cyan-500/10 border border-purple-500/30 rounded-2xl p-8 mb-8">
+                        <div className="flex items-start gap-6">
+                            <div className="w-16 h-16 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-2xl flex items-center justify-center shadow-lg shadow-yellow-500/20">
+                                <Crown className="w-8 h-8 text-white" />
+                            </div>
+                            <div className="flex-1">
+                                <div className="flex items-center gap-3 mb-2">
+                                    <h2 className="text-2xl font-bold text-white">Billing Exempt</h2>
+                                    <span className="px-3 py-1 bg-green-500/20 text-green-400 text-xs font-bold rounded-full border border-green-500/30">
+                                        ACTIVE
+                                    </span>
+                                </div>
+                                <p className="text-gray-400 mb-4 max-w-2xl">
+                                    As the owner of OASIS AI, your account is exempt from billing. All automations
+                                    are tracked for internal case studies and ROI documentation. Your usage helps
+                                    demonstrate the value of our services to potential clients.
+                                </p>
+                                <div className="grid sm:grid-cols-3 gap-4 mt-6">
+                                    <div className="bg-[#0a0a0f]/50 border border-[#1a1a2e] rounded-xl p-4">
+                                        <p className="text-gray-500 text-sm">Account Type</p>
+                                        <p className="text-white font-bold text-lg">Owner / Admin</p>
+                                    </div>
+                                    <div className="bg-[#0a0a0f]/50 border border-[#1a1a2e] rounded-xl p-4">
+                                        <p className="text-gray-500 text-sm">Billing Status</p>
+                                        <p className="text-green-400 font-bold text-lg">Exempt</p>
+                                    </div>
+                                    <div className="bg-[#0a0a0f]/50 border border-[#1a1a2e] rounded-xl p-4">
+                                        <p className="text-gray-500 text-sm">Access Level</p>
+                                        <p className="text-purple-400 font-bold text-lg">Full Access</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Quick Links for Owner */}
+                    <div className="grid md:grid-cols-2 gap-6">
+                        <div className="bg-[#0a0a0f] border border-[#1a1a2e] rounded-2xl p-6">
+                            <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                                <Shield className="w-5 h-5 text-cyan-500" />
+                                Admin Actions
+                            </h3>
+                            <div className="space-y-3">
+                                <Link
+                                    to="/portal/automations"
+                                    className="flex items-center justify-between p-4 bg-[#151520] hover:bg-[#1a1a2e] rounded-xl border border-[#2a2a3e] transition group"
+                                >
+                                    <span className="text-gray-300 group-hover:text-white">View My Automations</span>
+                                    <ExternalLink className="w-4 h-4 text-gray-500 group-hover:text-cyan-400" />
+                                </Link>
+                                <Link
+                                    to="/portal/reports"
+                                    className="flex items-center justify-between p-4 bg-[#151520] hover:bg-[#1a1a2e] rounded-xl border border-[#2a2a3e] transition group"
+                                >
+                                    <span className="text-gray-300 group-hover:text-white">ROI Reports & Case Studies</span>
+                                    <ExternalLink className="w-4 h-4 text-gray-500 group-hover:text-cyan-400" />
+                                </Link>
+                            </div>
+                        </div>
+
+                        <div className="bg-[#0a0a0f] border border-[#1a1a2e] rounded-2xl p-6">
+                            <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                                <Package className="w-5 h-5 text-purple-500" />
+                                Usage Tracking
+                            </h3>
+                            <p className="text-gray-400 text-sm mb-4">
+                                Your automation usage is being tracked for internal case studies.
+                                This data helps demonstrate ROI to potential clients.
+                            </p>
+                            <div className="flex items-center gap-2">
+                                <CheckCircle className="w-5 h-5 text-green-400" />
+                                <span className="text-green-400">Tracking Active</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </PortalLayout>
+        );
+    }
+
     // Guardrail: No subscription - redirect to plans or support
     if (!hasAccess && !subscription) {
         return (
@@ -223,6 +338,7 @@ export default function BillingPage() {
             </PortalLayout>
         );
     }
+
 
     return (
         <PortalLayout>
