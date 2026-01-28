@@ -216,8 +216,14 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
                     </div>
                 </aside>
 
-                {/* Mobile Header */}
-                <div className="lg:hidden fixed top-0 left-0 right-0 z-30 bg-[var(--bg-primary)] border-b border-[var(--bg-tertiary)] px-4 py-3 max-w-full transition-colors duration-300">
+                {/* Mobile Header - with iOS safe area support */}
+                <div
+                    className="lg:hidden fixed top-0 left-0 right-0 z-30 bg-[var(--bg-primary)] border-b border-[var(--bg-tertiary)] px-4 max-w-full transition-colors duration-300"
+                    style={{
+                        paddingTop: 'max(env(safe-area-inset-top, 0px), 12px)',
+                        paddingBottom: '12px'
+                    }}
+                >
                     <div className="flex items-center justify-between">
                         {/* Home button */}
                         <Link

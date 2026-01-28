@@ -58,13 +58,17 @@ export const Header = () => {
 
     return (
         <>
-            {/* Header Bar */}
+            {/* Header Bar - with iOS safe area support */}
             <header
                 className={`fixed top-0 left-0 right-0 transition-all duration-300 ${isScrolled || isMobileMenuOpen
-                        ? 'bg-[#050508]/95 backdrop-blur-xl border-b border-white/10 py-3'
-                        : 'bg-transparent py-4 sm:py-6'
+                        ? 'bg-[#050508]/95 backdrop-blur-xl border-b border-white/10'
+                        : 'bg-transparent'
                     }`}
-                style={{ zIndex: 9999 }}
+                style={{
+                    zIndex: 9999,
+                    paddingTop: 'max(env(safe-area-inset-top, 0px), 12px)',
+                    paddingBottom: '12px'
+                }}
             >
                 <div className="section-container flex items-center justify-between">
                     {/* Logo - Fixed spacing for mobile */}

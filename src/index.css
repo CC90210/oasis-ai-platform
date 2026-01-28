@@ -809,60 +809,20 @@ body {
   --text-muted: #64748b;
 }
 
-/* LIGHT MODE: Explicit text color overrides for all elements */
-#dashboard-root.light h1,
-#dashboard-root.light h2,
-#dashboard-root.light h3,
-#dashboard-root.light h4,
-#dashboard-root.light h5,
-#dashboard-root.light h6 {
-  color: var(--text-primary) !important;
+/* =============================================================================
+   iOS SAFE AREA SUPPORT - For iPhone notch/Dynamic Island
+   ============================================================================= */
+
+/* Ensure body respects safe areas */
+body {
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
 }
 
-#dashboard-root.light p,
-#dashboard-root.light span:not(.text-cyan-400):not(.text-cyan-500):not(.text-green-400):not(.text-red-400):not(.text-yellow-400):not(.text-yellow-500):not(.text-orange-400):not(.text-purple-400):not([class*="text-oasis"]) {
-  color: var(--text-secondary);
-}
-
-#dashboard-root.light .text-white {
-  color: var(--text-primary) !important;
-}
-
-#dashboard-root.light .text-gray-100,
-#dashboard-root.light .text-gray-200,
-#dashboard-root.light .text-gray-300 {
-  color: var(--text-primary) !important;
-}
-
-#dashboard-root.light .text-gray-400,
-#dashboard-root.light .text-gray-500 {
-  color: var(--text-secondary) !important;
-}
-
-/* Light mode card backgrounds */
-#dashboard-root.light .bg-\[var\(--bg-primary\)\],
-#dashboard-root.light .bg-\[var\(--bg-card\)\],
-#dashboard-root.light .bg-\[var\(--bg-card-strong\)\] {
-  background-color: #ffffff !important;
-  border-color: rgba(0, 0, 0, 0.08) !important;
-}
-
-/* Light mode borders */
-#dashboard-root.light [class*="border-gray-800"],
-#dashboard-root.light [class*="border-\[var\(--bg-tertiary\)\]"] {
-  border-color: #e2e8f0 !important;
-}
-
-/* Light mode sidebar */
-#dashboard-root.light aside {
-  background-color: #ffffff !important;
-  border-color: #e2e8f0 !important;
-}
-
-/* Light mode mobile header */
-#dashboard-root.light .lg\\:hidden.fixed {
-  background-color: #ffffff !important;
-  border-color: #e2e8f0 !important;
+/* Fixed headers should account for safe area */
+.fixed-header,
+header.fixed,
+[class*="fixed"][class*="top-0"] {
+  padding-top: max(env(safe-area-inset-top, 0px), 12px) !important;
 }
 
 /* Main website ALWAYS stays dark (unaffected by dashboard theme) */

@@ -16,7 +16,6 @@ export const useTheme = create<ThemeStore>()(
 
             setTheme: (theme: Theme) => {
                 set({ theme });
-                // Apply theme class to dashboard root ONLY (not document)
                 applyThemeClass(theme);
             },
 
@@ -29,7 +28,6 @@ export const useTheme = create<ThemeStore>()(
         {
             name: 'oasis-theme-storage',
             onRehydrateStorage: () => (state) => {
-                // Apply theme class when store rehydrates from localStorage
                 if (state?.theme) {
                     applyThemeClass(state.theme);
                 }
@@ -38,20 +36,16 @@ export const useTheme = create<ThemeStore>()(
     )
 );
 
-// Helper function to apply theme class to DASHBOARD ONLY (not main website)
+// Helper function to apply theme class
 function applyThemeClass(theme: Theme) {
-    // Only apply to dashboard-root if it exists (dashboard pages)
-    const dashboardRoot = document.getElementById('dashboard-root');
-    if (dashboardRoot) {
-        if (theme === 'light') {
-            dashboardRoot.classList.add('light');
-            dashboardRoot.classList.remove('dark');
-        } else {
-            dashboardRoot.classList.add('dark');
-            dashboardRoot.classList.remove('light');
-        }
+    const root = document.documentElement;
+    if (theme === 'light') {
+        root.classList.add('light-mode');
+        root.classList.remove('dark-mode');
+    } else {
+        root.classList.add('dark-mode');
+        root.classList.remove('light-mode');
     }
-    // Never modify document.documentElement - main website stays dark always
 }
 
 // Initialize theme on module load
@@ -61,13 +55,12 @@ if (typeof window !== 'undefined') {
         try {
             const parsed = JSON.parse(stored);
             if (parsed.state?.theme) {
-                // Delay to ensure DOM is ready
-                setTimeout(() => applyThemeClass(parsed.state.theme), 0);
+                applyThemeClass(parsed.state.theme);
             }
         } catch {
-            // Default to dark mode if parsing fails
-            setTimeout(() => applyThemeClass('dark'), 0);
+            applyThemeClass('dark');
         }
     }
 }
+
 
