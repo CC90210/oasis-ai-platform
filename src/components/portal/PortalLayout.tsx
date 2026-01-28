@@ -220,15 +220,15 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
                 <div
                     className="lg:hidden fixed top-0 left-0 right-0 z-30 bg-[var(--bg-primary)] border-b border-[var(--bg-tertiary)] px-4 max-w-full transition-colors duration-300"
                     style={{
-                        paddingTop: 'max(env(safe-area-inset-top, 0px), 12px)',
-                        paddingBottom: '12px'
+                        paddingTop: 'max(env(safe-area-inset-top, 0px), 16px)',
+                        paddingBottom: '16px'
                     }}
                 >
                     <div className="flex items-center justify-between">
                         {/* Home button */}
                         <Link
                             to="/"
-                            className="p-2 -ml-2 text-[var(--text-secondary)] hover:text-cyan-400 transition min-h-[44px] min-w-[44px] flex items-center justify-center"
+                            className="p-2 text-[var(--text-secondary)] hover:text-cyan-400 transition min-h-[44px] min-w-[44px] flex items-center justify-center"
                             aria-label="Back to website"
                         >
                             <Home className="w-5 h-5" />
@@ -245,7 +245,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
                         {/* Menu button */}
                         <button
                             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                            className="p-2 -mr-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] min-h-[44px] min-w-[44px] flex items-center justify-center"
+                            className="p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] min-h-[44px] min-w-[44px] flex items-center justify-center"
                             aria-label="Toggle menu"
                         >
                             {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -257,7 +257,15 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
                 {mobileMenuOpen && (
                     <div className="lg:hidden fixed inset-0 z-40">
                         <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setMobileMenuOpen(false)}></div>
-                        <div className="absolute top-0 left-0 bottom-0 w-72 max-w-[80vw] bg-[var(--bg-primary)] p-6 flex flex-col overflow-y-auto">
+                        <div
+                            className="absolute top-0 left-0 bottom-0 w-72 max-w-[80vw] bg-[var(--bg-primary)] flex flex-col overflow-y-auto"
+                            style={{
+                                paddingTop: 'max(env(safe-area-inset-top, 0px), 16px)',
+                                paddingLeft: '24px',
+                                paddingRight: '24px',
+                                paddingBottom: '24px'
+                            }}
+                        >
                             <div className="flex items-center justify-between mb-8">
                                 <div className="flex items-center gap-3">
                                     <div className="h-10 w-10 bg-[var(--bg-tertiary)] rounded-xl flex items-center justify-center border border-[var(--border)]">

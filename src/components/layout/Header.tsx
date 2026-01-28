@@ -61,26 +61,26 @@ export const Header = () => {
             {/* Header Bar - with iOS safe area support */}
             <header
                 className={`fixed top-0 left-0 right-0 transition-all duration-300 ${isScrolled || isMobileMenuOpen
-                        ? 'bg-[#050508]/95 backdrop-blur-xl border-b border-white/10'
-                        : 'bg-transparent'
+                    ? 'bg-[#050508]/95 backdrop-blur-xl border-b border-white/10'
+                    : 'bg-transparent'
                     }`}
                 style={{
                     zIndex: 9999,
-                    paddingTop: 'max(env(safe-area-inset-top, 0px), 12px)',
-                    paddingBottom: '12px'
+                    paddingTop: 'max(env(safe-area-inset-top, 0px), 16px)',
+                    paddingBottom: '16px'
                 }}
             >
-                <div className="section-container flex items-center justify-between">
-                    {/* Logo - Fixed spacing for mobile */}
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+                    {/* Logo - Proper mobile sizing */}
                     <Link
                         to="/"
-                        className="flex items-center gap-2 sm:gap-3 group flex-shrink-0"
+                        className="flex items-center gap-2 group flex-shrink-0"
                         onClick={handleNavClick}
                     >
                         <img
                             src="/images/oasis-logo.jpg"
                             alt="OASIS AI"
-                            className="w-8 h-8 sm:w-9 sm:h-9 lg:w-10 lg:h-10 rounded-lg sm:rounded-xl object-cover shadow-lg shadow-oasis-cyan/20 group-hover:shadow-oasis-cyan/40 transition-all flex-shrink-0"
+                            className="w-8 h-8 lg:w-10 lg:h-10 rounded-lg object-cover shadow-lg shadow-oasis-cyan/20 group-hover:shadow-oasis-cyan/40 transition-all flex-shrink-0"
                         />
                         <span className="font-display font-bold text-base sm:text-lg lg:text-xl tracking-tight text-white whitespace-nowrap">
                             OASIS <span className="text-oasis-cyan">AI</span>
@@ -173,17 +173,19 @@ export const Header = () => {
                         onClick={handleNavClick}
                     />
 
-                    {/* Slide-in Menu Panel - Fixed positioning from top */}
+                    {/* Slide-in Menu Panel - with iOS safe area */}
                     <div
-                        className="absolute top-0 right-0 w-[85vw] max-w-[320px] h-full bg-[#0a0a0f] border-l border-gray-800 overflow-y-auto animate-slide-in-right flex flex-col"
-                        style={{ paddingTop: '60px' }}
+                        className="absolute top-0 right-0 w-[80vw] max-w-[300px] h-full bg-[#0a0a0f] border-l border-gray-800 overflow-y-auto animate-slide-in-right flex flex-col"
+                        style={{
+                            paddingTop: 'max(env(safe-area-inset-top, 0px), 16px)'
+                        }}
                     >
                         {/* Menu Header */}
-                        <div className="flex items-center justify-between p-4 border-b border-gray-800/50">
+                        <div className="flex items-center justify-between px-4 py-4 border-b border-gray-800/50">
                             <span className="text-white font-bold text-lg">Menu</span>
                             <button
                                 onClick={handleNavClick}
-                                className="p-2 text-gray-400 hover:text-white transition rounded-lg hover:bg-white/5"
+                                className="p-2 text-gray-400 hover:text-white transition rounded-lg hover:bg-white/5 min-w-[44px] min-h-[44px] flex items-center justify-center"
                                 aria-label="Close menu"
                             >
                                 <X className="w-5 h-5" />
