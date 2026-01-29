@@ -38,9 +38,27 @@ export const CartDrawer = () => {
     }, [isOpen, closeCart]);
 
     const handleCheckout = useCallback(() => {
+        // Store cart items in sessionStorage for the checkout page
+        const cartItems = items.map(item => ({
+            productId: item.id,
+            productType: item.type === 'agent' ? 'automation' : 'bundle',
+            tier: item.tier || 'professional',
+            quantity: item.quantity || 1,
+        }));
+
+        const checkoutData = {
+            productId: items[0]?.id || '',
+            productType: items[0]?.type === 'agent' ? 'automation' : 'bundle',
+            tier: items[0]?.tier || 'professional',
+            currency: 'usd',
+            items: cartItems,
+        };
+
+        sessionStorage.setItem('pendingCheckout', JSON.stringify(checkoutData));
+
         closeCart();
-        navigate('/checkout');
-    }, [closeCart, navigate]);
+        navigate(`/checkout/legal?product=${items[0]?.id || ''}&type=${checkoutData.productType}&tier=${checkoutData.tier}&currency=usd`);
+    }, [closeCart, navigate, items]);
 
     const handleBackdropClick = useCallback((e: React.MouseEvent) => {
         // Only close if clicking the backdrop itself, not its children

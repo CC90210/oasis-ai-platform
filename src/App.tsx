@@ -20,6 +20,7 @@ const ProductConfigPage = lazy(() => import('./pages/pricing/ProductConfigPage')
 const ContactPage = lazy(() => import('./pages/contact/ContactPage'));
 const CheckoutPage = lazy(() => import('./pages/checkout/CheckoutPage'));
 const CheckoutSuccessPage = lazy(() => import('./pages/checkout/CheckoutSuccessPage'));
+const LegalCheckoutPage = lazy(() => import('./pages/checkout/LegalCheckoutPage'));
 const SubscriptionSuccessPage = lazy(() => import('./pages/subscription-success/SubscriptionSuccessPage'));
 const BlogPage = lazy(() => import('./pages/blog/BlogPage'));
 const BlogPost = lazy(() => import('./pages/blog/BlogPost'));
@@ -88,6 +89,7 @@ function App() {
                         <Route path="/case-studies" element={<MainLayout showChat={!showSplash}><CaseStudiesPage /></MainLayout>} />
                         <Route path="/checkout" element={<MainLayout showChat={!showSplash}><CheckoutPage /></MainLayout>} />
                         <Route path="/checkout/success" element={<CheckoutSuccessPage />} />
+                        <Route path="/checkout/legal" element={<LegalCheckoutPage />} />
                         <Route path="/subscription-success" element={<MainLayout showChat={!showSplash}><SubscriptionSuccessPage /></MainLayout>} />
 
                         {/* Custom Agreement Pages */}

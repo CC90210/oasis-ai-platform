@@ -42,48 +42,28 @@ export function StripeCheckoutButton({
         setError(null);
 
         try {
-            const response = await fetch('/api/stripe/checkout', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    productId, // Legacy: for single item
-                    productType, // Legacy
-                    tier, // Legacy
-                    items: items || [{ productId, productType, tier, quantity: 1 }], // Unified Items Array
-                    currency,
-                    customerName,
-                    businessName,
-                    customerEmail,
-                    customerPhone,
-                    discountPercent,
-                    promoCode,
-                }),
-            });
+            // Store checkout details in sessionStorage for the legal acceptance page
+            const checkoutData = {
+                productId,
+                productType,
+                tier: tier || 'professional',
+                currency,
+                customerName,
+                businessName,
+                customerEmail,
+                customerPhone,
+                discountPercent: discountPercent || 0,
+                promoCode: promoCode || '',
+                items: items || [{ productId, productType, tier, quantity: 1 }],
+            };
 
-            // Check if response is JSON
-            const contentType = response.headers.get('content-type');
-            if (!contentType || !contentType.includes('application/json')) {
-                // Response is not JSON - likely an error page
-                const text = await response.text();
-                console.error('Non-JSON response:', text.substring(0, 200));
-                throw new Error('Server error. Please try again or contact support.');
-            }
+            sessionStorage.setItem('pendingCheckout', JSON.stringify(checkoutData));
 
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.error || 'Checkout failed');
-            }
-
-            if (data.url) {
-                window.location.href = data.url;
-            } else {
-                throw new Error('No checkout URL returned');
-            }
+            // Redirect to checkout page with legal acceptance
+            window.location.href = `/checkout/legal?product=${productId}&type=${productType}&tier=${tier || 'professional'}&currency=${currency}`;
         } catch (err: any) {
             console.error('Checkout error:', err);
             setError(err.message || 'Something went wrong. Please try again.');
-        } finally {
             setLoading(false);
         }
     };
