@@ -148,7 +148,7 @@
 
   /* Body base styles - dark mode uses transparent for StarField */
   body {
-    background-color: var(--bg-primary);
+    background-color: transparent;
     color: var(--text-primary);
     font-family: var(--font-body);
     overflow-x: hidden;
@@ -157,15 +157,7 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
-  /* Dark mode: transparent background for StarField visibility */
-  :root:not(.light-mode) body {
-    background: transparent !important;
-  }
 
-  /* Light mode: solid background, no starfield */
-  :root.light-mode body {
-    background: var(--bg-primary) !important;
-  }
 
   /* Ensure content sits above global background */
   main,
@@ -204,15 +196,7 @@
     display: none;
   }
 
-  /* StarField is always visible - it handles theme colors internally */
-  #global-star-field {
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    z-index: 0 !important;
-    pointer-events: none !important;
-    transition: background 0.5s ease;
-  }
+
 
   h1,
   h2,

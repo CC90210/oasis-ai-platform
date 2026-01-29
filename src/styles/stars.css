@@ -13,6 +13,8 @@
     pointer-events: none;
     z-index: 0;
     overflow: hidden;
+    background-color: var(--bg-main);
+    transition: background-color 0.5s ease;
 }
 
 /* Base star layers using CSS gradients */
