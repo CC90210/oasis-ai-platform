@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
 import './styles/text-fix.css'
+import './styles/theme.css'
 import ErrorBoundary from './components/ErrorBoundary.tsx'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(

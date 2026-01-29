@@ -556,7 +556,7 @@ export default function ProfilePage() {
                         <div className="flex gap-3 mt-6">
                             <button
                                 onClick={() => setShowPasswordModal(false)}
-                                className="flex-1 px-4 py-3 bg-[var(--bg-tertiary)] text-[var(--text-secondary)] rounded-xl hover:bg-[#252530] transition"
+                                className="flex-1 px-4 py-3 bg-[var(--bg-tertiary)] text-[var(--text-secondary)] rounded-xl hover:bg-[var(--bg-secondary)] transition"
                             >
                                 Cancel
                             </button>
@@ -631,7 +631,7 @@ export default function ProfilePage() {
                         <div className="flex gap-3 mt-6">
                             <button
                                 onClick={() => setShowNotificationModal(false)}
-                                className="flex-1 px-4 py-3 bg-[var(--bg-tertiary)] text-[var(--text-secondary)] rounded-xl hover:bg-[#252530] transition"
+                                className="flex-1 px-4 py-3 bg-[var(--bg-tertiary)] text-[var(--text-secondary)] rounded-xl hover:bg-[var(--bg-secondary)] transition"
                             >
                                 Cancel
                             </button>

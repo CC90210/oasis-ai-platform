@@ -103,7 +103,7 @@ export default function SupportPage() {
                             <h3 className="text-lg font-bold text-[var(--text-primary)] mb-4">Contact Options</h3>
 
                             <div className="space-y-4">
-                                <a href="mailto:oasisaisolutions@gmail.com" className="flex items-center gap-4 p-4 rounded-xl bg-[var(--bg-tertiary)] hover:bg-[#1a1a2e] transition border border-[var(--border)] group">
+                                <a href="mailto:oasisaisolutions@gmail.com" className="flex items-center gap-4 p-4 rounded-xl bg-[var(--bg-tertiary)] hover:bg-[var(--bg-secondary)] transition border border-[var(--border)] group">
                                     <div className="w-10 h-10 rounded-lg bg-cyan-500/10 flex items-center justify-center text-cyan-500 group-hover:scale-110 transition">
                                         <Mail className="w-5 h-5" />
                                     </div>
@@ -113,7 +113,7 @@ export default function SupportPage() {
                                     </div>
                                 </a>
 
-                                <a href="tel:+12403325062" className="flex items-center gap-4 p-4 rounded-xl bg-[var(--bg-tertiary)] hover:bg-[#1a1a2e] transition border border-[var(--border)] group">
+                                <a href="tel:+12403325062" className="flex items-center gap-4 p-4 rounded-xl bg-[var(--bg-tertiary)] hover:bg-[var(--bg-secondary)] transition border border-[var(--border)] group">
                                     <div className="w-10 h-10 rounded-lg bg-green-500/10 flex items-center justify-center text-green-500 group-hover:scale-110 transition">
                                         <MessageSquare className="w-5 h-5" />
                                     </div>
