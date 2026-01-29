@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="dark">
 
 <head>
   <meta charset="UTF-8" />
@@ -47,7 +47,7 @@
   <meta name="msapplication-TileColor" content="#000000" />
 
   <!-- Theme Colors -->
-  <meta name="theme-color" content="#000000" />
+  <meta name="theme-color" content="#030712" />
 
   <!-- Open Graph / Facebook -->
   <meta property="og:type" content="website" />
@@ -147,6 +147,10 @@
 </head>
 
 <body>
+  <!-- Stars background - ALWAYS present, pure CSS, theme-aware -->
+  <div class="stars-bg" aria-hidden="true"></div>
+
+  <!-- App root -->
   <div id="root"></div>
   <script type="module" src="/src/main.tsx"></script>
 

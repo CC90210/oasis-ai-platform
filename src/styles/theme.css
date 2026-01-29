@@ -1,104 +1,124 @@
 /* ============================================
-   OASIS PORTAL THEME SYSTEM - BRIDGE FILE
-   
-   This file bridges the new theme system with
-   the existing CSS variables in index.css.
-   It supports multiple class naming conventions.
+   OASIS THEME SYSTEM - CSS VARIABLES
+   Single source of truth for all colors
    ============================================ */
 
 /* ============================================
-   LIGHT THEME - ADDITIONAL SELECTORS
-   These selectors complement the existing :root.light-mode
-   to support both old and new class naming conventions
+   DARK THEME (Default)
    ============================================ */
-
-:root.light,
-[data-theme="light"],
-html.light,
-body.light,
-#dashboard-root.light {
-    /* Background - Light theme */
-    --bg-main: #F1F5F9;
-    --bg-primary: #FFFFFF;
-    --bg-secondary: #F8FAFC;
-    --bg-tertiary: #E2E8F0;
-    --bg-card: rgba(255, 255, 255, 0.8);
-    --bg-card-strong: rgba(255, 255, 255, 0.95);
-
-    /* Text - Dark on light */
-    --text-primary: #0F172A;
-    --text-secondary: #334155;
-    --text-tertiary: #64748B;
-    --text-muted: #94A3B8;
-
-    /* Border - visible on light backgrounds */
-    --border: rgba(0, 0, 0, 0.1);
-    --border-hover: rgba(0, 0, 0, 0.2);
-
-    /* Primary stays cyan for brand consistency */
-    --oasis-cyan: #00B8D9;
-    --oasis-cyan-dark: #0097A7;
-    --oasis-cyan-glow: rgba(0, 184, 217, 0.25);
-
-    /* Stars - subtle for light mode */
-    --star-color-1: rgba(0, 0, 0, 0.08);
-    --star-color-2: rgba(124, 58, 237, 0.15);
-    --star-color-3: rgba(8, 145, 178, 0.15);
-    --star-opacity: 0.4;
-}
-
-/* ============================================
-   DARK THEME - EXPLICIT DARK SELECTORS
-   (Most variables are already set in :root in index.css)
-   ============================================ */
-
-:root.dark,
-[data-theme="dark"],
-html.dark,
-body.dark,
-#dashboard-root.dark {
-    /* Explicitly set dark mode values (same as :root defaults) */
-    --bg-main: #050505;
-    --bg-primary: #0A0A0F;
-    --bg-secondary: #0F1419;
-    --bg-tertiary: #1A1F2E;
-    --bg-card: rgba(15, 20, 25, 0.6);
+:root {
+    /* Backgrounds */
+    --bg-primary: #030712;
+    --bg-secondary: #0a0a0f;
+    --bg-tertiary: #111827;
+    --bg-card: rgba(17, 24, 39, 0.8);
+    --bg-card-solid: #111827;
     --bg-card-strong: rgba(10, 10, 15, 0.9);
+    --bg-input: #1f2937;
+    --bg-main: #050505;
 
-    --text-primary: #FFFFFF;
-    --text-secondary: #E2E8F0;
-    --text-tertiary: #94A3B8;
-    --text-muted: #64748B;
+    /* Text */
+    --text-primary: #ffffff;
+    --text-secondary: #e2e8f0;
+    --text-tertiary: #94a3b8;
+    --text-muted: #64748b;
 
+    /* Borders */
     --border: rgba(255, 255, 255, 0.1);
+    --border-color: rgba(255, 255, 255, 0.1);
     --border-hover: rgba(255, 255, 255, 0.2);
 
+    /* Accent */
+    --accent: #00d4ff;
+    --accent-purple: #a855f7;
     --oasis-cyan: #00D4FF;
     --oasis-cyan-dark: #00A3CC;
     --oasis-cyan-glow: rgba(0, 212, 255, 0.3);
 
-    --star-color-1: rgba(255, 255, 255, 0.8);
-    --star-color-2: rgba(168, 85, 247, 0.6);
-    --star-color-3: rgba(0, 212, 255, 0.6);
-    --star-opacity: 1;
+    /* Sidebar */
+    --sidebar-bg: #0a0a0f;
+    --sidebar-text: #94a3b8;
+    --sidebar-active: #00d4ff;
+    --sidebar-hover: rgba(255, 255, 255, 0.05);
+
+    /* Status */
+    --success: #10b981;
+    --warning: #f59e0b;
+    --error: #ef4444;
 }
 
 /* ============================================
-   LIGHT MODE TEXT COLOR OVERRIDES
-   Override hardcoded Tailwind classes
+   LIGHT THEME
+   ============================================ */
+:root.light,
+:root.light-mode,
+[data-theme="light"] {
+    /* Backgrounds */
+    --bg-primary: #f8fafc;
+    --bg-secondary: #ffffff;
+    --bg-tertiary: #f1f5f9;
+    --bg-card: rgba(255, 255, 255, 0.9);
+    --bg-card-solid: #ffffff;
+    --bg-card-strong: rgba(255, 255, 255, 0.95);
+    --bg-input: #f1f5f9;
+    --bg-main: #f1f5f9;
+
+    /* Text */
+    --text-primary: #0f172a;
+    --text-secondary: #334155;
+    --text-tertiary: #64748b;
+    --text-muted: #94a3b8;
+
+    /* Borders */
+    --border: rgba(0, 0, 0, 0.1);
+    --border-color: rgba(0, 0, 0, 0.1);
+    --border-hover: rgba(0, 0, 0, 0.2);
+
+    /* Accent */
+    --accent: #0891b2;
+    --accent-purple: #7c3aed;
+    --oasis-cyan: #0891b2;
+    --oasis-cyan-dark: #0e7490;
+    --oasis-cyan-glow: rgba(8, 145, 178, 0.2);
+
+    /* Sidebar */
+    --sidebar-bg: #ffffff;
+    --sidebar-text: #64748b;
+    --sidebar-active: #0891b2;
+    --sidebar-hover: rgba(0, 0, 0, 0.05);
+}
+
+/* ============================================
+   APPLY THEME TO BODY
+   ============================================ */
+
+html {
+    background-color: var(--bg-primary);
+}
+
+body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* ============================================
+   LIGHT MODE TEXT OVERRIDES
+   Override hardcoded Tailwind text classes
    ============================================ */
 
 :root.light .text-white,
-[data-theme="light"] .text-white,
-html.light .text-white,
-body.light .text-white,
-#dashboard-root.light .text-white {
+:root.light-mode .text-white,
+[data-theme="light"] .text-white {
     color: var(--text-primary) !important;
 }
 
 :root.light .text-gray-100,
 :root.light .text-gray-200,
 :root.light .text-gray-300,
+:root.light-mode .text-gray-100,
+:root.light-mode .text-gray-200,
+:root.light-mode .text-gray-300,
 [data-theme="light"] .text-gray-100,
 [data-theme="light"] .text-gray-200,
 [data-theme="light"] .text-gray-300 {
@@ -107,17 +127,27 @@ body.light .text-white,
 
 :root.light .text-gray-400,
 :root.light .text-gray-500,
+:root.light-mode .text-gray-400,
+:root.light-mode .text-gray-500,
 [data-theme="light"] .text-gray-400,
 [data-theme="light"] .text-gray-500 {
     color: var(--text-secondary) !important;
 }
 
-/* Background overrides */
+/* ============================================
+   LIGHT MODE BACKGROUND OVERRIDES
+   ============================================ */
+
 :root.light .bg-gray-900,
 :root.light .bg-gray-800,
 :root.light .bg-\[\#0a0a0f\],
 :root.light .bg-\[\#050508\],
 :root.light .bg-\[\#050505\],
+:root.light-mode .bg-gray-900,
+:root.light-mode .bg-gray-800,
+:root.light-mode .bg-\[\#0a0a0f\],
+:root.light-mode .bg-\[\#050508\],
+:root.light-mode .bg-\[\#050505\],
 [data-theme="light"] .bg-gray-900,
 [data-theme="light"] .bg-gray-800,
 [data-theme="light"] .bg-\[\#0a0a0f\],
@@ -126,154 +156,45 @@ body.light .text-white,
     background-color: var(--bg-primary) !important;
 }
 
-/* Border overrides */
-:root.light .border-gray-800,
-:root.light .border-gray-700,
-:root.light .border-white\/10,
-[data-theme="light"] .border-gray-800,
-[data-theme="light"] .border-gray-700,
-[data-theme="light"] .border-white\/10 {
-    border-color: var(--bg-tertiary) !important;
-}
-
-/* ============================================
-   LIGHT MODE BODY BACKGROUND
-   ============================================ */
-
-:root.light body,
-html.light body,
-body.light,
-[data-theme="light"] body {
-    background: var(--bg-primary) !important;
-}
-
-/* Hide vignette overlay in light mode */
+/* Hide dark vignette overlay in light mode */
 :root.light body::before,
-html.light body::before,
+:root.light-mode body::before,
 [data-theme="light"] body::before {
     opacity: 0 !important;
     display: none !important;
 }
 
 /* ============================================
-   STARRY BACKGROUND - THEME AWARE
-   ============================================ */
-
-.stars-container {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    z-index: 0;
-    overflow: hidden;
-    opacity: var(--star-opacity, 1);
-    transition: opacity 0.5s ease;
-}
-
-.star {
-    position: absolute;
-    border-radius: 50%;
-    animation: twinkle 3s ease-in-out infinite;
-}
-
-.star-white {
-    background: var(--star-color-1, rgba(255, 255, 255, 0.8));
-    box-shadow: 0 0 6px var(--star-color-1, rgba(255, 255, 255, 0.8));
-}
-
-.star-purple {
-    background: var(--star-color-2, rgba(168, 85, 247, 0.6));
-    box-shadow: 0 0 8px var(--star-color-2, rgba(168, 85, 247, 0.6));
-}
-
-.star-cyan {
-    background: var(--star-color-3, rgba(0, 212, 255, 0.6));
-    box-shadow: 0 0 8px var(--star-color-3, rgba(0, 212, 255, 0.6));
-}
-
-@keyframes twinkle {
-
-    0%,
-    100% {
-        opacity: 0.3;
-        transform: scale(1);
-    }
-
-    50% {
-        opacity: 1;
-        transform: scale(1.2);
-    }
-}
-
-/* ============================================
-   PORTAL UTILITY CLASSES
-   Use these for consistent theming
+   UTILITY CLASSES
    ============================================ */
 
 .portal-card {
     background-color: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: 0.75rem;
-    backdrop-filter: blur(8px);
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
 }
 
-.portal-card:hover {
-    background-color: var(--bg-card-strong);
-    border-color: var(--border-hover);
+.portal-card-solid {
+    background-color: var(--bg-card-solid);
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
 }
 
-.portal-text-primary {
+.portal-input {
+    background-color: var(--bg-input);
+    border: 1px solid var(--border);
     color: var(--text-primary);
+    transition: border-color 0.2s ease;
 }
 
-.portal-text-secondary {
-    color: var(--text-secondary);
+.portal-input:focus {
+    border-color: var(--accent);
+    outline: none;
 }
 
-.portal-text-tertiary {
-    color: var(--text-tertiary);
-}
-
-.portal-text-muted {
+.portal-input::placeholder {
     color: var(--text-muted);
-}
-
-.portal-bg-primary {
-    background-color: var(--bg-primary);
-}
-
-.portal-bg-secondary {
-    background-color: var(--bg-secondary);
-}
-
-.portal-bg-tertiary {
-    background-color: var(--bg-tertiary);
-}
-
-.portal-border {
-    border-color: var(--border);
-}
-
-/* ============================================
-   SMOOTH THEME TRANSITIONS
-   ============================================ */
-
-html,
-body,
-#root,
-#dashboard-root {
-    transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-.theme-transition,
-.theme-transition * {
-    transition: background-color 0.3s ease,
-        color 0.3s ease,
-        border-color 0.3s ease,
-        box-shadow 0.3s ease !important;
 }
 
 /* ============================================
@@ -281,45 +202,43 @@ body,
    ============================================ */
 
 /* Dark mode scrollbar */
-:root:not(.light):not([data-theme="light"]) ::-webkit-scrollbar,
-:root.dark ::-webkit-scrollbar,
-[data-theme="dark"] ::-webkit-scrollbar {
+:root:not(.light):not(.light-mode):not([data-theme="light"]) ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
 }
 
-:root:not(.light):not([data-theme="light"]) ::-webkit-scrollbar-track,
-:root.dark ::-webkit-scrollbar-track,
-[data-theme="dark"] ::-webkit-scrollbar-track {
+:root:not(.light):not(.light-mode):not([data-theme="light"]) ::-webkit-scrollbar-track {
     background: var(--bg-secondary);
 }
 
-:root:not(.light):not([data-theme="light"]) ::-webkit-scrollbar-thumb,
-:root.dark ::-webkit-scrollbar-thumb,
-[data-theme="dark"] ::-webkit-scrollbar-thumb {
+:root:not(.light):not(.light-mode):not([data-theme="light"]) ::-webkit-scrollbar-thumb {
     background: var(--bg-tertiary);
     border-radius: 4px;
 }
 
 /* Light mode scrollbar */
 :root.light ::-webkit-scrollbar,
+:root.light-mode ::-webkit-scrollbar,
 [data-theme="light"] ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
 }
 
 :root.light ::-webkit-scrollbar-track,
+:root.light-mode ::-webkit-scrollbar-track,
 [data-theme="light"] ::-webkit-scrollbar-track {
     background: #f1f5f9;
 }
 
 :root.light ::-webkit-scrollbar-thumb,
+:root.light-mode ::-webkit-scrollbar-thumb,
 [data-theme="light"] ::-webkit-scrollbar-thumb {
     background: #cbd5e1;
     border-radius: 4px;
 }
 
 :root.light ::-webkit-scrollbar-thumb:hover,
+:root.light-mode ::-webkit-scrollbar-thumb:hover,
 [data-theme="light"] ::-webkit-scrollbar-thumb:hover {
     background: #94a3b8;
 }

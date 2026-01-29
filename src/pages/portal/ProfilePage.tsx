@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { supabase, Profile } from '@/lib/supabase';
 import { User, Shield, Bell, Loader2, AlertCircle, Save, CheckCircle, Camera, Upload, Eye, EyeOff, X, Sun, Moon } from 'lucide-react';
-import { useTheme } from '@/store/themeStore';
+import { useTheme } from '@/contexts/ThemeContext';
 import PortalLayout from '@/components/portal/PortalLayout';
 import { formatDate } from '@/lib/formatters';
 

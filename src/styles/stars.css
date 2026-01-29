@@ -1,0 +1,143 @@
+/* ============================================
+   OASIS STARRY BACKGROUND - PURE CSS
+   Always visible, theme-aware, no JavaScript
+   ============================================ */
+
+/* Star container - fixed behind all content */
+.stars-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+}
+
+/* Base star layers using CSS gradients */
+.stars-bg::before,
+.stars-bg::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+/* Layer 1: Small white stars */
+.stars-bg::before {
+    background-image:
+        radial-gradient(2px 2px at 20px 30px, var(--star-white), transparent),
+        radial-gradient(2px 2px at 40px 70px, var(--star-white), transparent),
+        radial-gradient(1px 1px at 90px 40px, var(--star-white), transparent),
+        radial-gradient(2px 2px at 160px 120px, var(--star-white), transparent),
+        radial-gradient(1px 1px at 230px 80px, var(--star-white), transparent),
+        radial-gradient(2px 2px at 300px 150px, var(--star-white), transparent),
+        radial-gradient(1px 1px at 380px 60px, var(--star-white), transparent),
+        radial-gradient(2px 2px at 450px 200px, var(--star-white), transparent),
+        radial-gradient(1px 1px at 520px 90px, var(--star-white), transparent),
+        radial-gradient(2px 2px at 600px 170px, var(--star-white), transparent),
+        radial-gradient(1px 1px at 680px 50px, var(--star-white), transparent),
+        radial-gradient(2px 2px at 750px 130px, var(--star-white), transparent),
+        radial-gradient(1px 1px at 830px 220px, var(--star-white), transparent),
+        radial-gradient(2px 2px at 900px 80px, var(--star-white), transparent),
+        radial-gradient(1px 1px at 980px 160px, var(--star-white), transparent),
+        radial-gradient(2px 2px at 1050px 240px, var(--star-white), transparent),
+        radial-gradient(1px 1px at 1120px 100px, var(--star-white), transparent),
+        radial-gradient(2px 2px at 1200px 180px, var(--star-white), transparent),
+        radial-gradient(1px 1px at 1280px 60px, var(--star-white), transparent),
+        radial-gradient(2px 2px at 1350px 140px, var(--star-white), transparent),
+        radial-gradient(1px 1px at 50px 250px, var(--star-white), transparent),
+        radial-gradient(2px 2px at 120px 320px, var(--star-white), transparent),
+        radial-gradient(1px 1px at 200px 280px, var(--star-white), transparent),
+        radial-gradient(2px 2px at 280px 350px, var(--star-white), transparent),
+        radial-gradient(1px 1px at 350px 400px, var(--star-white), transparent),
+        radial-gradient(2px 2px at 420px 300px, var(--star-white), transparent),
+        radial-gradient(1px 1px at 500px 380px, var(--star-white), transparent),
+        radial-gradient(2px 2px at 580px 450px, var(--star-white), transparent),
+        radial-gradient(1px 1px at 650px 350px, var(--star-white), transparent),
+        radial-gradient(2px 2px at 720px 420px, var(--star-white), transparent),
+        radial-gradient(1px 1px at 800px 500px, var(--star-white), transparent),
+        radial-gradient(2px 2px at 880px 380px, var(--star-white), transparent),
+        radial-gradient(1px 1px at 950px 460px, var(--star-white), transparent),
+        radial-gradient(2px 2px at 1030px 520px, var(--star-white), transparent),
+        radial-gradient(1px 1px at 1100px 400px, var(--star-white), transparent),
+        radial-gradient(2px 2px at 1180px 480px, var(--star-white), transparent),
+        radial-gradient(1px 1px at 1250px 550px, var(--star-white), transparent),
+        radial-gradient(2px 2px at 1320px 430px, var(--star-white), transparent),
+        radial-gradient(1px 1px at 70px 520px, var(--star-white), transparent),
+        radial-gradient(2px 2px at 150px 600px, var(--star-white), transparent),
+        radial-gradient(1px 1px at 230px 680px, var(--star-white), transparent),
+        radial-gradient(2px 2px at 310px 580px, var(--star-white), transparent),
+        radial-gradient(1px 1px at 400px 650px, var(--star-white), transparent),
+        radial-gradient(2px 2px at 480px 720px, var(--star-white), transparent),
+        radial-gradient(1px 1px at 560px 600px, var(--star-white), transparent),
+        radial-gradient(2px 2px at 640px 680px, var(--star-white), transparent),
+        radial-gradient(1px 1px at 720px 750px, var(--star-white), transparent),
+        radial-gradient(2px 2px at 800px 620px, var(--star-white), transparent),
+        radial-gradient(1px 1px at 880px 700px, var(--star-white), transparent),
+        radial-gradient(2px 2px at 960px 780px, var(--star-white), transparent);
+    background-size: 1400px 800px;
+    animation: twinkle 4s ease-in-out infinite;
+}
+
+/* Layer 2: Colored accent stars (purple & cyan) */
+.stars-bg::after {
+    background-image:
+        radial-gradient(3px 3px at 100px 100px, var(--star-purple), transparent),
+        radial-gradient(3px 3px at 350px 200px, var(--star-cyan), transparent),
+        radial-gradient(2px 2px at 550px 150px, var(--star-purple), transparent),
+        radial-gradient(3px 3px at 800px 250px, var(--star-cyan), transparent),
+        radial-gradient(2px 2px at 1000px 100px, var(--star-purple), transparent),
+        radial-gradient(3px 3px at 1200px 300px, var(--star-cyan), transparent),
+        radial-gradient(2px 2px at 200px 400px, var(--star-cyan), transparent),
+        radial-gradient(3px 3px at 450px 500px, var(--star-purple), transparent),
+        radial-gradient(2px 2px at 700px 450px, var(--star-cyan), transparent),
+        radial-gradient(3px 3px at 950px 550px, var(--star-purple), transparent),
+        radial-gradient(2px 2px at 1150px 480px, var(--star-cyan), transparent),
+        radial-gradient(3px 3px at 150px 650px, var(--star-purple), transparent),
+        radial-gradient(2px 2px at 400px 700px, var(--star-cyan), transparent),
+        radial-gradient(3px 3px at 650px 620px, var(--star-purple), transparent),
+        radial-gradient(2px 2px at 900px 750px, var(--star-cyan), transparent),
+        radial-gradient(3px 3px at 1100px 680px, var(--star-purple), transparent),
+        radial-gradient(2px 2px at 1300px 600px, var(--star-cyan), transparent),
+        radial-gradient(3px 3px at 50px 800px, var(--star-purple), transparent),
+        radial-gradient(2px 2px at 300px 850px, var(--star-cyan), transparent),
+        radial-gradient(3px 3px at 550px 780px, var(--star-purple), transparent);
+    background-size: 1400px 900px;
+    animation: twinkle 5s ease-in-out infinite reverse;
+}
+
+@keyframes twinkle {
+
+    0%,
+    100% {
+        opacity: 0.5;
+    }
+
+    50% {
+        opacity: 1;
+    }
+}
+
+/* ============================================
+   THEME VARIABLES FOR STARS
+   ============================================ */
+
+/* Dark theme (default) - bright stars */
+:root {
+    --star-white: rgba(255, 255, 255, 0.8);
+    --star-purple: rgba(168, 85, 247, 0.7);
+    --star-cyan: rgba(0, 212, 255, 0.7);
+}
+
+/* Light theme - dark/muted stars */
+:root.light,
+:root.light-mode,
+[data-theme="light"] {
+    --star-white: rgba(0, 0, 0, 0.12);
+    --star-purple: rgba(124, 58, 237, 0.25);
+    --star-cyan: rgba(6, 182, 212, 0.25);
+}

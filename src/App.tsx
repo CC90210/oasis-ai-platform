@@ -6,7 +6,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 import SplashScreen from './components/SplashScreen';
 import { CartDrawer } from './components/cart/CartDrawer';
 import { Analytics } from '@vercel/analytics/react';
-import StarField from './components/StarField';
+import { ThemeProvider } from './contexts/ThemeContext';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 
 // Lazy load pages for performance
@@ -68,101 +68,103 @@ function App() {
 
     return (
         <ErrorBoundary>
-            <StarField paused={showSplash} forceTheme="dark" />
-            {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
+            <ThemeProvider>
+                {/* Stars background is in index.html as pure CSS - always visible, theme-aware */}
+                {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
 
-            {/* Main content is always rendered behind the splash screen for seamless transition */}
-            <Router>
-                <ScrollToTop />
-                {/* Global Cart Drawer - Persists across route transitions */}
-                <CartDrawer />
-                <Suspense fallback={<PageLoader />}>
-                    <Routes>
-                        {/* Public Routes */}
-                        <Route path="/" element={<MainLayout showChat={!showSplash} showNav={!showSplash}><LandingPage /></MainLayout>} />
-                        <Route path="/services" element={<MainLayout showChat={!showSplash}><ServicesPage /></MainLayout>} />
-                        <Route path="/pricing" element={<MainLayout showChat={!showSplash}><PricingPage /></MainLayout>} />
-                        <Route path="/pricing/:productId" element={<MainLayout showChat={!showSplash}><ProductConfigPage /></MainLayout>} />
-                        <Route path="/contact" element={<MainLayout showChat={!showSplash}><ContactPage /></MainLayout>} />
-                        <Route path="/blog" element={<MainLayout showChat={!showSplash}><BlogPage /></MainLayout>} />
-                        <Route path="/blog/:slug" element={<MainLayout showChat={!showSplash}><BlogPost /></MainLayout>} />
-                        <Route path="/case-studies" element={<MainLayout showChat={!showSplash}><CaseStudiesPage /></MainLayout>} />
-                        <Route path="/checkout" element={<MainLayout showChat={!showSplash}><CheckoutPage /></MainLayout>} />
-                        <Route path="/checkout/success" element={<CheckoutSuccessPage />} />
-                        <Route path="/checkout/legal" element={<LegalCheckoutPage />} />
-                        <Route path="/subscription-success" element={<MainLayout showChat={!showSplash}><SubscriptionSuccessPage /></MainLayout>} />
+                {/* Main content is always rendered behind the splash screen for seamless transition */}
+                <Router>
+                    <ScrollToTop />
+                    {/* Global Cart Drawer - Persists across route transitions */}
+                    <CartDrawer />
+                    <Suspense fallback={<PageLoader />}>
+                        <Routes>
+                            {/* Public Routes */}
+                            <Route path="/" element={<MainLayout showChat={!showSplash} showNav={!showSplash}><LandingPage /></MainLayout>} />
+                            <Route path="/services" element={<MainLayout showChat={!showSplash}><ServicesPage /></MainLayout>} />
+                            <Route path="/pricing" element={<MainLayout showChat={!showSplash}><PricingPage /></MainLayout>} />
+                            <Route path="/pricing/:productId" element={<MainLayout showChat={!showSplash}><ProductConfigPage /></MainLayout>} />
+                            <Route path="/contact" element={<MainLayout showChat={!showSplash}><ContactPage /></MainLayout>} />
+                            <Route path="/blog" element={<MainLayout showChat={!showSplash}><BlogPage /></MainLayout>} />
+                            <Route path="/blog/:slug" element={<MainLayout showChat={!showSplash}><BlogPost /></MainLayout>} />
+                            <Route path="/case-studies" element={<MainLayout showChat={!showSplash}><CaseStudiesPage /></MainLayout>} />
+                            <Route path="/checkout" element={<MainLayout showChat={!showSplash}><CheckoutPage /></MainLayout>} />
+                            <Route path="/checkout/success" element={<CheckoutSuccessPage />} />
+                            <Route path="/checkout/legal" element={<LegalCheckoutPage />} />
+                            <Route path="/subscription-success" element={<MainLayout showChat={!showSplash}><SubscriptionSuccessPage /></MainLayout>} />
 
-                        {/* Custom Agreement Pages */}
-                        <Route path="/custom-agreement" element={<MainLayout showChat={!showSplash}><CustomAgreementPage /></MainLayout>} />
-                        <Route path="/custom-agreement/success" element={<CustomAgreementSuccessPage />} />
+                            {/* Custom Agreement Pages */}
+                            <Route path="/custom-agreement" element={<MainLayout showChat={!showSplash}><CustomAgreementPage /></MainLayout>} />
+                            <Route path="/custom-agreement/success" element={<CustomAgreementSuccessPage />} />
 
-                        {/* Legal Pages */}
-                        <Route path="/privacy" element={<MainLayout showChat={!showSplash}><PrivacyPage /></MainLayout>} />
-                        <Route path="/terms" element={<MainLayout showChat={!showSplash}><TermsPage /></MainLayout>} />
+                            {/* Legal Pages */}
+                            <Route path="/privacy" element={<MainLayout showChat={!showSplash}><PrivacyPage /></MainLayout>} />
+                            <Route path="/terms" element={<MainLayout showChat={!showSplash}><TermsPage /></MainLayout>} />
 
-                        {/* Portal Auth Routes (No Protection) */}
-                        <Route path="/portal/login" element={<PortalLoginPage />} />
-                        <Route path="/portal/signup" element={<PortalSignupPage />} />
+                            {/* Portal Auth Routes (No Protection) */}
+                            <Route path="/portal/login" element={<PortalLoginPage />} />
+                            <Route path="/portal/signup" element={<PortalSignupPage />} />
 
-                        {/* Protected Portal Routes */}
-                        <Route path="/portal/welcome" element={
-                            <ProtectedRoute>
-                                <PortalWelcomePage />
-                            </ProtectedRoute>
-                        } />
-                        <Route path="/portal/dashboard" element={
-                            <ProtectedRoute>
-                                <PortalDashboard />
-                            </ProtectedRoute>
-                        } />
-                        <Route path="/portal/automations" element={
-                            <ProtectedRoute>
-                                <PortalAutomationsPage />
-                            </ProtectedRoute>
-                        } />
-                        <Route path="/portal/reports" element={
-                            <ProtectedRoute>
-                                <PortalReportsPage />
-                            </ProtectedRoute>
-                        } />
-                        <Route path="/portal/billing" element={
-                            <ProtectedRoute>
-                                <PortalBillingPage />
-                            </ProtectedRoute>
-                        } />
-                        <Route path="/portal/support" element={
-                            <ProtectedRoute>
-                                <PortalSupportPage />
-                            </ProtectedRoute>
-                        } />
-                        <Route path="/portal/settings" element={
-                            <ProtectedRoute>
-                                <PortalSettingsPage />
-                            </ProtectedRoute>
-                        } />
-                        <Route path="/portal/profile" element={
-                            <ProtectedRoute>
-                                <PortalProfilePage />
-                            </ProtectedRoute>
-                        } />
-                        <Route path="/portal/test" element={
-                            <ProtectedRoute>
-                                <TestConnection />
-                            </ProtectedRoute>
-                        } />
-                        <Route path="/portal/debug" element={
-                            <ProtectedRoute>
-                                <ConnectionDebugger />
-                            </ProtectedRoute>
-                        } />
+                            {/* Protected Portal Routes */}
+                            <Route path="/portal/welcome" element={
+                                <ProtectedRoute>
+                                    <PortalWelcomePage />
+                                </ProtectedRoute>
+                            } />
+                            <Route path="/portal/dashboard" element={
+                                <ProtectedRoute>
+                                    <PortalDashboard />
+                                </ProtectedRoute>
+                            } />
+                            <Route path="/portal/automations" element={
+                                <ProtectedRoute>
+                                    <PortalAutomationsPage />
+                                </ProtectedRoute>
+                            } />
+                            <Route path="/portal/reports" element={
+                                <ProtectedRoute>
+                                    <PortalReportsPage />
+                                </ProtectedRoute>
+                            } />
+                            <Route path="/portal/billing" element={
+                                <ProtectedRoute>
+                                    <PortalBillingPage />
+                                </ProtectedRoute>
+                            } />
+                            <Route path="/portal/support" element={
+                                <ProtectedRoute>
+                                    <PortalSupportPage />
+                                </ProtectedRoute>
+                            } />
+                            <Route path="/portal/settings" element={
+                                <ProtectedRoute>
+                                    <PortalSettingsPage />
+                                </ProtectedRoute>
+                            } />
+                            <Route path="/portal/profile" element={
+                                <ProtectedRoute>
+                                    <PortalProfilePage />
+                                </ProtectedRoute>
+                            } />
+                            <Route path="/portal/test" element={
+                                <ProtectedRoute>
+                                    <TestConnection />
+                                </ProtectedRoute>
+                            } />
+                            <Route path="/portal/debug" element={
+                                <ProtectedRoute>
+                                    <ConnectionDebugger />
+                                </ProtectedRoute>
+                            } />
 
-                        {/* Convenience Redirects */}
-                        <Route path="/login" element={<Navigate to="/portal/login" replace />} />
-                        <Route path="/portal" element={<Navigate to="/portal/dashboard" replace />} />
-                    </Routes>
-                </Suspense>
-                <Analytics />
-            </Router>
+                            {/* Convenience Redirects */}
+                            <Route path="/login" element={<Navigate to="/portal/login" replace />} />
+                            <Route path="/portal" element={<Navigate to="/portal/dashboard" replace />} />
+                        </Routes>
+                    </Suspense>
+                    <Analytics />
+                </Router>
+            </ThemeProvider>
         </ErrorBoundary>
     );
 }
