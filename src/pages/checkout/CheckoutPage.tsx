@@ -3,7 +3,7 @@ import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft, Check, Bot, Shield, Sparkles, Zap } from 'lucide-react';
 import LegalAcceptance, { AcceptanceData } from '@/components/legal/LegalAcceptance';
 import { supabase } from '@/lib/supabase';
-import StarField from '@/components/StarField';
+
 
 // Product definitions matching pricing page
 const PRODUCTS: Record<string, {
@@ -215,7 +215,7 @@ export default function CheckoutPage() {
 
     return (
         <div className="min-h-screen bg-[var(--bg-primary)] relative">
-            <StarField forceTheme="dark" />
+
 
             {/* Header */}
             <div className="border-b border-[var(--bg-tertiary)] relative z-10 bg-[var(--bg-primary)]/80 backdrop-blur-xl">

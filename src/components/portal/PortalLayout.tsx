@@ -145,7 +145,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
                     <div className="relative">
                         <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500 to-purple-600 rounded-xl blur opacity-25 group-hover/logo:opacity-50 transition duration-500"></div>
                         <div className="relative h-12 w-12 bg-[var(--bg-tertiary)] rounded-xl flex items-center justify-center border border-[var(--border)] shadow-xl">
-                            <Bot className="w-7 h-7 text-cyan-400" />
+                            <Bot className="w-7 h-7 text-[var(--accent)]" />
                         </div>
                     </div>
                     <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[var(--text-primary)] to-[var(--text-muted)]">
@@ -174,14 +174,14 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
                                 className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group relative overflow-hidden ${isExternal
                                     ? 'text-[var(--text-muted)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] border border-transparent'
                                     : isActive
-                                        ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 shadow-[0_0_20px_rgba(6,182,212,0.15)]'
+                                        ? 'bg-[var(--oasis-cyan-glow)] text-[var(--sidebar-active)] border border-[var(--sidebar-active)]/20 shadow-lg shadow-[var(--oasis-cyan)]/10'
                                         : 'text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] border border-transparent'
                                     }`}
                             >
                                 {isActive && !isExternal && (
-                                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-cyan-500 rounded-l-xl"></div>
+                                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-[var(--sidebar-active)] rounded-l-xl"></div>
                                 )}
-                                <IconComponent className={`w-5 h-5 ${isActive && !isExternal ? 'text-cyan-400' : 'text-[var(--text-muted)] group-hover:text-cyan-400 transition-colors'}`} />
+                                <IconComponent className={`w-5 h-5 ${isActive && !isExternal ? 'text-[var(--sidebar-active)]' : 'text-[var(--text-muted)] group-hover:text-[var(--sidebar-active)] transition-colors'}`} />
                                 <span className="font-medium">{linkItem.label}</span>
                                 {isExternal && <ExternalLink className="w-3 h-3 ml-auto opacity-50" />}
                             </Link>
@@ -235,7 +235,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
                     {/* Logo */}
                     <Link to="/" className="flex items-center gap-2">
                         <div className="h-8 w-8 bg-[var(--bg-tertiary)] rounded-lg flex items-center justify-center border border-[var(--border)] flex-shrink-0">
-                            <Bot className="w-4 h-4 text-cyan-400" />
+                            <Bot className="w-4 h-4 text-[var(--accent)]" />
                         </div>
                         <span className="font-bold text-[var(--text-primary)]">OASIS AI</span>
                     </Link>
@@ -267,7 +267,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
                         <div className="flex items-center justify-between mb-8">
                             <div className="flex items-center gap-3">
                                 <div className="h-10 w-10 bg-[var(--bg-tertiary)] rounded-xl flex items-center justify-center border border-[var(--border)]">
-                                    <Bot className="w-5 h-5 text-cyan-400" />
+                                    <Bot className="w-5 h-5 text-[var(--accent)]" />
                                 </div>
                                 <span className="font-bold text-[var(--text-primary)]">OASIS AI</span>
                             </div>
@@ -301,7 +301,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
                                         className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all min-h-[48px] ${isExternal
                                             ? 'text-[var(--text-muted)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]'
                                             : isActive
-                                                ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20'
+                                                ? 'bg-[var(--oasis-cyan-glow)] text-[var(--sidebar-active)] border border-[var(--sidebar-active)]/20'
                                                 : 'text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]'
                                             }`}
                                     >

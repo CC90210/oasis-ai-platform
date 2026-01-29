@@ -500,7 +500,7 @@ export default function AutomationsPage() {
 
                                                     return (
                                                         <div key={log.id} className="relative pl-4 sm:pl-6 pb-4 border-l border-[var(--bg-tertiary)] last:border-0 last:pb-0 group/log">
-                                                            <div className={`absolute -left-[5px] top-1.5 w-2.5 h-2.5 rounded-full border-2 border-[#050505] ${log.status === 'success' ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                                                            <div className={`absolute -left-[5px] top-1.5 w-2.5 h-2.5 rounded-full border-2 border-[var(--bg-main)] ${log.status === 'success' ? 'bg-green-500' : 'bg-red-500'}`}></div>
 
                                                             <div className="bg-[var(--bg-primary)] border border-[var(--bg-tertiary)] rounded-xl group-hover/log:border-[var(--border)] transition overflow-hidden">
                                                                 <div className="p-3 sm:p-4">

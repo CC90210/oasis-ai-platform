@@ -242,3 +242,67 @@ body {
 [data-theme="light"] ::-webkit-scrollbar-thumb:hover {
     background: #94a3b8;
 }
+/* ============================================
+   LIGHT MODE ACCENT TEXT OVERRIDES
+   Ensure readable contrast in light mode
+   ============================================ */
+
+:root.light .text-cyan-400,
+:root.light .text-cyan-500,
+:root.light-mode .text-cyan-400,
+:root.light-mode .text-cyan-500,
+[data-theme='light'] .text-cyan-400,
+[data-theme='light'] .text-cyan-500 {
+  color: var(--accent) !important;
+}
+
+:root.light .text-purple-400,
+:root.light .text-purple-500,
+:root.light-mode .text-purple-400,
+:root.light-mode .text-purple-500,
+[data-theme='light'] .text-purple-400,
+[data-theme='light'] .text-purple-500 {
+  color: var(--accent-purple) !important;
+}
+
+:root.light .text-green-400,
+:root.light .text-green-500,
+:root.light-mode .text-green-400,
+:root.light-mode .text-green-500,
+[data-theme='light'] .text-green-400,
+[data-theme='light'] .text-green-500 {
+  color: #059669 !important; /* emerald-600 */
+}
+
+:root.light .text-emerald-400,
+:root.light-mode .text-emerald-400,
+[data-theme='light'] .text-emerald-400 {
+  color: #059669 !important;
+}
+
+:root.light .text-yellow-400,
+:root.light .text-yellow-500,
+:root.light-mode .text-yellow-400,
+:root.light-mode .text-yellow-500,
+[data-theme='light'] .text-yellow-400,
+[data-theme='light'] .text-yellow-500,
+:root.light .text-orange-400,
+:root.light-mode .text-orange-400,
+[data-theme='light'] .text-orange-400 {
+  color: #d97706 !important; /* amber-600 */
+}
+
+
+/* ============================================
+   BORDER HOVER VARIABLES
+   ============================================ */
+:root {
+  --border-hover: #3a3a4e;
+}
+
+:root.light,
+:root.light-mode,
+[data-theme='light'] {
+  --border-hover: #cbd5e1; /* slate-300 */
+}
+

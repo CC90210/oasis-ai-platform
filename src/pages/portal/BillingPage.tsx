@@ -314,14 +314,14 @@ export default function BillingPage() {
                             <div className="space-y-3">
                                 <Link
                                     to="/portal/automations"
-                                    className="flex items-center justify-between p-4 bg-[var(--bg-tertiary)] hover:bg-[#1a1a2e] rounded-xl border border-[var(--border)] transition group"
+                                    className="flex items-center justify-between p-4 bg-[var(--bg-tertiary)] hover:bg-[var(--bg-secondary)] rounded-xl border border-[var(--border)] transition group"
                                 >
                                     <span className="text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]">View My Automations</span>
                                     <ExternalLink className="w-4 h-4 text-[var(--text-muted)] group-hover:text-cyan-400" />
                                 </Link>
                                 <Link
                                     to="/portal/reports"
-                                    className="flex items-center justify-between p-4 bg-[var(--bg-tertiary)] hover:bg-[#1a1a2e] rounded-xl border border-[var(--border)] transition group"
+                                    className="flex items-center justify-between p-4 bg-[var(--bg-tertiary)] hover:bg-[var(--bg-secondary)] rounded-xl border border-[var(--border)] transition group"
                                 >
                                     <span className="text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]">ROI Reports & Case Studies</span>
                                     <ExternalLink className="w-4 h-4 text-[var(--text-muted)] group-hover:text-cyan-400" />
@@ -372,7 +372,7 @@ export default function BillingPage() {
                             </Link>
                             <Link
                                 to="/portal/support"
-                                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#1a1a2e] text-[var(--text-primary)] font-medium rounded-xl hover:bg-[#2a2a3e] transition border border-[var(--border)]"
+                                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[var(--bg-tertiary)] text-[var(--text-primary)] font-medium rounded-xl hover:bg-[var(--bg-secondary)] transition border border-[var(--border)]"
                             >
                                 Contact Support
                             </Link>
@@ -662,14 +662,14 @@ export default function BillingPage() {
                                                         </a>
                                                         <a
                                                             href="tel:+12403325062"
-                                                            className="flex items-center gap-2 px-4 py-2 bg-[#1a1a2e] hover:bg-[#2a2a3e] text-[var(--text-primary)] rounded-lg transition border border-[var(--border)]"
+                                                            className="flex items-center gap-2 px-4 py-2 bg-[var(--bg-tertiary)] hover:bg-[var(--bg-secondary)] text-[var(--text-primary)] rounded-lg transition border border-[var(--border)]"
                                                         >
                                                             <Phone className="w-4 h-4" />
                                                             +1 (240) 332-5062
                                                         </a>
                                                         <Link
                                                             to="/portal/support"
-                                                            className="flex items-center gap-2 px-4 py-2 bg-[#1a1a2e] hover:bg-[#2a2a3e] text-[var(--text-primary)] rounded-lg transition border border-[var(--border)]"
+                                                            className="flex items-center gap-2 px-4 py-2 bg-[var(--bg-tertiary)] hover:bg-[var(--bg-secondary)] text-[var(--text-primary)] rounded-lg transition border border-[var(--border)]"
                                                         >
                                                             <MessageCircle className="w-4 h-4" />
                                                             Open Ticket
@@ -725,7 +725,7 @@ export default function BillingPage() {
                                         <>
                                             <a
                                                 href="mailto:oasisaisolutions@gmail.com?subject=Billing%20Inquiry"
-                                                className="w-full flex items-center justify-between p-4 bg-[var(--bg-tertiary)] hover:bg-[#1a1a2e] rounded-xl border border-[var(--border)] transition group"
+                                                className="w-full flex items-center justify-between p-4 bg-[var(--bg-tertiary)] hover:bg-[var(--bg-secondary)] rounded-xl border border-[var(--border)] transition group"
                                             >
                                                 <div className="flex items-center gap-3">
                                                     <div className="w-10 h-10 bg-blue-500/10 rounded-lg flex items-center justify-center">
@@ -741,7 +741,7 @@ export default function BillingPage() {
 
                                             <a
                                                 href="mailto:oasisaisolutions@gmail.com?subject=Update%20Payment%20Method"
-                                                className="w-full flex items-center justify-between p-4 bg-[var(--bg-tertiary)] hover:bg-[#1a1a2e] rounded-xl border border-[var(--border)] transition group"
+                                                className="w-full flex items-center justify-between p-4 bg-[var(--bg-tertiary)] hover:bg-[var(--bg-secondary)] rounded-xl border border-[var(--border)] transition group"
                                             >
                                                 <div className="flex items-center gap-3">
                                                     <div className="w-10 h-10 bg-green-500/10 rounded-lg flex items-center justify-center">
@@ -757,7 +757,7 @@ export default function BillingPage() {
 
                                             <Link
                                                 to="/portal/support"
-                                                className="w-full flex items-center justify-between p-4 bg-[var(--bg-tertiary)] hover:bg-[#1a1a2e] rounded-xl border border-[var(--border)] transition group"
+                                                className="w-full flex items-center justify-between p-4 bg-[var(--bg-tertiary)] hover:bg-[var(--bg-secondary)] rounded-xl border border-[var(--border)] transition group"
                                             >
                                                 <div className="flex items-center gap-3">
                                                     <div className="w-10 h-10 bg-purple-500/10 rounded-lg flex items-center justify-center">
@@ -777,7 +777,7 @@ export default function BillingPage() {
                                             <button
                                                 onClick={openStripePortal}
                                                 disabled={portalLoading}
-                                                className="w-full flex items-center justify-between p-4 bg-[var(--bg-tertiary)] hover:bg-[#1a1a2e] rounded-xl border border-[var(--border)] transition group"
+                                                className="w-full flex items-center justify-between p-4 bg-[var(--bg-tertiary)] hover:bg-[var(--bg-secondary)] rounded-xl border border-[var(--border)] transition group"
                                             >
                                                 <div className="flex items-center gap-3">
                                                     <div className="w-10 h-10 bg-blue-500/10 rounded-lg flex items-center justify-center">
@@ -794,7 +794,7 @@ export default function BillingPage() {
                                             <button
                                                 onClick={openStripePortal}
                                                 disabled={portalLoading}
-                                                className="w-full flex items-center justify-between p-4 bg-[var(--bg-tertiary)] hover:bg-[#1a1a2e] rounded-xl border border-[var(--border)] transition group"
+                                                className="w-full flex items-center justify-between p-4 bg-[var(--bg-tertiary)] hover:bg-[var(--bg-secondary)] rounded-xl border border-[var(--border)] transition group"
                                             >
                                                 <div className="flex items-center gap-3">
                                                     <div className="w-10 h-10 bg-green-500/10 rounded-lg flex items-center justify-center">

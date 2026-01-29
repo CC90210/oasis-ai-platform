@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { CheckCircle, ArrowRight, Mail, Calendar, Rocket } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
-import StarField from '@/components/StarField';
+
 
 export default function CheckoutSuccessPage() {
     const [searchParams] = useSearchParams();
@@ -30,7 +30,7 @@ export default function CheckoutSuccessPage() {
 
     return (
         <div className="min-h-screen bg-[var(--bg-primary)] relative flex items-center justify-center px-4">
-            <StarField forceTheme="dark" />
+
 
             <div className="max-w-lg w-full text-center relative z-10">
                 {/* Success Icon */}

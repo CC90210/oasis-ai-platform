@@ -5,7 +5,7 @@ import * as LucideIcons from 'lucide-react';
 import LegalAcceptance, { AcceptanceData } from '@/components/legal/LegalAcceptance';
 import { supabase } from '@/lib/supabase';
 import { ALL_AUTOMATIONS, BUNDLES } from '@/lib/pricing';
-import StarField from '@/components/StarField';
+
 
 interface CheckoutData {
     productId: string;
@@ -213,7 +213,7 @@ export default function LegalCheckoutPage() {
 
     return (
         <div className="min-h-screen bg-[var(--bg-primary)] relative">
-            <StarField forceTheme="dark" />
+
 
             {/* Header */}
             <div className="border-b border-[var(--bg-tertiary)] relative z-10 bg-[var(--bg-primary)]/80 backdrop-blur-xl">

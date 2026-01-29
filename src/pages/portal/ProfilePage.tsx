@@ -588,7 +588,7 @@ export default function ProfilePage() {
                         </div>
 
                         <div className="space-y-4">
-                            <label className="flex items-center justify-between p-4 bg-[var(--bg-tertiary)] rounded-xl border border-[var(--border)] cursor-pointer hover:border-[#3a3a4e] transition">
+                            <label className="flex items-center justify-between p-4 bg-[var(--bg-tertiary)] rounded-xl border border-[var(--border)] cursor-pointer hover:border-[var(--border-hover)] transition">
                                 <div>
                                     <p className="text-[var(--text-primary)] font-medium">Automation Alerts</p>
                                     <p className="text-xs text-[var(--text-muted)]">Get notified when automations execute</p>
@@ -601,7 +601,7 @@ export default function ProfilePage() {
                                 />
                             </label>
 
-                            <label className="flex items-center justify-between p-4 bg-[var(--bg-tertiary)] rounded-xl border border-[var(--border)] cursor-pointer hover:border-[#3a3a4e] transition">
+                            <label className="flex items-center justify-between p-4 bg-[var(--bg-tertiary)] rounded-xl border border-[var(--border)] cursor-pointer hover:border-[var(--border-hover)] transition">
                                 <div>
                                     <p className="text-[var(--text-primary)] font-medium">Weekly Summary</p>
                                     <p className="text-xs text-[var(--text-muted)]">Receive weekly performance reports</p>
@@ -614,7 +614,7 @@ export default function ProfilePage() {
                                 />
                             </label>
 
-                            <label className="flex items-center justify-between p-4 bg-[var(--bg-tertiary)] rounded-xl border border-[var(--border)] cursor-pointer hover:border-[#3a3a4e] transition">
+                            <label className="flex items-center justify-between p-4 bg-[var(--bg-tertiary)] rounded-xl border border-[var(--border)] cursor-pointer hover:border-[var(--border-hover)] transition">
                                 <div>
                                     <p className="text-[var(--text-primary)] font-medium">Billing Updates</p>
                                     <p className="text-xs text-[var(--text-muted)]">Get notified about billing and invoices</p>

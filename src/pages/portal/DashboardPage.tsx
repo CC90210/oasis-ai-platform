@@ -354,7 +354,7 @@ export default function DashboardPage() {
                         </h3>
                         <div className="grid sm:grid-cols-3 gap-4">
                             {primaryConfig.insights.map((insight, idx) => (
-                                <div key={idx} className="bg-[var(--bg-secondary)] border border-[var(--border)] rounded-xl p-4 hover:border-[#252535] transition">
+                                <div key={idx} className="bg-[var(--bg-secondary)] border border-[var(--border)] rounded-xl p-4 hover:border-[var(--border-hover)] transition">
                                     <div className="flex items-center gap-3 mb-3">
                                         <div className={`w-10 h-10 rounded-lg bg-${insight.color}-500/10 flex items-center justify-center`}>
                                             {idx === 0 && <Target className={`w-5 h-5 text-${insight.color}-400`} />}
