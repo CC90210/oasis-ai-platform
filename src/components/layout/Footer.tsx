@@ -57,7 +57,7 @@ export const Footer = () => {
                             </li>
                             <li className="flex items-start gap-3 text-text-secondary">
                                 <MapPin className="w-5 h-5 text-oasis-cyan flex-shrink-0 mt-1" />
-                                <span className="break-words">Montreal & Ontario, Canada</span>
+                                <span className="break-words">Collingwood, Ontario, Canada</span>
                             </li>
                             <li className="flex items-start gap-3 text-text-secondary">
                                 <Globe className="w-5 h-5 text-oasis-cyan flex-shrink-0 mt-1" />
@@ -69,7 +69,7 @@ export const Footer = () => {
 
                 <div className="border-t border-white/5 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
                     <p className="text-text-tertiary text-sm">
-                        © {new Date().getFullYear()} OASIS AI Solutions. All rights reserved.
+                        © {new Date().getFullYear()} OASIS AI Solutions | Conaugh McKenna, Sole Proprietor | Collingwood, Ontario, Canada
                     </p>
                     <div className="flex gap-8 text-sm text-text-tertiary">
                         <Link to="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>

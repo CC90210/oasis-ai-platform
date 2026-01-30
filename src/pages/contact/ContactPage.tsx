@@ -112,9 +112,8 @@ const ContactPage = () => {
                                 className="glass-card p-8 hover:shadow-oasis transition-all group"
                             >
                                 <MapPin className="w-10 h-10 text-oasis-cyan mb-4 group-hover:scale-110 transition-transform" />
-                                <h3 className="font-display font-bold text-xl mb-2 text-white">Our Locations</h3>
-                                <p className="text-text-secondary mb-1">Toronto, Ontario (HQ)</p>
-                                <p className="text-text-secondary">Montreal, Quebec</p>
+                                <h3 className="font-display font-bold text-xl mb-2 text-white">Our Location</h3>
+                                <p className="text-text-secondary">Collingwood, Ontario, Canada</p>
                             </motion.div>
 
 

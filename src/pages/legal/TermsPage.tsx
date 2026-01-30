@@ -47,11 +47,22 @@ export default function TermsPage() {
                     </div>
 
                     {/* Introduction */}
-                    <p className="text-gray-300 text-lg">
-                        These Terms of Service ("Terms") govern your use of services provided by OASIS AI Solutions
-                        ("OASIS," "we," "us," or "our"), a business operating in Ontario, Canada. By purchasing,
-                        accessing, or using our services, you ("Client," "you," or "your") agree to be bound by these Terms.
-                    </p>
+                    <div className="space-y-4 text-gray-300 text-lg">
+                        <p>
+                            OASIS AI Solutions is a sole proprietorship legally owned and operated by Conaugh McKenna.
+                            The business is registered with the Province of Ontario, Canada, and is based in Collingwood, Ontario.
+                        </p>
+                        <p>
+                            Conaugh McKenna holds 100% ownership of OASIS AI Solutions. There are no partners, shareholders,
+                            or equity holders. Any individuals who assist with the business do so as independent contractors,
+                            not as partners or owners.
+                        </p>
+                        <p>
+                            These Terms of Service ("Terms") govern your use of services provided by OASIS AI Solutions
+                            ("OASIS," "we," "us," or "our"). By purchasing, accessing, or using our services,
+                            you ("Client," "you," or "your") agree to be bound by these Terms.
+                        </p>
+                    </div>
 
                     <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4 my-6">
                         <p className="text-yellow-200 text-sm m-0">
@@ -404,7 +415,7 @@ export default function TermsPage() {
                     <div className="bg-gray-800 rounded-lg p-4 my-4">
                         <p className="text-white font-semibold mb-1">OASIS AI Solutions</p>
                         <p className="text-gray-300 m-0">Email: oasisaisolutions@gmail.com</p>
-                        <p className="text-gray-300 m-0">Location: Ontario, Canada</p>
+                        <p className="text-gray-300 m-0">Location: Collingwood, Ontario, Canada</p>
                     </div>
 
                     {/* Final Agreement */}

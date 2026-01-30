@@ -22,9 +22,8 @@ Build a **world-class, fully functional AI automation agency website** for OASIS
 ## Brand Identity
 
 **Company:** OASIS AI Solutions
-**Founder & CEO:** CC (Conaugh McKenna) - 21 years old, technical founder
-**Headquarters:** Toronto, Ontario, Canada
-**Secondary Office:** Montreal, Quebec, Canada
+**Owner:** Conaugh McKenna (Sole Proprietorship)
+**Headquarters:** Collingwood, Ontario, Canada
 **Website:** oasisai.work
 **Email:** oasisaisolutions@gmail.com
 **Phone:** +1 (240) 332-5062
@@ -372,35 +371,13 @@ These agents require a discovery call to properly scope and customize. They invo
 
 ---
 
-## TIER 4: MONTHLY RETAINERS (Subscription Required for Active Agents)
-
-**CRITICAL:** The monthly retainer keeps your AI employees running. It covers software subscriptions, API credits, hosting, and support—like paying your AI employee's salary. Without it, automations stop working.
-
-### 💼 OASIS Essentials — $297/month
-
-**Best For:** Businesses with 1-2 simple agents needing basic support.
-
-**Includes:**
-- System monitoring and uptime management
-- Bug fixes and error resolution
-- Email support (48-hour response)
-- Monthly performance report
-- Up to 5,000 AI interactions/month
-- Basic API credits included
-
-**Not Included:**
-- New workflow development
-- Major feature additions
-- Phone support
-
----
-
-### ⭐ OASIS Standard — $497/month (RECOMMENDED)
+### 💼 AI Ops Monthly Retainer — $497/month (RECOMMENDED)
 
 **Best For:** Businesses with 3-5 agents needing reliable, ongoing optimization.
 
 **Includes:**
-- Everything in Essentials, plus:
+- System monitoring and uptime management
+- Bug fixes and error resolution
 - Priority email support (24-hour response)
 - Monthly optimization call (30 min)
 - Performance tuning and improvements
@@ -412,24 +389,6 @@ These agents require a discovery call to properly scope and customize. They invo
 **Not Included:**
 - New workflow development (quoted separately)
 - Phone support
-
----
-
-### 🔥 OASIS Priority — $797/month
-
-**Best For:** Businesses with mission-critical automations requiring premium support.
-
-**Includes:**
-- Everything in Standard, plus:
-- Dedicated account manager
-- Priority phone + email support (4-hour response)
-- Bi-weekly optimization calls
-- Unlimited minor adjustments
-- Up to 50,000 AI interactions/month
-- Premium API credits included
-- Proactive monitoring and alerts
-- Custom analytics dashboard
-- Monthly executive summary report
 
 **Bonus:** 10% discount on any new agent development
 

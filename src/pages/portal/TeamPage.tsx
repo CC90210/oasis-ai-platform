@@ -4,10 +4,10 @@ import { Button } from '@/components/ui/button';
 
 const TeamPage = () => {
     const members = [
-        { id: 1, name: "CC Admin", email: "cc@oasis-ai.com", role: "Admin", status: "active", lastActive: "Now" },
-        { id: 2, name: "Adan Partner", email: "adan@oasis-ai.com", role: "Admin", status: "active", lastActive: "2 hours ago" },
-        { id: 3, name: "Sarah Manager", email: "sarah@client.com", role: "Member", status: "active", lastActive: "1 day ago" },
-        { id: 4, name: "John Viewer", email: "john@client.com", role: "Viewer", status: "invited", lastActive: "-" },
+        { id: 1, name: "Conaugh McKenna", email: "conaugh@oasis-ai.com", role: "Owner", status: "active", lastActive: "Now" },
+        { id: 2, name: "AI Ops Assistant", email: "assistant@oasis-ai.com", role: "Admin", status: "active", lastActive: "2 hours ago" },
+        { id: 3, name: "Client Manager", email: "manager@client.com", role: "Member", status: "active", lastActive: "1 day ago" },
+        { id: 4, name: "Standard User", email: "user@client.com", role: "Viewer", status: "invited", lastActive: "-" },
     ];
 
     return (

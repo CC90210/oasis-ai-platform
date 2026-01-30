@@ -3,16 +3,16 @@ export const BUNDLES = {
         id: 'launchpad',
         name: 'OASIS Launchpad',
         tag: 'BEST FOR GETTING STARTED',
-        description: 'Best for getting started. Includes 90-min discovery consultation, custom automation roadmap, 1 automation of your choice, first month included, 7-day priority implementation, and monthly ROI documentation.',
-        setupFee: 1497,
-        monthlyFee: 347,
+        description: 'Best for getting started. Includes 90-min discovery consultation, custom automation roadmap, 1 automation of your choice, setup, configuration, and 30 days support.',
+        setupFee: 997,
+        monthlyFee: 497,
         features: [
             '90-minute discovery consultation',
             'Custom automation roadmap',
             '1 automation of your choice',
-            'First month included',
+            'Setup, configuration, and deployment',
             '7-day priority implementation',
-            'Monthly ROI documentation'
+            '30 days technical support'
         ],
         idealFor: 'Small businesses testing automation for the first time',
         cta: 'Get Started'
@@ -21,20 +21,18 @@ export const BUNDLES = {
         id: 'integration-suite',
         name: 'Integration Suite',
         tag: 'MOST POPULAR',
-        description: 'Most popular choice. Half-day strategy workshop, 3 core automations, CRM integration setup, cross-automation data flows, first 2 months included, dedicated implementation manager, bi-weekly optimization calls.',
-        setupFee: 4997,
+        description: 'Comprehensive transformation. 3-5 custom AI agents, Voice AI + Chat, CRM integration, and 90 days of dedicated support.',
+        setupFee: 3500, // Starting price as per system message
         monthlyFee: 497,
         features: [
-            'Half-day strategy workshop',
-            '3 core automations (client\'s choice)',
-            'CRM integration setup',
-            'Cross-automation data flows',
-            'First 2 months of subscription included',
-            'Dedicated implementation manager',
-            'Bi-weekly optimization calls (first 90 days)',
-            'Monthly ROI documentation'
+            '3-5 custom AI agents',
+            'AI-powered website chat widget',
+            'Voice AI phone system',
+            'CRM integration and synchronization',
+            '90 days optimization and support',
+            'Comprehensive documentation'
         ],
-        roi: 'Average 312% ROI within 90 days or we rebuild for free',
+        roi: 'Average 312% ROI within 90 days',
         idealFor: 'Growing businesses ready to scale operations',
         cta: 'Book Consultation'
     }
@@ -46,7 +44,7 @@ export const STANDARD_AUTOMATIONS = {
         name: 'Website Chat Automation',
         description: '24/7 intelligent chat that captures leads and answers questions.',
         icon: 'MessageSquare',
-        setupFee: 997,
+        setupFee: 797,
         tiers: {
             starter: { price: 149, name: 'Starter' },
             professional: { price: 297, name: 'Professional' },
@@ -103,7 +101,7 @@ export const STANDARD_AUTOMATIONS = {
         name: 'Google Review Automation',
         description: 'Automate review requests and respond to reviews intelligently.',
         icon: 'Star',
-        setupFee: 797,
+        setupFee: 597,
         tiers: {
             starter: { price: 149, name: 'Starter' },
             professional: { price: 297, name: 'Professional' },
@@ -117,23 +115,23 @@ export const STANDARD_AUTOMATIONS = {
             'Multi-location'
         ]
     },
-    invoiceHandling: {
-        id: 'invoice-handling',
-        name: 'Invoice Handling Automation',
-        description: 'Process inbound/outbound invoices with personalized creation and tracking.',
-        icon: 'Receipt',
-        setupFee: 1197,
+    leadCapture: {
+        id: 'lead-capture',
+        name: 'Lead Capture & Qualification Automation',
+        description: 'Captures and qualifies leads 24/7 from your website and social channels.',
+        icon: 'Target',
+        setupFee: 897,
         tiers: {
             starter: { price: 149, name: 'Starter' },
             professional: { price: 297, name: 'Professional' },
             business: { price: 497, name: 'Business' }
         },
-        highlight: 'Zero manual data entry',
+        highlight: 'Zero missed opportunities',
         features: [
-            'Inbound invoice processing',
-            'Personalized invoice creation',
-            'Payment tracking',
-            'Automatic reconciliation'
+            'AI qualification',
+            'Instant hot lead alerts',
+            'CRM integration',
+            'Automated follow-up'
         ]
     }
 };
@@ -141,40 +139,40 @@ export const STANDARD_AUTOMATIONS = {
 export const PREMIUM_AUTOMATIONS = {
     voiceAI: {
         id: 'voice-ai',
-        name: 'Voice AI Automation',
-        description: 'Never miss a call. AI receptionist that books appointments and answers questions.',
+        name: 'Voice AI Phone Agent',
+        description: 'AI-powered phone system that answers calls 24/7, books appointments, and qualifies leads.',
         icon: 'Phone',
-        setupFee: 1497,
+        setupFee: 2497,
         tiers: {
-            starter: { price: 197, name: 'Starter' },
-            professional: { price: 347, name: 'Professional' },
-            business: { price: 547, name: 'Business' }
+            starter: { price: 297, name: 'Starter' },
+            professional: { price: 497, name: 'Professional' },
+            business: { price: 797, name: 'Business' }
         },
         highlight: 'Handles 500+ calls/month',
         features: [
-            'Custom voice persona',
-            'Call transcription',
-            'SMS follow-ups',
+            'Twilio phone setup',
+            'ElevenLabs natural voice',
+            'CRM integration',
             'Appointment booking'
         ]
     },
-    leadGeneration: {
-        id: 'lead-generation',
-        name: 'Lead Generation Automation',
-        description: 'Find, enrich, and qualify leads on autopilot.',
+    knowledgeBase: {
+        id: 'knowledge-base',
+        name: 'RAG Knowledge Base Agent',
+        description: 'AI agent with instant access to your company knowledge, documents, and FAQs.',
         icon: 'Database',
-        setupFee: 1497,
+        setupFee: 1997,
         tiers: {
-            starter: { price: 197, name: 'Starter' },
-            professional: { price: 347, name: 'Professional' },
-            business: { price: 547, name: 'Business' }
+            starter: { price: 297, name: 'Starter' },
+            professional: { price: 497, name: 'Professional' },
+            business: { price: 797, name: 'Business' }
         },
-        highlight: '1000+ qualified leads/month',
+        highlight: 'Instant source citations',
         features: [
-            'Multi-source scraping',
-            'Data enrichment',
-            'Lead scoring',
-            'CRM population'
+            'Vector database setup',
+            'Document ingestion',
+            'Semantic search',
+            'Auto-refresh sync'
         ]
     },
     socialMedia: {

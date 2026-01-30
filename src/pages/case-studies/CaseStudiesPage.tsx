@@ -194,34 +194,34 @@ const CaseStudiesPage = () => {
                     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
                         {[
                             {
-                                quote: "Before OASIS AI, I was drowning in admin work. Now my business runs itself while I sleep. Conaugh and his team built exactly what I needed—no fluff, just results. Best investment I've made in years.",
+                                quote: "Before OASIS AI, I was drowning in admin work. Now my business runs itself while I sleep. Conaugh built exactly what I needed—no fluff, just results. Best investment I've made in years.",
                                 author: "Marcus T.",
-                                title: "Service Business Owner, Toronto"
+                                title: "Service Business Owner"
                             },
                             {
                                 quote: "I was skeptical about AI automation, but OASIS made it simple. They handled everything from setup to training, and now I'm saving 25+ hours a week. My only regret is not doing this sooner.",
                                 author: "Sarah L.",
-                                title: "E-commerce Founder, Vancouver"
+                                title: "E-commerce Founder"
                             },
                             {
                                 quote: "What impressed me most was how Conaugh actually listened to my specific needs. This wasn't a cookie-cutter solution—it was built for MY business. The ROI has been incredible.",
                                 author: "David R.",
-                                title: "Clinic Owner, Montreal"
+                                title: "Clinic Owner"
                             },
                             {
                                 quote: "The customer support automation alone paid for itself in the first month. Our response times went from hours to seconds, and our customers love it. OASIS delivered exactly what they promised.",
                                 author: "Jennifer K.",
-                                title: "Retail Business Owner, Calgary"
+                                title: "Retail Business Owner"
                             },
                             {
                                 quote: "I run a small team and couldn't afford to hire more staff. OASIS AI gave me the equivalent of 2-3 employees for a fraction of the cost. Game changer for any small business owner.",
                                 author: "Michael P.",
-                                title: "Agency Owner, Ottawa"
+                                title: "Agency Owner"
                             },
                             {
                                 quote: "The transparency and fixed pricing made this an easy decision. No surprises, no hidden fees. Just honest automation work that actually delivers results. Highly recommend.",
                                 author: "Lisa M.",
-                                title: "Consultant, Toronto"
+                                title: "Consultant"
                             }
                         ].map((testimonial, index) => (
                             <motion.div

@@ -107,15 +107,18 @@ const AboutPage = () => {
                                     <span className="text-4xl font-bold text-white">CM</span>
                                 </div>
                                 <h3 className="text-3xl font-display font-bold mb-2 text-white">Conaugh McKenna</h3>
-                                <p className="text-oasis-cyan text-lg font-medium tracking-wide">Founder & CEO</p>
+                                <p className="text-oasis-cyan text-lg font-medium tracking-wide">Sole Proprietor</p>
                             </div>
 
                             <div className="text-text-secondary text-lg leading-relaxed space-y-6">
                                 <p>
-                                    Conaugh McKenna founded OASIS AI with a clear mission: to make enterprise-level automation accessible
-                                    to businesses of all sizes. With deep technical expertise in AI and automation systems, Conaugh saw
-                                    a growing divide between large corporations with unlimited budgets and small businesses struggling with
-                                    manual processes.
+                                    OASIS AI Solutions was founded by Conaugh McKenna with a mission to help small and medium-sized businesses
+                                    harness the power of AI automation. Based in Collingwood, Ontario, we specialize in creating custom
+                                    AI workflows that help business owners work ON their business, not IN their business.
+                                </p>
+                                <p>
+                                    As a sole proprietorship 100% owned and operated by Conaugh McKenna, OASIS AI delivers direct,
+                                    expert-led automation infrastructure without the enterprise price tag or agency overhead.
                                 </p>
                                 <p className="italic border-l-4 border-oasis-cyan pl-6 py-2 bg-oasis-cyan/5 rounded-r-lg">
                                     "I watched too many talented business owners drowning in admin work while their competitors scaled with automation.
@@ -210,28 +213,16 @@ const AboutPage = () => {
                         Proudly <span className="text-oasis-cyan">Canadian</span>
                     </h2>
 
-                    <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                    <div className="flex justify-center max-w-4xl mx-auto">
                         <motion.div
-                            initial={{ opacity: 0, x: -20 }}
-                            whileInView={{ opacity: 1, x: 0 }}
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            whileInView={{ opacity: 1, scale: 1 }}
                             viewport={{ once: true }}
-                            className="glass-card p-8 border border-white/5 hover:border-oasis-cyan/30 transition-all hover:-translate-y-1 group"
+                            className="glass-card p-12 border border-white/5 hover:border-oasis-cyan/30 transition-all hover:-translate-y-1 group text-center"
                         >
-                            <MapPin className="w-12 h-12 text-oasis-cyan mb-6 group-hover:scale-110 transition-transform" />
-                            <h3 className="text-2xl font-display font-bold mb-2 text-white">Toronto, Ontario</h3>
-                            <p className="text-text-secondary">Headquarters</p>
-                        </motion.div>
-
-                        <motion.div
-                            initial={{ opacity: 0, x: 20 }}
-                            whileInView={{ opacity: 1, x: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ delay: 0.1 }}
-                            className="glass-card p-8 border border-white/5 hover:border-oasis-cyan/30 transition-all hover:-translate-y-1 group"
-                        >
-                            <MapPin className="w-12 h-12 text-oasis-cyan mb-6 group-hover:scale-110 transition-transform" />
-                            <h3 className="text-2xl font-display font-bold mb-2 text-white">Montreal, Quebec</h3>
-                            <p className="text-text-secondary">Secondary Office</p>
+                            <MapPin className="w-16 h-16 text-oasis-cyan mb-6 mx-auto group-hover:scale-110 transition-transform" />
+                            <h3 className="text-3xl font-display font-bold mb-2 text-white">Collingwood, Ontario</h3>
+                            <p className="text-text-secondary text-lg">Headquarters & Sole Proprietorship</p>
                         </motion.div>
                     </div>
 
