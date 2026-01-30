@@ -265,16 +265,16 @@ export default function TermsPage() {
                     </p>
 
                     <h3 className="text-xl font-semibold text-white mt-8 mb-3">9.2 What We're Not Liable For</h3>
-                    <div className="bg-gray-800 rounded-lg p-4 my-4">
-                        <p className="text-white font-semibold mb-2">OASIS AI SOLUTIONS SHALL NOT BE LIABLE FOR:</p>
-                        <ul className="text-gray-300 space-y-1 mb-0">
+                    <div className="bg-gray-800 rounded-lg p-6 my-4 border-l-4 border-red-500">
+                        <p className="text-white font-bold mb-4">OASIS AI SOLUTIONS AND CONAUGH MCKENNA SHALL NOT BE LIABLE FOR:</p>
+                        <ul className="text-gray-300 space-y-2 mb-0">
                             <li>Indirect, incidental, special, consequential, or punitive damages</li>
-                            <li>Lost profits, revenue, data, or business opportunities</li>
-                            <li>Business interruption or loss of goodwill</li>
-                            <li>Damages arising from AI outputs, recommendations, or automated decisions</li>
-                            <li>Issues caused by third-party platform changes or outages</li>
-                            <li>Damages resulting from unauthorized access to your systems</li>
-                            <li>Any damages exceeding the total fees paid by you in the 12 months preceding the claim</li>
+                            <li>Lost profits, revenue, data, business opportunities, or anticipated savings</li>
+                            <li>Business interruption, loss of goodwill, or reputational damage</li>
+                            <li>Damages arising from AI outputs, hallucinations, errors, or automated decisions</li>
+                            <li>Issues caused by third-party platform changes, outages, or API deprecation</li>
+                            <li>Damages resulting from unauthorized access to your systems or data breaches</li>
+                            <li><strong className="text-white">AGGREGATE LIABILITY CAP:</strong> IN NO EVENT SHALL THE TOTAL AGGREGATE LIABILITY OF OASIS AI SOLUTIONS FOR ALL CLAIMS EXCEED THE TOTAL FEES PAID BY YOU IN THE <span className="underline">THREE (3) MONTHS</span> PRECEDING THE CLAIM.</li>
                         </ul>
                     </div>
 
@@ -302,20 +302,22 @@ export default function TermsPage() {
 
                     {/* Section 10 - INDEMNIFICATION (CRITICAL) */}
                     <h2 id="indemnification" className="text-2xl font-bold text-white mt-12 mb-4 scroll-mt-24">10. Indemnification</h2>
-                    <p className="text-gray-300">
-                        You agree to indemnify, defend, and hold harmless OASIS AI Solutions, its officers, employees,
-                        and agents from any claims, damages, losses, liabilities, costs, and expenses (including reasonable
-                        attorneys' fees) arising from:
-                    </p>
-                    <ul className="text-gray-300 space-y-2">
-                        <li>Your use of our services</li>
-                        <li>Your violation of these Terms</li>
-                        <li>Your violation of any third-party rights</li>
-                        <li>Content you create or deploy using our services</li>
-                        <li>Your business operations and customer interactions</li>
-                        <li>Any claims by your customers or end users</li>
-                        <li>Your failure to comply with applicable laws</li>
-                    </ul>
+                    <div className="bg-gray-800 p-6 rounded-xl border border-white/5">
+                        <p className="text-gray-300">
+                            You agree to indemnify, defend, and hold harmless OASIS AI Solutions, its owner (Conaugh McKenna), contractors,
+                            and agents from any and all claims, damages, losses, liabilities, costs, and expenses (including absolute indemnity
+                            for legal fees and disbursements) arising from or relating to:
+                        </p>
+                        <ul className="text-gray-300 space-y-2 mt-4">
+                            <li>Your use or misuse of our services or AI-generated outputs</li>
+                            <li>Your violation of these Terms or any applicable law</li>
+                            <li>Your violation of any third-party rights, including intellectual property or privacy rights</li>
+                            <li>Any content you create, deploy, or distribute using our services</li>
+                            <li>Your business operations, customer interactions, and service delivery</li>
+                            <li>Any claims by your customers, employees, or end users</li>
+                            <li>Errors or omissions in the data you provide to us</li>
+                        </ul>
+                    </div>
 
                     {/* Section 11 */}
                     <h2 id="termination" className="text-2xl font-bold text-white mt-12 mb-4 scroll-mt-24">11. Termination</h2>

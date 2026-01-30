@@ -563,7 +563,7 @@ export default function CustomAgreementPage() {
                                             value={formData.agreementReference}
                                             onChange={(e) => handleInputChange('agreementReference', e.target.value)}
                                             className="w-full bg-gray-800/50 border border-gray-700 rounded-lg pl-10 pr-4 py-3 text-white placeholder-gray-500 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition"
-                                            placeholder="e.g. Met with CC on Jan 9"
+                                            placeholder="e.g. Discovery call on Jan 9"
                                         />
                                     </div>
                                     <p className="text-xs text-gray-500 mt-1">Optional - reference your discussion with our team</p>

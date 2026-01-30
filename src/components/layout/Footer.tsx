@@ -27,9 +27,7 @@ export const Footer = () => {
                             <a href="https://www.linkedin.com/in/conaugh-mckenna-a82471352" target="_blank" rel="noopener noreferrer" className="p-2 bg-white/5 rounded-lg hover:bg-oasis-cyan/20 hover:text-oasis-cyan transition-colors">
                                 <Linkedin className="w-5 h-5" />
                             </a>
-                            <a href="https://github.com/CC90210/oasis-ai-platform" target="_blank" rel="noopener noreferrer" className="p-2 bg-white/5 rounded-lg hover:bg-oasis-cyan/20 hover:text-oasis-cyan transition-colors">
-                                <Github className="w-5 h-5" />
-                            </a>
+
                             <a href="https://discord.gg/pprh394E" target="_blank" rel="noopener noreferrer" className="p-2 bg-white/5 rounded-lg hover:bg-[#5865F2]/20 hover:text-[#5865F2] transition-colors" title="Join our Discord">
                                 <MessageCircle className="w-5 h-5" />
                             </a>

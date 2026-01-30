@@ -93,11 +93,11 @@ export const Sidebar = ({ isOpen, setIsOpen }: SidebarProps) => {
                 <div className="p-4 border-t border-white/10">
                     <div className="flex items-center gap-3 mb-4 px-2">
                         <div className="h-8 w-8 rounded-full bg-oasis-cyan/20 flex items-center justify-center text-oasis-cyan font-bold">
-                            CC
+                            CM
                         </div>
                         <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-white truncate">CC Admin</p>
-                            <p className="text-xs text-text-tertiary truncate">cc@oasis-ai.com</p>
+                            <p className="text-sm font-medium text-white truncate">Admin</p>
+                            <p className="text-xs text-text-tertiary truncate">admin@oasisai.work</p>
                         </div>
                     </div>
                     <Button
