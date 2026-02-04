@@ -207,7 +207,7 @@ export async function fetchAutomationMetrics(automationId: string, userId: strin
 export async function fetchAllAutomationMetrics(userId: string): Promise<Map<string, AutomationMetrics>> {
     // Fetch all automations for this user
     const { data: automations, error: automationsError } = await supabase
-        .from('client_automations')
+        .from('automations')
         .select('id')
         .eq('user_id', userId);
 

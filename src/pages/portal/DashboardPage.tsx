@@ -56,37 +56,46 @@ export default function DashboardPage() {
             const user = authData.user;
 
             // Load profile
+            let profileData;
             try {
-                const { data: profileData } = await supabase.from('profiles').select('*').eq('id', user.id).single();
-                setProfile(profileData || {
+                const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+                profileData = data;
+                setProfile(data || {
                     id: user.id, email: user.email!, full_name: user.user_metadata?.full_name || 'Client',
-                    company_name: '', phone: null, avatar_url: null, created_at: ''
+                    company_name: '', phone: null, avatar_url: null, created_at: '', role: 'client'
                 });
             } catch {
                 setProfile({
                     id: user.id, email: user.email!, full_name: user.user_metadata?.full_name || 'Client',
-                    company_name: '', phone: null, avatar_url: null, created_at: ''
+                    company_name: '', phone: null, avatar_url: null, created_at: '', role: 'client'
                 });
             }
 
-            // Fetch automations
-            const { data: automationData } = await supabase
-                .from('client_automations')
-                .select('*')
-                .eq('user_id', user.id)
-                .order('created_at', { ascending: false });
+            // Fetch automations with role-based filtering
+            let query = supabase.from('automations').select('*');
+
+            // Admins/Owners see all automations, clients only see their own
+            const isAdmin = profileData?.role === 'admin' || profileData?.role === 'super_admin' || profileData?.is_admin || profileData?.is_owner;
+
+            if (!isAdmin) {
+                query = query.eq('user_id', user.id);
+            }
+
+            const { data: automationData } = await query.order('created_at', { ascending: false });
             setAutomations(automationData || []);
 
-            // Fetch recent logs for display (limit 10)
-            const { data: logData } = await supabase
-                .from('automation_logs')
-                .select('*')
-                .eq('user_id', user.id)
+            // Fetch recent logs (admins see all, clients see their own)
+            let logsQuery = supabase.from('automation_logs').select('*');
+            if (!isAdmin) {
+                logsQuery = logsQuery.eq('user_id', user.id);
+            }
+
+            const { data: logData } = await logsQuery
                 .order('created_at', { ascending: false })
                 .limit(10);
             setRecentLogs(logData || []);
 
-            // CRITICAL: Fetch metrics using centralized service for consistency
+            // CRITICAL: Fetch metrics using centralized service
             const dashboardMetrics = await fetchDashboardMetrics(user.id);
             setMetrics(dashboardMetrics);
 
@@ -199,12 +208,12 @@ export default function DashboardPage() {
                     </div>
                 )}
 
-                {/* Stats Grid - Using CENTRALIZED METRICS */}
+                {/* Stats Grid - Using HYBRID METRICS (Logs + Automation Aggregates) */}
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-4 md:gap-5 mb-8">
                     {[
                         {
                             label: 'Total Executions',
-                            value: metrics?.totalExecutions || 0,
+                            value: metrics?.totalExecutions || automations.reduce((sum, a) => sum + (a.stats?.total_runs || (a as any).total_runs || 0), 0),
                             icon: Activity,
                             color: 'text-cyan-400',
                             sub: 'All time',
@@ -212,7 +221,7 @@ export default function DashboardPage() {
                         },
                         {
                             label: 'Tasks This Week',
-                            value: metrics?.executionsThisWeek || 0,
+                            value: metrics?.executionsThisWeek || automations.reduce((sum, a) => sum + (a.stats?.successful_runs || (a as any).successful_runs || 0), 0),
                             icon: Flame,
                             color: 'text-orange-400',
                             sub: 'Recent activity',
@@ -220,7 +229,7 @@ export default function DashboardPage() {
                         },
                         {
                             label: 'Hours Saved',
-                            value: metrics?.hoursSaved || 0,
+                            value: metrics?.hoursSaved || automations.reduce((sum, a) => sum + (a.stats?.hours_saved || (a as any).hours_saved || 0), 0),
                             icon: Clock,
                             color: 'text-purple-400',
                             sub: 'vs manual work',
@@ -228,7 +237,7 @@ export default function DashboardPage() {
                         },
                         {
                             label: 'Money Saved',
-                            value: formatMoneySaved(metrics?.moneySaved || 0),
+                            value: metrics?.moneySaved ? formatMoneySaved(metrics.moneySaved) : formatMoneySaved(automations.reduce((sum, a) => sum + (a.stats?.hours_saved || (a as any).hours_saved || 0), 0) * 25),
                             icon: DollarSign,
                             color: 'text-emerald-400',
                             sub: `vs ${formatMoneySaved(metrics?.humanCostEquivalent || 0)} human`,
@@ -236,7 +245,7 @@ export default function DashboardPage() {
                         },
                         {
                             label: 'Success Rate',
-                            value: formatPercentage(metrics?.successRate || 100),
+                            value: metrics?.successRate ? formatPercentage(metrics.successRate) : formatPercentage(automations.length > 0 ? 100 : 0),
                             icon: TrendingUp,
                             color: 'text-green-400',
                             sub: 'Reliability score',
@@ -277,7 +286,8 @@ export default function DashboardPage() {
                         ) : (
                             <div className="grid gap-4">
                                 {automations.map(auto => {
-                                    const config = getAutomationTypeConfig(auto.automation_type);
+                                    const autoType = auto.type || (auto as any).automation_type || 'default';
+                                    const config = getAutomationTypeConfig(autoType);
                                     return (
                                         <Link key={auto.id} to="/portal/automations" className="bg-[var(--bg-card-strong)] border border-[var(--bg-tertiary)] p-4 md:p-5 rounded-xl hover:border-cyan-500/30 transition-all group relative overflow-hidden block">
                                             <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 opacity-0 group-hover:opacity-100 transition duration-500"></div>
@@ -287,9 +297,11 @@ export default function DashboardPage() {
                                                         <Bot className={`w-5 h-5 sm:w-6 sm:h-6 text-${config.color}-400`} />
                                                     </div>
                                                     <div className="min-w-0 flex-1">
-                                                        <h3 className="font-bold text-[var(--text-primary)] text-base sm:text-lg group-hover:text-cyan-400 transition truncate sm:whitespace-normal">{auto.display_name}</h3>
+                                                        <h3 className="font-bold text-[var(--text-primary)] text-base sm:text-lg group-hover:text-cyan-400 transition truncate sm:whitespace-normal">
+                                                            {auto.name || (auto as any).display_name}
+                                                        </h3>
                                                         <div className="flex flex-wrap items-center gap-1 sm:gap-2 text-xs sm:text-sm text-[var(--text-muted)]">
-                                                            <span className="capitalize">{auto.tier} Plan</span>
+                                                            <span className="capitalize">{(auto as any).tier || 'Standard'} Plan</span>
                                                             <span className="hidden sm:inline">•</span>
                                                             <span className="text-emerald-500">${config.hourlyRate}/hr saved</span>
                                                         </div>
@@ -348,7 +360,7 @@ export default function DashboardPage() {
                             AI Performance Insights
                             {automations.length > 0 && (
                                 <span className="text-xs text-[var(--text-muted)] font-normal ml-2">
-                                    Based on {automations[0]?.display_name}
+                                    Based on {automations[0]?.name || (automations[0] as any).display_name}
                                 </span>
                             )}
                         </h3>

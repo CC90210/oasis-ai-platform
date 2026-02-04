@@ -140,7 +140,7 @@ CREATE TABLE IF NOT EXISTS automation_logs (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- SET RLS POLICIES (Allow all for simplified setup)
+-- SET RLS POLICIES
 ALTER TABLE legal_acceptances ENABLE ROW LEVEL SECURITY;
 ALTER TABLE custom_agreements ENABLE ROW LEVEL SECURITY;
 ALTER TABLE product_purchases ENABLE ROW LEVEL SECURITY;
@@ -156,6 +156,7 @@ BEGIN
     DROP POLICY IF EXISTS "Allow all operations for product_purchases" ON product_purchases;
     DROP POLICY IF EXISTS "Allow all operations for profiles" ON profiles;
     DROP POLICY IF EXISTS "Allow all operations for automations" ON automations;
+    DROP POLICY IF EXISTS "Automation access policy" ON automations;
     DROP POLICY IF EXISTS "Allow all operations for automation_logs" ON automation_logs;
 END $$;
 
@@ -163,8 +164,28 @@ CREATE POLICY "Allow all operations for legal_acceptances" ON legal_acceptances 
 CREATE POLICY "Allow all operations for custom_agreements" ON custom_agreements FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow all operations for product_purchases" ON product_purchases FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow all operations for profiles" ON profiles FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Allow all operations for automations" ON automations FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow all operations for automation_logs" ON automation_logs FOR ALL USING (true) WITH CHECK (true);
+
+-- ROBURST AUTOMATION POLICY: Users see own, Admins see all
+CREATE POLICY "Automation access policy" ON automations
+  FOR ALL USING (
+    auth.uid() = user_id 
+    OR 
+    EXISTS (
+      SELECT 1 FROM profiles 
+      WHERE id = auth.uid() 
+      AND (role IN ('admin', 'super_admin') OR is_admin = true OR is_owner = true)
+    )
+  )
+  WITH CHECK (
+    auth.uid() = user_id 
+    OR 
+    EXISTS (
+      SELECT 1 FROM profiles 
+      WHERE id = auth.uid() 
+      AND (role IN ('admin', 'super_admin') OR is_admin = true OR is_owner = true)
+    )
+  );
 
 -- TRIGGERS FOR UPDATED_AT
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -237,7 +258,16 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='custom_agreements' AND column_name='user_agent') THEN
         ALTER TABLE custom_agreements ADD COLUMN user_agent TEXT;
     END IF;
+
+    -- Add role column to profiles
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='profiles' AND column_name='role') THEN
+        ALTER TABLE profiles ADD COLUMN role TEXT DEFAULT 'client';
+    END IF;
 END $$;
+
+-- Populate role column if it was empty, based on is_admin/is_owner flags
+UPDATE profiles SET role = 'super_admin' WHERE is_owner = true AND (role IS NULL OR role = 'client');
+UPDATE profiles SET role = 'admin' WHERE is_admin = true AND is_owner = false AND (role IS NULL OR role = 'client');
 
 -- VERIFICATION QUERY
 SELECT 'Tables created and RLS set' as status;

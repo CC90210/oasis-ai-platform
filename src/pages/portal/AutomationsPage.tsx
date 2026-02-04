@@ -93,7 +93,7 @@ export default function AutomationsPage() {
     useEffect(() => {
         if (selectedAuto && userId) {
             loadLogsAndMetrics(selectedAuto.id, userId);
-            setNewName(selectedAuto.display_name);
+            setNewName(selectedAuto.name || (selectedAuto as any).display_name || '');
         } else {
             setLogs([]);
             setAutomationMetrics(null);
@@ -107,11 +107,17 @@ export default function AutomationsPage() {
 
             setUserId(user.id);
 
-            const { data, error } = await supabase
-                .from('client_automations')
-                .select('*')
-                .eq('user_id', user.id)
-                .order('created_at', { ascending: false });
+            // Fetch profile for role check
+            const { data: profileData } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+            const isAdmin = profileData?.role === 'admin' || profileData?.role === 'super_admin' || profileData?.is_admin || profileData?.is_owner;
+
+            let query = supabase.from('automations').select('*');
+
+            if (!isAdmin) {
+                query = query.eq('user_id', user.id);
+            }
+
+            const { data, error } = await query.order('created_at', { ascending: false });
 
             if (error) throw error;
             setAutomations(data || []);
@@ -130,17 +136,22 @@ export default function AutomationsPage() {
         setLoadingLogs(true);
         try {
             // Fetch logs for display
-            const { data, error } = await supabase
-                .from('automation_logs')
-                .select('*')
-                .eq('automation_id', automationId)
+            // Note: We use the user_id that OWNERS the automation, which might be different if current user is admin
+            // However, automation_logs also has user_id.
+            // If admin, we don't filter logs by userId, or we filter by the automation's owner
+
+            let logsQuery = supabase.from('automation_logs').select('*').eq('automation_id', automationId);
+
+            const { data: logData, error } = await logsQuery
                 .order('created_at', { ascending: false })
                 .limit(50);
 
             if (error) throw error;
-            setLogs(data || []);
+            setLogs(logData || []);
 
-            // CRITICAL: Fetch metrics using centralized service for consistency with Dashboard
+            // Fetch metrics
+            // We need to know who the owner is to fetch their specific metrics if they are calculated per user
+            // But usually metrics are per automation.
             const metrics = await fetchAutomationMetrics(automationId, userId);
             setAutomationMetrics(metrics);
 
@@ -183,9 +194,10 @@ export default function AutomationsPage() {
 
             if (!error) {
                 // Update local state
-                setSelectedAuto(prev => prev ? { ...prev, display_name: newName.trim() } : null);
+                const updatedName = newName.trim();
+                setSelectedAuto(prev => prev ? { ...prev, name: updatedName } : null);
                 setAutomations(prev => prev.map(a =>
-                    a.id === selectedAuto.id ? { ...a, display_name: newName.trim() } : a
+                    a.id === selectedAuto.id ? { ...a, name: updatedName } : a
                 ));
                 setEditingName(false);
             } else {
@@ -275,7 +287,8 @@ export default function AutomationsPage() {
 
         const a = document.createElement('a');
         a.href = url;
-        a.download = `${selectedAuto.display_name.replace(/[^a-z0-9]/gi, '_')}-logs-${new Date().toISOString().split('T')[0]}.csv`;
+        const fileName = (selectedAuto.name || (selectedAuto as any).display_name || 'automation').replace(/[^a-z0-9]/gi, '_');
+        a.download = `${fileName}-logs-${new Date().toISOString().split('T')[0]}.csv`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -317,15 +330,15 @@ export default function AutomationsPage() {
                                 >
                                     <div className="flex justify-between items-start gap-2 mb-2">
                                         <h3 className={`font-bold text-sm sm:text-base break-words ${selectedAuto?.id === auto.id ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]'}`}>
-                                            {auto.display_name}
+                                            {auto.name || (auto as any).display_name}
                                         </h3>
                                         <span className={`px-2 py-0.5 text-[10px] uppercase font-bold rounded-full border flex-shrink-0 ${getStatusColor(auto.status)}`}>
                                             {auto.status}
                                         </span>
                                     </div>
                                     <div className="flex justify-between items-center text-xs text-[var(--text-muted)]">
-                                        <span className="capitalize">{auto.tier} Plan</span>
-                                        <span>{formatRelativeTime(auto.last_run_at || new Date().toISOString())}</span>
+                                        <span className="capitalize">{(auto as any).tier || 'Standard'} Plan</span>
+                                        <span>{formatRelativeTime((auto as any).last_run_at || auto.created_at)}</span>
                                     </div>
                                 </button>
                             ))
@@ -356,13 +369,13 @@ export default function AutomationsPage() {
                                     </div>
                                     <div className="min-w-0 flex-1">
                                         <h2 className="text-base sm:text-xl font-bold text-[var(--text-primary)] break-words leading-tight">
-                                            {selectedAuto.display_name}
+                                            {selectedAuto.name || (selectedAuto as any).display_name}
                                         </h2>
                                         <div className="flex items-center gap-2 text-xs sm:text-sm text-[var(--text-secondary)] mt-1">
                                             <span className={`w-2 h-2 rounded-full flex-shrink-0 ${selectedAuto.status === 'active' ? 'bg-green-500 shadow-[0_0_8px_rgb(34,197,94)]' : 'bg-gray-500'}`}></span>
                                             <span className="capitalize truncate">{selectedAuto.status.replace('_', ' ')}</span>
                                             <span className="text-[var(--text-muted)]">•</span>
-                                            <span className="capitalize truncate">{selectedAuto.tier} Plan</span>
+                                            <span className="capitalize truncate">{(selectedAuto as any).tier || 'Standard'} Plan</span>
                                         </div>
                                     </div>
                                 </div>
@@ -412,7 +425,7 @@ export default function AutomationsPage() {
                                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                                         <div className="bg-[var(--bg-primary)] border border-[var(--bg-tertiary)] p-3 sm:p-4 rounded-xl">
                                             <p className="text-[10px] sm:text-xs text-[var(--text-muted)] uppercase tracking-wider mb-1">Type</p>
-                                            <p className="text-[var(--text-primary)] text-sm sm:text-base font-medium truncate">{selectedAuto.automation_type}</p>
+                                            <p className="text-[var(--text-primary)] text-sm sm:text-base font-medium truncate">{selectedAuto.type || (selectedAuto as any).automation_type}</p>
                                         </div>
                                         <div className="bg-[var(--bg-primary)] border border-[var(--bg-tertiary)] p-3 sm:p-4 rounded-xl">
                                             <p className="text-[10px] sm:text-xs text-[var(--text-muted)] uppercase tracking-wider mb-1">Created</p>

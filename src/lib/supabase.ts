@@ -36,7 +36,8 @@ export interface Profile {
     phone: string | null;
     avatar_url: string | null;
     created_at: string;
-    // Owner/Admin flags for special account handling
+    role: 'client' | 'admin' | 'super_admin';
+    // Legacy flags - kept for compatibility
     is_owner?: boolean;
     is_admin?: boolean;
     billing_exempt?: boolean;
@@ -46,11 +47,11 @@ export interface Profile {
 
 // Helper functions for owner/admin checks
 export function isOwnerAccount(profile: Profile | null): boolean {
-    return profile?.is_owner === true;
+    return profile?.role === 'super_admin' || profile?.is_owner === true;
 }
 
 export function isAdminAccount(profile: Profile | null): boolean {
-    return profile?.is_admin === true || profile?.is_owner === true;
+    return profile?.role === 'super_admin' || profile?.role === 'admin' || profile?.is_admin === true || profile?.is_owner === true;
 }
 
 export function isBillingExempt(profile: Profile | null): boolean {
@@ -60,14 +61,21 @@ export function isBillingExempt(profile: Profile | null): boolean {
 export interface Automation {
     id: string;
     user_id: string;
-    automation_type: string;
-    display_name: string;
-    tier: 'starter' | 'professional' | 'business' | 'standard' | 'enterprise';
-    status: 'pending_setup' | 'in_progress' | 'testing' | 'active' | 'paused' | 'cancelled';
+    name: string;
+    type: string;
+    status: 'active' | 'paused' | 'pending_setup' | 'cancelled';
     config: Record<string, any>;
+    stats: {
+        total_runs: number;
+        hours_saved: number;
+        successful_runs?: number;
+        failed_runs?: number;
+    };
     created_at: string;
-    activated_at: string | null;
-    last_run_at: string | null;
+    // Keep legacy fields as optional for compatibility during transition
+    display_name?: string;
+    automation_type?: string;
+    tier?: string;
 }
 
 export interface AutomationLog {
