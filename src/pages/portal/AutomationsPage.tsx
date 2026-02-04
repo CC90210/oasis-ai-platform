@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { supabase, Automation, AutomationLog } from '@/lib/supabase';
 import {
     fetchAutomationMetrics,
@@ -149,46 +149,46 @@ export default function AutomationsPage() {
     const loadLogsAndMetrics = async (automationId: string, userId: string, isAdmin: boolean = false) => {
         setLoadingLogs(true);
         try {
-            // RESILIENT LOG FETCH: We rely on automation_id for relevance. 
-            // We omit user_id check here because if the user can select the automation, 
-            // they should see its logs, and RLS will handle the security layer.
-            let logsQuery = supabase.from('automation_logs').select('*').eq('automation_id', automationId);
+            let finalLogs: AutomationLog[] = [];
 
-            // For non-admins, we still filter by user_id on the log if possible, 
-            // but we use OR to allow logs that only have the automation_id.
-            if (!isAdmin) {
-                logsQuery = logsQuery.or(`user_id.eq.${userId},automation_id.eq.${automationId}`);
-            } else {
-                // For admins/owners, we broaden the search to recover ALL logs matching this user/type
-                logsQuery = supabase.from('automation_logs').select('*')
-                    .or(`user_id.eq.${userId},event_name.ilike.%${selectedAuto?.name || ''}%,event_type.ilike.%${selectedAuto?.type || ''}%`);
-            }
-
-            const { data: logData, error } = await logsQuery
+            // 1. PRIMARY: Direct ID Match
+            const { data: directLogs } = await supabase
+                .from('automation_logs')
+                .select('*')
+                .eq('automation_id', automationId)
                 .order('created_at', { ascending: false })
                 .limit(100);
 
-            if (error) {
-                console.warn('Logs fetch failed, retrying simple select:', error);
-                const { data: backup } = await supabase.from('automation_logs').select('id, created_at').eq('automation_id', automationId).limit(10);
-                setLogs((backup || []) as any);
-            } else {
-                let finalLogs = (logData || []) as AutomationLog[];
+            if (directLogs && directLogs.length > 0) {
+                finalLogs = directLogs as AutomationLog[];
+            } 
+            
+            // 2. FALLBACK: Admin Recovery
+            else if (isAdmin) {
+                console.log('Direct fetch empty. Trying heuristic search...');
+                const { data: heuristicLogs } = await supabase
+                    .from('automation_logs')
+                    .select('*')
+                    .or(user_id.eq.,event_name.ilike.%%)
+                    .order('created_at', { ascending: false })
+                    .limit(100);
+                
+                if (heuristicLogs && heuristicLogs.length > 0) {
+                    finalLogs = heuristicLogs as AutomationLog[];
+                }
 
-                // NUCLEAR OPTION: If Admin and still 0 logs, just show EVERYTHING
-                if (isAdmin && finalLogs.length === 0) {
-                    console.log('Nuclear Option: Fetching most recent 50 logs regardless of owner...');
-                    const { data: allLogs } = await supabase
+                if (finalLogs.length === 0) {
+                    console.log('Nuclear Option: Fetching global logs...');
+                    const { data: panicLogs } = await supabase
                         .from('automation_logs')
                         .select('*')
                         .order('created_at', { ascending: false })
                         .limit(50);
-                    if (allLogs) finalLogs = allLogs as AutomationLog[];
+                    if (panicLogs) finalLogs = panicLogs as AutomationLog[];
                 }
-
-                setLogs(finalLogs);
             }
-
+            
+            setLogs(finalLogs);
             const metrics = await fetchAutomationMetrics(automationId, userId, isAdmin);
             setAutomationMetrics(metrics);
         } catch (err) {
@@ -318,7 +318,7 @@ export default function AutomationsPage() {
                         <>
                             <div className="p-6 border-b border-[var(--bg-tertiary)] bg-[var(--bg-primary)] flex items-center justify-between shadow-lg z-10 flex-shrink-0">
                                 <div className="flex items-center gap-4 min-w-0 flex-1">
-                                    <button onClick={() => setSelectedAuto(null)} className="lg:hidden p-2 -ml-2 text-[var(--text-secondary)]">←</button>
+                                    <button onClick={() => setSelectedAuto(null)} className="lg:hidden p-2 -ml-2 text-[var(--text-secondary)]">â†</button>
                                     <div className="w-12 h-12 rounded-xl bg-[var(--bg-tertiary)] border border-[var(--border)] flex items-center justify-center flex-shrink-0">
                                         <Bot className="w-6 h-6 text-cyan-400" />
                                     </div>
