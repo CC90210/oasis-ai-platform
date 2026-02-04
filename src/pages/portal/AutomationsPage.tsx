@@ -177,11 +177,12 @@ export default function AutomationsPage() {
 
                 // NUCLEAR OPTION: If Admin and still 0 logs, just show EVERYTHING
                 if (isAdmin && finalLogs.length === 0) {
+                    console.log('Nuclear Option: Fetching most recent 50 logs regardless of owner...');
                     const { data: allLogs } = await supabase
                         .from('automation_logs')
                         .select('*')
                         .order('created_at', { ascending: false })
-                        .limit(200);
+                        .limit(50);
                     if (allLogs) finalLogs = allLogs as AutomationLog[];
                 }
 
