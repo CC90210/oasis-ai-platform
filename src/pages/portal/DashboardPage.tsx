@@ -55,45 +55,56 @@ export default function DashboardPage() {
 
             const user = authData.user;
 
-            // Load profile
-            let profileData;
+            // Load profile with cross-check for Admin status
+            let profileData: any;
             try {
-                const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+                const { data, error } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+                if (error) throw error;
                 profileData = data;
-                setProfile(data || {
-                    id: user.id, email: user.email!, full_name: user.user_metadata?.full_name || 'Client',
-                    company_name: '', phone: null, avatar_url: null, created_at: '', role: 'client'
-                });
-            } catch {
-                setProfile({
-                    id: user.id, email: user.email!, full_name: user.user_metadata?.full_name || 'Client',
-                    company_name: '', phone: null, avatar_url: null, created_at: '', role: 'client'
-                });
+                setProfile(data);
+            } catch (err) {
+                console.warn('Profile fetch failed, using metadata fallback', err);
+                const fallbackProfile = {
+                    id: user.id,
+                    email: user.email!,
+                    full_name: user.user_metadata?.full_name || 'Client',
+                    company_name: '',
+                    phone: null,
+                    avatar_url: null,
+                    created_at: new Date().toISOString(),
+                    role: 'client' as const
+                };
+                setProfile(fallbackProfile as any);
+                profileData = fallbackProfile;
             }
+
+            // Determine admin status (check role, flags, or known admin emails)
+            const isAdmin =
+                profileData?.role === 'admin' ||
+                profileData?.role === 'super_admin' ||
+                profileData?.is_admin ||
+                profileData?.is_owner ||
+                user.email === 'konamak@icloud.com';
 
             // Fetch automations with role-based filtering from client_automations
-            let query = supabase.from('client_automations').select('*');
-
-            // Admins/Owners see all automations, clients only see their own
-            const isAdmin = profileData?.role === 'admin' || profileData?.role === 'super_admin' || profileData?.is_admin || profileData?.is_owner;
-
+            let autoQuery = supabase.from('client_automations').select('*');
             if (!isAdmin) {
-                query = query.eq('user_id', user.id);
+                autoQuery = autoQuery.eq('user_id', user.id);
             }
 
-            const { data: automationData, error: autoError } = await query.order('created_at', { ascending: false });
+            const { data: automationData, error: autoError } = await autoQuery.order('created_at', { ascending: false });
             if (autoError) throw autoError;
 
-            // Robust data mapping: handle both 'name' and 'display_name'
+            // Map data for resilience
             const mappedAutomations = (automationData || []).map(a => ({
                 ...a,
                 name: a.display_name || a.name || 'Untitled Automation',
                 type: a.automation_type || a.type || 'default'
-            }));
+            })) as Automation[];
 
             setAutomations(mappedAutomations);
 
-            // Fetch recent logs (admins see all, clients see their own)
+            // Fetch recent logs (platform-wide for admins, client-specific for users)
             let logsQuery = supabase.from('automation_logs').select('*');
             if (!isAdmin) {
                 logsQuery = logsQuery.eq('user_id', user.id);
@@ -103,11 +114,14 @@ export default function DashboardPage() {
                 .order('created_at', { ascending: false })
                 .limit(10);
 
-            if (logError) throw logError;
-            setRecentLogs(logData || []);
+            if (logError) {
+                console.error('Logs fetch failed:', logError);
+            } else {
+                setRecentLogs((logData || []) as AutomationLog[]);
+            }
 
-            // CRITICAL: Fetch metrics using centralized service
-            const dashboardMetrics = await fetchDashboardMetrics(user.id);
+            // CRITICAL: Fetch metrics (Role-aware: admins see platform totals)
+            const dashboardMetrics = await fetchDashboardMetrics(user.id, isAdmin);
             setMetrics(dashboardMetrics);
 
         } catch (err: any) {

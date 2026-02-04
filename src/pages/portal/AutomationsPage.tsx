@@ -85,6 +85,7 @@ export default function AutomationsPage() {
     // NEW: Clear all logs state
     const [showClearAllLogs, setShowClearAllLogs] = useState(false);
     const [clearingAllLogs, setClearingAllLogs] = useState(false);
+    const [profile, setProfile] = useState<any>(null);
 
     useEffect(() => {
         loadAutomations();
@@ -92,13 +93,21 @@ export default function AutomationsPage() {
 
     useEffect(() => {
         if (selectedAuto && userId) {
-            loadLogsAndMetrics(selectedAuto.id, userId);
+            // Check if admin again for the hook
+            const isAdmin =
+                profile?.role === 'admin' ||
+                profile?.role === 'super_admin' ||
+                profile?.is_admin ||
+                profile?.is_owner ||
+                profile?.email === 'konamak@icloud.com';
+
+            loadLogsAndMetrics(selectedAuto.id, userId, isAdmin);
             setNewName(selectedAuto.name || (selectedAuto as any).display_name || '');
         } else {
             setLogs([]);
             setAutomationMetrics(null);
         }
-    }, [selectedAuto, userId]);
+    }, [selectedAuto, userId, profile]);
 
     const loadAutomations = async () => {
         try {
@@ -109,7 +118,14 @@ export default function AutomationsPage() {
 
             // Fetch profile for role check
             const { data: profileData } = await supabase.from('profiles').select('*').eq('id', user.id).single();
-            const isAdmin = profileData?.role === 'admin' || profileData?.role === 'super_admin' || profileData?.is_admin || profileData?.is_owner;
+            setProfile(profileData || { email: user.email, role: 'client' });
+
+            const isAdmin =
+                profileData?.role === 'admin' ||
+                profileData?.role === 'super_admin' ||
+                profileData?.is_admin ||
+                profileData?.is_owner ||
+                user.email === 'konamak@icloud.com';
 
             let query = supabase.from('client_automations').select('*');
 
@@ -126,12 +142,14 @@ export default function AutomationsPage() {
                 ...a,
                 name: a.display_name || a.name || 'Untitled Automation',
                 type: a.automation_type || a.type || 'default'
-            }));
+            })) as Automation[];
 
             setAutomations(mappedData);
 
             if (mappedData.length > 0) {
                 setSelectedAuto(mappedData[0]);
+                // Initial load
+                loadLogsAndMetrics(mappedData[0].id, user.id, isAdmin);
             }
         } catch (err: any) {
             console.error('Error loading automations:', err);
@@ -140,14 +158,10 @@ export default function AutomationsPage() {
         }
     };
 
-    const loadLogsAndMetrics = async (automationId: string, userId: string) => {
+    const loadLogsAndMetrics = async (automationId: string, userId: string, isAdmin: boolean = false) => {
         setLoadingLogs(true);
         try {
-            // Fetch logs for display
-            // Note: We use the user_id that OWNERS the automation, which might be different if current user is admin
-            // However, automation_logs also has user_id.
-            // If admin, we don't filter logs by userId, or we filter by the automation's owner
-
+            // Fetch logs (Admins see logs regardless of user_id)
             let logsQuery = supabase.from('automation_logs').select('*').eq('automation_id', automationId);
 
             const { data: logData, error } = await logsQuery
@@ -155,13 +169,15 @@ export default function AutomationsPage() {
                 .limit(50);
 
             if (error) throw error;
-            setLogs(logData || []);
+            setLogs((logData || []) as AutomationLog[]);
 
-            // Fetch metrics
-            // We need to know who the owner is to fetch their specific metrics if they are calculated per user
-            // But usually metrics are per automation.
-            const metrics = await fetchAutomationMetrics(automationId, userId);
-            setAutomationMetrics(metrics);
+            // Fetch metrics (Role-aware)
+            try {
+                const metrics = await fetchAutomationMetrics(automationId, userId, isAdmin);
+                setAutomationMetrics(metrics);
+            } catch (metricsErr) {
+                console.warn('Metrics load failed for automation:', automationId);
+            }
 
         } catch (err) {
             console.error('Error loading logs:', err);

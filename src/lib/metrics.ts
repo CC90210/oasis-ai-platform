@@ -93,156 +93,126 @@ const getStartOfToday = (): Date => {
  * Fetch all metrics for the current user's dashboard
  * This is the SINGLE SOURCE OF TRUTH for all dashboard metrics
  */
-export async function fetchDashboardMetrics(userId: string): Promise<DashboardMetrics> {
-    // Fetch ALL logs for this user (single query for consistency)
-    // Removed metadata to ensure query doesn't fail if column is missing/different
-    const { data: allLogs, error } = await supabase
-        .from('automation_logs')
-        .select('id, status, created_at')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false });
+export async function fetchDashboardMetrics(userId: string, isAdmin: boolean = false): Promise<DashboardMetrics> {
+    try {
+        // Fetch ALL logs (Admins see ALL logs across platform, clients see their own)
+        let query = supabase
+            .from('automation_logs')
+            .select('id, status, created_at, automation_id');
 
-    if (error) {
-        console.error('Error fetching metrics:', error);
-        throw error;
+        if (!isAdmin) {
+            query = query.eq('user_id', userId);
+        }
+
+        const { data: allLogs, error } = await query.order('created_at', { ascending: false });
+
+        if (error) {
+            console.error('Error fetching dashboard metrics:', error);
+            // Fallback: return empty metrics instead of throwing to prevent UI crash
+            return DEFAULT_DASHBOARD_METRICS;
+        }
+
+        const logs = allLogs || [];
+
+        // Calculate metrics
+        const totalExecutions = logs.length;
+        const successfulExecutions = logs.filter(l =>
+            l.status?.toLowerCase() === 'success' ||
+            l.status?.toLowerCase() === 'completed' ||
+            l.status?.toLowerCase() === 'active'
+        ).length;
+        const failedExecutions = logs.filter(l =>
+            l.status?.toLowerCase() === 'error' ||
+            l.status?.toLowerCase() === 'failed'
+        ).length;
+
+        const startOfWeek = getStartOfWeek();
+        const startOfMonth = getStartOfMonth();
+        const startOfToday = getStartOfToday();
+
+        const executionsThisWeek = logs.filter(l => new Date(l.created_at) >= startOfWeek).length;
+        const executionsThisMonth = logs.filter(l => new Date(l.created_at) >= startOfMonth).length;
+        const executionsToday = logs.filter(l => new Date(l.created_at) >= startOfToday).length;
+
+        const successRate = totalExecutions > 0 ? Math.round((successfulExecutions / totalExecutions) * 100) : 100;
+        const hoursSaved = Math.round(successfulExecutions * METRICS_CONFIG.HOURS_SAVED_PER_EXECUTION * 10) / 10;
+        const moneySaved = Math.round(hoursSaved * METRICS_CONFIG.HOURLY_RATE);
+        const humanCost = totalExecutions * METRICS_CONFIG.HUMAN_COST_PER_TICKET;
+        const aiCost = totalExecutions * METRICS_CONFIG.AI_COST_PER_TICKET;
+        const costReduction = humanCost > 0 ? Math.round(((humanCost - aiCost) / humanCost) * 100) : 87;
+        const humanCostEquivalent = Math.round(hoursSaved * METRICS_CONFIG.HOURLY_RATE * 1.5);
+
+        return {
+            totalExecutions,
+            successfulExecutions,
+            failedExecutions,
+            executionsThisWeek,
+            executionsThisMonth,
+            executionsToday,
+            successRate,
+            hoursSaved,
+            moneySaved,
+            avgResponseTime: `<${METRICS_CONFIG.AI_AVG_RESPONSE_TIME_MINUTES} min`,
+            costReduction,
+            humanCostEquivalent,
+        };
+    } catch (err) {
+        console.error('fetchDashboardMetrics failed:', err);
+        return DEFAULT_DASHBOARD_METRICS;
     }
-
-    const logs = allLogs || [];
-
-    // Calculate all metrics from this single dataset
-    const totalExecutions = logs.length;
-    // Handle both 'success' and 'failed/error' formats
-    const successfulExecutions = logs.filter(l => l.status === 'success' || l.status === 'completed').length;
-    const failedExecutions = logs.filter(l => l.status === 'error' || l.status === 'failed').length;
-
-    // Time-based filtering
-    const startOfWeek = getStartOfWeek();
-    const startOfMonth = getStartOfMonth();
-    const startOfToday = getStartOfToday();
-
-    const executionsThisWeek = logs.filter(l => new Date(l.created_at) >= startOfWeek).length;
-    const executionsThisMonth = logs.filter(l => new Date(l.created_at) >= startOfMonth).length;
-    const executionsToday = logs.filter(l => new Date(l.created_at) >= startOfToday).length;
-
-    // Calculated metrics
-    const successRate = totalExecutions > 0
-        ? Math.round((successfulExecutions / totalExecutions) * 100)
-        : 100;
-
-    const hoursSaved = Math.round(successfulExecutions * METRICS_CONFIG.HOURS_SAVED_PER_EXECUTION * 10) / 10;
-    const moneySaved = Math.round(hoursSaved * METRICS_CONFIG.HOURLY_RATE);
-
-    // Cost reduction percentage
-    const humanCost = totalExecutions * METRICS_CONFIG.HUMAN_COST_PER_TICKET;
-    const aiCost = totalExecutions * METRICS_CONFIG.AI_COST_PER_TICKET;
-    const costReduction = humanCost > 0
-        ? Math.round(((humanCost - aiCost) / humanCost) * 100)
-        : 87; // Default 87% if no data
-
-    // Human cost equivalent based on hours saved
-    const humanCostEquivalent = Math.round(hoursSaved * METRICS_CONFIG.HOURLY_RATE * 1.5); // 1.5x for benefits/overhead
-
-    return {
-        totalExecutions,
-        successfulExecutions,
-        failedExecutions,
-        executionsThisWeek,
-        executionsThisMonth,
-        executionsToday,
-        successRate,
-        hoursSaved,
-        moneySaved,
-        avgResponseTime: `<${METRICS_CONFIG.AI_AVG_RESPONSE_TIME_MINUTES} min`,
-        costReduction,
-        humanCostEquivalent,
-    };
 }
+
+const DEFAULT_DASHBOARD_METRICS: DashboardMetrics = {
+    totalExecutions: 0,
+    successfulExecutions: 0,
+    failedExecutions: 0,
+    executionsThisWeek: 0,
+    executionsThisMonth: 0,
+    executionsToday: 0,
+    successRate: 100,
+    hoursSaved: 0,
+    moneySaved: 0,
+    avgResponseTime: '<2 min',
+    costReduction: 87,
+    humanCostEquivalent: 0
+};
 
 /**
  * Fetch metrics for a specific automation
- * Used on My Automations page when viewing an automation
  */
-export async function fetchAutomationMetrics(automationId: string, userId: string): Promise<AutomationMetrics> {
-    // Fetch logs for this specific automation
-    const { data: logs, error } = await supabase
-        .from('automation_logs')
-        .select('id, status, created_at')
-        .eq('automation_id', automationId)
-        .eq('user_id', userId) // Security: ensure user owns this automation
-        .order('created_at', { ascending: false });
+export async function fetchAutomationMetrics(automationId: string, userId: string, isAdmin: boolean = false): Promise<AutomationMetrics> {
+    try {
+        let query = supabase.from('automation_logs').select('id, status, created_at, automation_id');
 
-    if (error) {
-        console.error('Error fetching automation metrics:', error);
-        throw error;
-    }
+        // Filter by automation
+        query = query.eq('automation_id', automationId);
 
-    const allLogs = logs || [];
-    const totalRuns = allLogs.length;
-    const successfulRuns = allLogs.filter(l => l.status === 'success' || l.status === 'completed').length;
-    const failedRuns = allLogs.filter(l => l.status === 'error' || l.status === 'failed').length;
+        // Only filter by user if NOT admin
+        if (!isAdmin) {
+            query = query.eq('user_id', userId);
+        }
 
-    const reliability = totalRuns > 0
-        ? Math.round((successfulRuns / totalRuns) * 100)
-        : 100;
+        const { data: logs, error } = await query.order('created_at', { ascending: false });
 
-    const lastRunAt = allLogs.length > 0 ? allLogs[0].created_at : null;
+        if (error) throw error;
 
-    const startOfWeek = getStartOfWeek();
-    const runsThisWeek = allLogs.filter(l => new Date(l.created_at) >= startOfWeek).length;
+        const allLogs = logs || [];
+        const totalRuns = allLogs.length;
+        const successfulRuns = allLogs.filter(l =>
+            l.status?.toLowerCase() === 'success' ||
+            l.status?.toLowerCase() === 'completed'
+        ).length;
+        const failedRuns = allLogs.filter(l =>
+            l.status?.toLowerCase() === 'error' ||
+            l.status?.toLowerCase() === 'failed'
+        ).length;
 
-    return {
-        automationId,
-        totalRuns,
-        successfulRuns,
-        failedRuns,
-        reliability,
-        lastRunAt,
-        runsThisWeek,
-        avgExecutionTime: 2, // Default 2 seconds
-    };
-}
-
-/**
- * Fetch metrics for ALL automations belonging to the user
- * Returns a map of automationId -> metrics
- */
-export async function fetchAllAutomationMetrics(userId: string): Promise<Map<string, AutomationMetrics>> {
-    // Fetch all automations for this user from client_automations
-    const { data: automations, error: automationsError } = await supabase
-        .from('client_automations')
-        .select('id')
-        .eq('user_id', userId);
-
-    if (automationsError) throw automationsError;
-
-    // Fetch ALL logs for this user in one query (efficient)
-    const { data: allLogs, error: logsError } = await supabase
-        .from('automation_logs')
-        .select('id, automation_id, status, created_at')
-        .eq('user_id', userId);
-
-    if (logsError) throw logsError;
-
-    const logs = allLogs || [];
-    const metricsMap = new Map<string, AutomationMetrics>();
-    const startOfWeek = getStartOfWeek();
-
-    // Calculate metrics for each automation
-    for (const automation of automations || []) {
-        const automationLogs = logs.filter(l => l.automation_id === automation.id);
-        const totalRuns = automationLogs.length;
-        const successfulRuns = automationLogs.filter(l => l.status === 'success' || l.status === 'completed').length;
-        const failedRuns = automationLogs.filter(l => l.status === 'error' || l.status === 'failed').length;
         const reliability = totalRuns > 0 ? Math.round((successfulRuns / totalRuns) * 100) : 100;
+        const lastRunAt = allLogs.length > 0 ? allLogs[0].created_at : null;
+        const runsThisWeek = allLogs.filter(l => new Date(l.created_at) >= getStartOfWeek()).length;
 
-        const sortedLogs = [...automationLogs].sort((a, b) =>
-            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-        );
-        const lastRunAt = sortedLogs.length > 0 ? sortedLogs[0].created_at : null;
-        const runsThisWeek = automationLogs.filter(l => new Date(l.created_at) >= startOfWeek).length;
-
-        metricsMap.set(automation.id, {
-            automationId: automation.id,
+        return {
+            automationId,
             totalRuns,
             successfulRuns,
             failedRuns,
@@ -250,10 +220,77 @@ export async function fetchAllAutomationMetrics(userId: string): Promise<Map<str
             lastRunAt,
             runsThisWeek,
             avgExecutionTime: 2,
-        });
+        };
+    } catch (err) {
+        console.error('fetchAutomationMetrics failed:', err);
+        return {
+            automationId,
+            totalRuns: 0,
+            successfulRuns: 0,
+            failedRuns: 0,
+            reliability: 100,
+            lastRunAt: null,
+            runsThisWeek: 0,
+            avgExecutionTime: 0
+        };
     }
+}
 
-    return metricsMap;
+/**
+ * Fetch metrics for ALL automations belonging to the user
+ */
+export async function fetchAllAutomationMetrics(userId: string, isAdmin: boolean = false): Promise<Map<string, AutomationMetrics>> {
+    try {
+        // Fetch all automations (respect filters)
+        let autoQuery = supabase.from('client_automations').select('id');
+        if (!isAdmin) autoQuery = autoQuery.eq('user_id', userId);
+
+        const { data: automations } = await autoQuery;
+
+        // Fetch ALL logs (respect filters)
+        let logQuery = supabase.from('automation_logs').select('id, automation_id, status, created_at');
+        if (!isAdmin) logQuery = logQuery.eq('user_id', userId);
+
+        const { data: allLogs } = await logQuery;
+
+        const logs = allLogs || [];
+        const metricsMap = new Map<string, AutomationMetrics>();
+        const startOfWeek = getStartOfWeek();
+
+        for (const automation of automations || []) {
+            const automationLogs = logs.filter(l => l.automation_id === automation.id);
+            const totalRuns = automationLogs.length;
+            const successfulRuns = automationLogs.filter(l =>
+                l.status?.toLowerCase() === 'success' ||
+                l.status?.toLowerCase() === 'completed'
+            ).length;
+            const failedRuns = automationLogs.filter(l =>
+                l.status?.toLowerCase() === 'error' ||
+                l.status?.toLowerCase() === 'failed'
+            ).length;
+
+            const reliability = totalRuns > 0 ? Math.round((successfulRuns / totalRuns) * 100) : 100;
+            const sortedLogs = [...automationLogs].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+            const lastRunAt = sortedLogs.length > 0 ? sortedLogs[0].created_at : null;
+            const runsThisWeek = automationLogs.filter(l => new Date(l.created_at) >= startOfWeek).length;
+
+            metricsMap.set(automation.id, {
+                automationId: automation.id,
+                totalRuns,
+                successfulRuns,
+                failedRuns,
+                reliability,
+                lastRunAt,
+                runsThisWeek,
+                avgExecutionTime: 2,
+            });
+        }
+
+        return metricsMap;
+    } catch (err) {
+        console.error('fetchAllAutomationMetrics failed:', err);
+        return new Map();
+    }
 }
 
 // ============================================
