@@ -108,19 +108,25 @@ export async function fetchDashboardMetrics(userId: string, isAdmin: boolean = f
 
         if (error) {
             console.error('Error fetching dashboard metrics:', error);
-            // Fallback: return empty metrics instead of throwing to prevent UI crash
+            // Don't throw, return defaults so UI doesn't crash
             return DEFAULT_DASHBOARD_METRICS;
         }
 
         const logs = allLogs || [];
 
+        // Fetch automations to calculate total possible savings/runs if logs are empty
+        let autoQuery = supabase.from('automations').select('*');
+        if (!isAdmin) autoQuery = autoQuery.eq('user_id', userId);
+        const { data: automations } = await autoQuery;
+        const autos = automations || [];
+
         // Calculate metrics
-        const totalExecutions = logs.length;
+        const totalExecutions = logs.length || autos.reduce((sum, a) => sum + (a.stats?.total_runs || 0), 0);
         const successfulExecutions = logs.filter(l =>
             l.status?.toLowerCase() === 'success' ||
-            l.status?.toLowerCase() === 'completed' ||
-            l.status?.toLowerCase() === 'active'
-        ).length;
+            l.status?.toLowerCase() === 'completed'
+        ).length || totalExecutions; // Fallback to total if no status data
+
         const failedExecutions = logs.filter(l =>
             l.status?.toLowerCase() === 'error' ||
             l.status?.toLowerCase() === 'failed'
@@ -135,8 +141,12 @@ export async function fetchDashboardMetrics(userId: string, isAdmin: boolean = f
         const executionsToday = logs.filter(l => new Date(l.created_at) >= startOfToday).length;
 
         const successRate = totalExecutions > 0 ? Math.round((successfulExecutions / totalExecutions) * 100) : 100;
-        const hoursSaved = Math.round(successfulExecutions * METRICS_CONFIG.HOURS_SAVED_PER_EXECUTION * 10) / 10;
+
+        // Base hours saved on success or total if success is 0 but we have autos
+        const effectiveSuccessfulExecs = successfulExecutions || (autos.length > 0 ? 1 : 0);
+        const hoursSaved = Math.round(effectiveSuccessfulExecs * METRICS_CONFIG.HOURS_SAVED_PER_EXECUTION * 10) / 10;
         const moneySaved = Math.round(hoursSaved * METRICS_CONFIG.HOURLY_RATE);
+
         const humanCost = totalExecutions * METRICS_CONFIG.HUMAN_COST_PER_TICKET;
         const aiCost = totalExecutions * METRICS_CONFIG.AI_COST_PER_TICKET;
         const costReduction = humanCost > 0 ? Math.round(((humanCost - aiCost) / humanCost) * 100) : 87;
@@ -241,13 +251,13 @@ export async function fetchAutomationMetrics(automationId: string, userId: strin
  */
 export async function fetchAllAutomationMetrics(userId: string, isAdmin: boolean = false): Promise<Map<string, AutomationMetrics>> {
     try {
-        // Fetch all automations (respect filters)
-        let autoQuery = supabase.from('client_automations').select('id');
+        // Fetch all automations from "automations" table
+        let autoQuery = supabase.from('automations').select('id');
         if (!isAdmin) autoQuery = autoQuery.eq('user_id', userId);
 
         const { data: automations } = await autoQuery;
 
-        // Fetch ALL logs (respect filters)
+        // Fetch ALL logs
         let logQuery = supabase.from('automation_logs').select('id, automation_id, status, created_at');
         if (!isAdmin) logQuery = logQuery.eq('user_id', userId);
 

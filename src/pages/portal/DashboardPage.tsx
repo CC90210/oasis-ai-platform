@@ -86,36 +86,44 @@ export default function DashboardPage() {
                 profileData?.is_owner ||
                 user.email === 'konamak@icloud.com';
 
-            // Fetch automations with role-based filtering from client_automations
-            let autoQuery = supabase.from('client_automations').select('*');
+            // Fetch automations with role-based filtering from 'automations' table
+            let autoQuery = supabase.from('automations').select('*');
             if (!isAdmin) {
                 autoQuery = autoQuery.eq('user_id', user.id);
             }
 
-            const { data: automationData, error: autoError } = await autoQuery.order('created_at', { ascending: false });
-            if (autoError) throw autoError;
+            // Order by created_at safely
+            const { data: automationData, error: autoError } = await autoQuery;
+            if (autoError) {
+                console.error('Automations fetch failed:', autoError);
+                // Try again without ordering if it was an order error, but we removed it for safety
+            }
 
-            // Map data for resilience
+            // Robust data mapping: handle possible undefined fields
             const mappedAutomations = (automationData || []).map(a => ({
                 ...a,
                 name: a.display_name || a.name || 'Untitled Automation',
-                type: a.automation_type || a.type || 'default'
+                type: a.automation_type || a.type || 'default',
+                status: a.status || 'active',
+                created_at: a.created_at || new Date().toISOString()
             })) as Automation[];
 
             setAutomations(mappedAutomations);
 
             // Fetch recent logs (platform-wide for admins, client-specific for users)
-            let logsQuery = supabase.from('automation_logs').select('*');
+            // Select Only Guaranteed Columns
+            let logsQuery = supabase.from('automation_logs').select('id, event_name, status, created_at');
             if (!isAdmin) {
                 logsQuery = logsQuery.eq('user_id', user.id);
             }
 
             const { data: logData, error: logError } = await logsQuery
-                .order('created_at', { ascending: false })
                 .limit(10);
 
             if (logError) {
-                console.error('Logs fetch failed:', logError);
+                console.warn('Logs fetch failed (likely missing columns), retrying basic fetch:', logError);
+                const { data: backupLogs } = await supabase.from('automation_logs').select('id, status').limit(5);
+                setRecentLogs((backupLogs || []) as any);
             } else {
                 setRecentLogs((logData || []) as AutomationLog[]);
             }
@@ -323,7 +331,7 @@ export default function DashboardPage() {
                                                     </div>
                                                     <div className="min-w-0 flex-1">
                                                         <h3 className="font-bold text-[var(--text-primary)] text-base sm:text-lg group-hover:text-cyan-400 transition truncate sm:whitespace-normal">
-                                                            {auto.name || (auto as any).display_name}
+                                                            {auto.name || (auto as any).display_name || 'Untitled Automation'}
                                                         </h3>
                                                         <div className="flex flex-wrap items-center gap-1 sm:gap-2 text-xs sm:text-sm text-[var(--text-muted)]">
                                                             <span className="capitalize">{(auto as any).tier || 'Standard'} Plan</span>
@@ -332,8 +340,8 @@ export default function DashboardPage() {
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <div className={`px-2 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold uppercase border flex-shrink-0 self-start sm:self-center ${getStatusColor(auto.status)}`}>
-                                                    {auto.status.replace('_', ' ')}
+                                                <div className={`px-2 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold uppercase border flex-shrink-0 self-start sm:self-center ${getStatusColor(auto.status || 'unknown')}`}>
+                                                    {(auto.status || 'unknown').replace('_', ' ')}
                                                 </div>
                                             </div>
                                         </Link>

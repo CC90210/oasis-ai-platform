@@ -61,20 +61,21 @@ export function isBillingExempt(profile: Profile | null): boolean {
 export interface Automation {
     id: string;
     user_id: string;
+    order_id?: string | null;
+    subscription_id?: string | null;
     automation_type: string;
     display_name: string;
-    tier: string;
-    status: 'pending_setup' | 'active' | 'paused' | 'cancelled';
-    webhook_secret?: string;
-    config: Record<string, any>;
+    status?: 'pending_setup' | 'active' | 'paused' | 'cancelled';
+    tier?: string;
+    config?: Record<string, any>;
     stats?: {
         total_runs: number;
         hours_saved: number;
         successful_runs?: number;
         failed_runs?: number;
     };
-    last_run_at: string | null;
-    created_at: string;
+    last_run_at?: string | null;
+    created_at?: string;
     // Compatibility fields
     name?: string;
     type?: string;

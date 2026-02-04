@@ -127,28 +127,32 @@ export default function AutomationsPage() {
                 profileData?.is_owner ||
                 user.email === 'konamak@icloud.com';
 
-            let query = supabase.from('client_automations').select('*');
+            let query = supabase.from('automations').select('*');
 
             if (!isAdmin) {
                 query = query.eq('user_id', user.id);
             }
 
-            const { data, error } = await query.order('created_at', { ascending: false });
+            const { data, error } = await query;
+            if (error) {
+                console.error('Automations fetch error:', error);
+            }
 
-            if (error) throw error;
-
-            // Map data for resilience
+            // Map data for resilience (using display_name/automation_type from your screenshot)
             const mappedData = (data || []).map(a => ({
                 ...a,
                 name: a.display_name || a.name || 'Untitled Automation',
-                type: a.automation_type || a.type || 'default'
+                type: a.automation_type || a.type || 'default',
+                status: a.status || 'active',
+                created_at: a.created_at || new Date().toISOString(),
+                config: a.config || {}
             })) as Automation[];
 
             setAutomations(mappedData);
 
             if (mappedData.length > 0) {
                 setSelectedAuto(mappedData[0]);
-                // Initial load
+                // Initial load: Pass user.id and isAdmin for metrics calculation
                 loadLogsAndMetrics(mappedData[0].id, user.id, isAdmin);
             }
         } catch (err: any) {
