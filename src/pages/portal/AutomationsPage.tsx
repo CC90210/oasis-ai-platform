@@ -148,47 +148,29 @@ export default function AutomationsPage() {
 
     const loadLogsAndMetrics = async (automationId: string, userId: string, isAdmin: boolean = false) => {
         setLoadingLogs(true);
+        console.log(`[DEBUG] Loading logs for Automation: ${automationId}, User: ${userId}`);
         try {
-            let finalLogs: AutomationLog[] = [];
+            // 1. Fetch Logs via Bulletproof RPC
+            const { data: rpcLogs, error: rpcError } = await supabase.rpc('get_portal_logs', {
+                target_automation_id: automationId,
+                log_limit: 100
+            });
 
-            // 1. PRIMARY: Direct ID Match
-            const { data: directLogs } = await supabase
-                .from('automation_logs')
-                .select('*')
-                .eq('automation_id', automationId)
-                .order('created_at', { ascending: false })
-                .limit(100);
-
-            if (directLogs && directLogs.length > 0) {
-                finalLogs = directLogs as AutomationLog[];
-            }
-
-            // 2. FALLBACK: Admin Recovery
-            else if (isAdmin) {
-                console.log('Direct fetch empty. Trying heuristic search...');
-                const { data: heuristicLogs } = await supabase
+            if (rpcError) {
+                console.error('[DIAGNOSTIC] RPC Fetch Failed:', rpcError);
+                // Fallback to direct fetch if RPC is not yet deployed
+                const { data: directLogs } = await supabase
                     .from('automation_logs')
                     .select('*')
-                    .or(`user_id.eq.${userId},event_name.ilike.%${selectedAuto?.name || ''}%`)
+                    .eq('automation_id', automationId)
                     .order('created_at', { ascending: false })
                     .limit(100);
-
-                if (heuristicLogs && heuristicLogs.length > 0) {
-                    finalLogs = heuristicLogs as AutomationLog[];
-                }
-
-                if (finalLogs.length === 0) {
-                    console.log('Nuclear Option: Fetching global logs...');
-                    const { data: panicLogs } = await supabase
-                        .from('automation_logs')
-                        .select('*')
-                        .order('created_at', { ascending: false })
-                        .limit(50);
-                    if (panicLogs) finalLogs = panicLogs as AutomationLog[];
-                }
+                setLogs(directLogs || []);
+            } else {
+                console.log(`[DIAGNOSTIC] Success! Received ${rpcLogs?.length || 0} logs.`);
+                setLogs(rpcLogs || []);
             }
 
-            setLogs(finalLogs);
             const metrics = await fetchAutomationMetrics(automationId, userId, isAdmin);
             setAutomationMetrics(metrics);
         } catch (err) {

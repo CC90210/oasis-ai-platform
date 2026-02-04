@@ -127,25 +127,26 @@ export default function DashboardPage() {
             const metricsResult = await fetchDashboardMetrics(user.id, isAdmin);
             setMetrics(metricsResult);
 
-            // RESILIENT LOG FETCH
-            const automationIds = mappedAutomations.map(a => a.id);
-            let logsQuery = supabase.from('automation_logs').select('*');
+            // BULLETPROOF LOG FETCH (RPC)
+            console.log(`[DIAGNOSTIC] Fetching dashboard logs for User: ${user.id}`);
+            const { data: rpcLogs, error: rpcError } = await supabase.rpc('get_portal_logs', {
+                target_user_id: user.id,
+                log_limit: 20
+            });
 
-            if (automationIds.length > 0) {
-                // Fetch logs for these specific automations (RLS will filter if logged user is owner)
-                logsQuery = logsQuery.in('automation_id', automationIds);
+            if (!rpcError && rpcLogs) {
+                console.log(`[DIAGNOSTIC] Dashboard Logs Success: ${rpcLogs.length} found.`);
+                setRecentLogs(rpcLogs as AutomationLog[]);
             } else {
-                logsQuery = logsQuery.eq('user_id', user.id);
-            }
+                console.warn('[DIAGNOSTIC] Dashboard RPC Failed, trying fallback...', rpcError);
+                // Fallback
+                const automationIds = mappedAutomations.map(a => a.id);
+                let logsQuery = supabase.from('automation_logs').select('*');
+                if (automationIds.length > 0) logsQuery = logsQuery.in('automation_id', automationIds);
+                else logsQuery = logsQuery.eq('user_id', user.id);
 
-            const { data: logData, error: logError } = await logsQuery
-                .order('created_at', { ascending: false })
-                .limit(20);
-
-            if (!logError && logData) {
-                setRecentLogs(logData as AutomationLog[]);
-            } else {
-                console.warn('Dashboard logs fetch failed:', logError);
+                const { data: logData } = await logsQuery.order('created_at', { ascending: false }).limit(20);
+                setRecentLogs(logData as AutomationLog[] || []);
             }
 
 
