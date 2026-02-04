@@ -161,18 +161,18 @@ export default function AutomationsPage() {
 
             if (directLogs && directLogs.length > 0) {
                 finalLogs = directLogs as AutomationLog[];
-            } 
-            
+            }
+
             // 2. FALLBACK: Admin Recovery
             else if (isAdmin) {
                 console.log('Direct fetch empty. Trying heuristic search...');
                 const { data: heuristicLogs } = await supabase
                     .from('automation_logs')
                     .select('*')
-                    .or(user_id.eq.,event_name.ilike.%%)
+                    .or(`user_id.eq.${userId},event_name.ilike.%${selectedAuto?.name || ''}%`)
                     .order('created_at', { ascending: false })
                     .limit(100);
-                
+
                 if (heuristicLogs && heuristicLogs.length > 0) {
                     finalLogs = heuristicLogs as AutomationLog[];
                 }
@@ -187,7 +187,7 @@ export default function AutomationsPage() {
                     if (panicLogs) finalLogs = panicLogs as AutomationLog[];
                 }
             }
-            
+
             setLogs(finalLogs);
             const metrics = await fetchAutomationMetrics(automationId, userId, isAdmin);
             setAutomationMetrics(metrics);
