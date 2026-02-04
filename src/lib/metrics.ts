@@ -117,20 +117,17 @@ export async function fetchDashboardMetrics(userId: string, isAdmin: boolean = f
 
             if (logErr) console.error('Global log fetch failed:', logErr);
             logs = allLogs || [];
-        } else if (autoIds.length > 0) {
-            // Find logs where user_id matches OR it belongs to one of user's automations
-            const idList = autoIds.map(id => `'${id}'`).join(',');
+        } else {
+            // STANDARD USER: Fetch logs by User ID (Reliable due to DB Triggers)
+            // We optimized the DB so every log has the correct owner_id.
             const { data: logData, error: logError } = await supabase
                 .from('automation_logs')
                 .select('*')
-                .or(`user_id.eq.${userId},automation_id.in.(${idList})`)
+                .eq('user_id', userId)
                 .order('created_at', { ascending: false });
 
             if (!logError) {
                 logs = logData || [];
-            } else {
-                const { data: fallbackLogs } = await supabase.from('automation_logs').select('*').eq('user_id', userId).order('created_at', { ascending: false });
-                logs = fallbackLogs || [];
             }
         }
 

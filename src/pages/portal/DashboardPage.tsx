@@ -196,6 +196,13 @@ export default function DashboardPage() {
 
     // Helper to calculate aggregate stats if metrics are zero
     const getAggValue = (key: 'runs' | 'hours' | 'money') => {
+        // PRIORITY: Use calculated metrics from logs if available
+        if (metrics) {
+            if (key === 'runs') return metrics.totalExecutions;
+            if (key === 'hours') return metrics.hoursSaved;
+            if (key === 'money') return metrics.moneySaved;
+        }
+
         if (!automations.length) return 0;
         const totalRuns = automations.reduce((sum, a) => sum + (a.stats?.total_runs || (a as any).total_runs || 0), 0);
         const totalHours = automations.reduce((sum, a) => sum + (a.stats?.hours_saved || (a as any).hours_saved || 0), 0);
