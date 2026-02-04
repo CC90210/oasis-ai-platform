@@ -174,7 +174,7 @@ ALTER TABLE custom_agreements ENABLE ROW LEVEL SECURITY;
 ALTER TABLE product_purchases ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.client_automations ENABLE ROW LEVEL SECURITY;
--- ALTER TABLE public.automation_logs ENABLE ROW LEVEL SECURITY; -- TEMPORARILY DISABLED
+ALTER TABLE public.automation_logs ENABLE ROW LEVEL SECURITY;
 -- Ensure other sensitive tables are secured
 ALTER TABLE public.invoices ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.promo_code_usage ENABLE ROW LEVEL SECURITY;

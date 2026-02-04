@@ -95,48 +95,22 @@ const getStartOfToday = (): Date => {
  */
 export async function fetchDashboardMetrics(userId: string, isAdmin: boolean = false): Promise<DashboardMetrics> {
     try {
-        // STEP 1: Fetch Automations (Primary source for ownership & historical stats)
-        let autoQuery = supabase.from('automations').select('*');
-        if (!isAdmin) {
-            autoQuery = autoQuery.eq('user_id', userId);
-        }
-        const { data: automations } = await autoQuery;
+        // STEP 1: Fetch Automations
+        const { data: automations } = await supabase.from('automations').select('*').eq('user_id', userId);
         const autos = automations || [];
         const autoIds = autos.map(a => a.id);
 
-        // STEP 2: Fetch Logs (Resilient to missing user_id)
+        // STEP 2: Fetch Logs (Resilient Path)
         let logs: any[] = [];
 
-        if (isAdmin) {
-            // GLOBAL RECOVERY: Admins see EVERY log in the database.
-            let { data: allLogs, error: logErr } = await supabase
-                .from('automation_logs')
-                .select('*')
-                .order('created_at', { ascending: false });
-
-            if (logErr || !allLogs || allLogs.length === 0) {
-                // FALLBACK: If global fetch returns nothing (RLS issue?), try fetching OWN logs
-                console.warn('Global fetch empty. Falling back to User ID fetch.');
-                const { data: ownLogs } = await supabase
-                    .from('automation_logs')
-                    .select('*')
-                    .eq('user_id', userId)
-                    .order('created_at', { ascending: false });
-                allLogs = ownLogs || [];
-            }
-            logs = allLogs || [];
+        if (autoIds.length > 0) {
+            // Fetch by Automation IDs
+            const { data } = await supabase.from('automation_logs').select('*').in('automation_id', autoIds);
+            logs = data || [];
         } else {
-            // STANDARD USER: Fetch logs by User ID (Reliable due to DB Triggers)
-            // We optimized the DB so every log has the correct owner_id.
-            const { data: logData, error: logError } = await supabase
-                .from('automation_logs')
-                .select('*')
-                .eq('user_id', userId)
-                .order('created_at', { ascending: false });
-
-            if (!logError) {
-                logs = logData || [];
-            }
+            // Fallback to User ID
+            const { data } = await supabase.from('automation_logs').select('*').eq('user_id', userId);
+            logs = data || [];
         }
 
         // STEP 3: Aggregate stats from Automations as a hard fallback
@@ -144,7 +118,7 @@ export async function fetchDashboardMetrics(userId: string, isAdmin: boolean = f
         const aggregateHours = autos.reduce((sum, a) => sum + (a.stats?.hours_saved || (a as any).hours_saved || 0), 0);
         const aggregateSuccess = autos.reduce((sum, a) => sum + (a.stats?.successful_runs || (a as any).successful_runs || 0), 0);
 
-        // STEP 4: Calculate final metrics
+        // STEP 4: Calculate final metrics from logs
         const totalExecutionsFromLogs = logs.length;
         const successfulExecutionsFromLogs = logs.filter(l => {
             const status = String(l.status || '').toLowerCase();
@@ -152,7 +126,7 @@ export async function fetchDashboardMetrics(userId: string, isAdmin: boolean = f
             return status === 'success' || status === 'completed' || (status === '' && eventType === 'execution');
         }).length;
 
-        // Use logs if present, otherwise fallback to the aggregate stats stored in automations table
+        // Final values favoring logs but falling back to stats
         const totalExecutions = Math.max(totalExecutionsFromLogs, aggregateRuns);
         const successfulExecutions = totalExecutionsFromLogs > 0 ? successfulExecutionsFromLogs : (aggregateSuccess || totalExecutions);
 

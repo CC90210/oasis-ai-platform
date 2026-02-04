@@ -103,7 +103,7 @@ export default function DashboardPage() {
                 profileData?.role === 'super_admin' ||
                 profileData?.is_admin ||
                 profileData?.is_owner ||
-                ['konamak@icloud.com', 'keitemplaysgames@gmail.com'].includes((user.email || '').toLowerCase());
+                ['konamak@icloud.com', 'kaelamplaysgames@gmail.com'].includes((user.email || '').toLowerCase());
 
             // Fetch automations (Strictly Own Automations Only to prevent Data Leakage)
             let autoQuery = supabase.from('automations').select('*').eq('user_id', user.id);
@@ -128,26 +128,24 @@ export default function DashboardPage() {
             setMetrics(metricsResult);
 
             // RESILIENT LOG FETCH
+            const automationIds = mappedAutomations.map(a => a.id);
             let logsQuery = supabase.from('automation_logs').select('*');
-            if (!isAdmin) {
-                const ids = mappedAutomations.map(a => a.id);
-                if (ids.length > 0) {
-                    const idList = ids.map(id => `'${id}'`).join(',');
-                    logsQuery = logsQuery.or(`user_id.eq.${user.id},automation_id.in.(${idList})`);
-                } else {
-                    logsQuery = logsQuery.eq('user_id', user.id);
-                }
+
+            if (automationIds.length > 0) {
+                // Fetch logs for these specific automations (RLS will filter if logged user is owner)
+                logsQuery = logsQuery.in('automation_id', automationIds);
+            } else {
+                logsQuery = logsQuery.eq('user_id', user.id);
             }
 
             const { data: logData, error: logError } = await logsQuery
                 .order('created_at', { ascending: false })
-                .limit(10);
+                .limit(20);
 
-            if (logError) {
-                console.warn('Dashboard logs fetch failed:', logError);
-                setRecentLogs([]);
+            if (!logError && logData) {
+                setRecentLogs(logData as AutomationLog[]);
             } else {
-                setRecentLogs((logData || []) as AutomationLog[]);
+                console.warn('Dashboard logs fetch failed:', logError);
             }
 
 
