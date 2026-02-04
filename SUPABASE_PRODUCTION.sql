@@ -226,15 +226,24 @@ CREATE POLICY "Automation access policy" ON public.client_automations
     )
   );
 
-CREATE POLICY "Simple owner view" ON public.automation_logs
+CREATE POLICY "View logs via automation ownership" ON public.automation_logs
   FOR SELECT USING (
-    user_id = auth.uid()
+    -- Option A: You own the Parent Automation
+    EXISTS (
+        SELECT 1 FROM public.client_automations a
+        WHERE a.id = automation_logs.automation_id
+        AND a.user_id = auth.uid()
+    )
     OR
+    -- Option B: You are an Admin/Owner
     EXISTS (
         SELECT 1 FROM public.profiles 
         WHERE id = auth.uid() 
         AND (role IN ('admin', 'super_admin') OR is_admin = true OR is_owner = true)
     )
+    OR
+    -- Option C: Fallback to log ownership
+    user_id = auth.uid()
   );
 
 -- TRIGGERS FOR UPDATED_AT
