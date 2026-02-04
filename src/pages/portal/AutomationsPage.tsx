@@ -99,7 +99,7 @@ export default function AutomationsPage() {
                 profile?.role === 'super_admin' ||
                 profile?.is_admin ||
                 profile?.is_owner ||
-                ['konamak@icloud.com', 'keitemplaysgames@gmail.com'].includes((profile?.email || '').toLowerCase());
+                ['konamak@icloud.com', 'kaelamplaysgames@gmail.com'].includes((profile?.email || '').toLowerCase());
 
             loadLogsAndMetrics(selectedAuto.id, userId, isAdmin);
             setNewName(selectedAuto.name || (selectedAuto as any).display_name || '');
@@ -118,7 +118,7 @@ export default function AutomationsPage() {
             const { data: profileData } = await supabase.from('profiles').select('*').eq('id', user.id).single();
             setProfile(profileData || { email: user.email, role: 'client' });
 
-            const isAdmin = profileData?.role === 'admin' || profileData?.role === 'super_admin' || profileData?.is_admin || profileData?.is_owner || ['konamak@icloud.com', 'keitemplaysgames@gmail.com'].includes(user.email || '');
+            const isAdmin = profileData?.role === 'admin' || profileData?.role === 'super_admin' || profileData?.is_admin || profileData?.is_owner || ['konamak@icloud.com', 'kaelamplaysgames@gmail.com'].includes(user.email || '');
 
             let query = supabase.from('automations').select('*').eq('user_id', user.id);
             // if (!isAdmin) query = query.eq('user_id', user.id); // DISABLED GLOBAL ADMIN VIEW

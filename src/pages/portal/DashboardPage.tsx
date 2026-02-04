@@ -84,7 +84,7 @@ export default function DashboardPage() {
                 profileData = data;
                 setProfile(data);
             } catch (err) {
-                const isWhitelisted = ['konamak@icloud.com', 'keitemplaysgames@gmail.com'].includes((user.email || '').toLowerCase());
+                const isWhitelisted = ['konamak@icloud.com', 'kaelamplaysgames@gmail.com'].includes((user.email || '').toLowerCase());
                 const fallbackProfile = {
                     id: user.id,
                     email: user.email!,

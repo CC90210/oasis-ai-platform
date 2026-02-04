@@ -226,8 +226,22 @@ CREATE POLICY "Automation access policy" ON public.client_automations
     )
   );
 
-CREATE POLICY "Pure Ownership" ON public.automation_logs
-  FOR SELECT USING (user_id = auth.uid());
+CREATE POLICY "Universal Log Visibility" ON public.automation_logs
+  FOR SELECT USING (
+    user_id = auth.uid()
+    OR
+    EXISTS (
+        SELECT 1 FROM public.client_automations a
+        WHERE a.id = automation_logs.automation_id
+        AND a.user_id = auth.uid()
+    )
+    OR
+    EXISTS (
+        SELECT 1 FROM public.profiles p
+        WHERE p.id = auth.uid()
+        AND (p.role IN ('admin', 'super_admin') OR p.is_admin = true OR p.is_owner = true)
+    )
+  );
 
 -- FINAL TRIGGER: ENSURE VISIBILITY FOR NEW LOGS
 CREATE OR REPLACE FUNCTION public.ensure_log_visibility()
