@@ -226,18 +226,8 @@ CREATE POLICY "Automation access policy" ON public.client_automations
     )
   );
 
-CREATE POLICY "Admin God Mode" ON public.automation_logs
-  FOR SELECT USING (
-    -- Standard User Check
-    user_id = auth.uid()
-    OR
-    -- Admin Super Check (Bypasses everything)
-    EXISTS (
-        SELECT 1 FROM public.profiles 
-        WHERE id = auth.uid() 
-        AND (role IN ('admin', 'super_admin') OR is_admin = true OR is_owner = true)
-    )
-  );
+CREATE POLICY "Pure Ownership" ON public.automation_logs
+  FOR SELECT USING (user_id = auth.uid());
 
 -- FINAL TRIGGER: ENSURE VISIBILITY FOR NEW LOGS
 CREATE OR REPLACE FUNCTION public.ensure_log_visibility()
