@@ -100,7 +100,7 @@ export default function DashboardPage() {
                 profileData?.role === 'super_admin' ||
                 profileData?.is_admin ||
                 profileData?.is_owner ||
-                ['konamak@icloud.com', 'keitemplaysgames@gmail.com'].includes(user.email || '');
+                ['konamak@icloud.com', 'keitemplaysgames@gmail.com'].includes((user.email || '').toLowerCase());
 
             // Fetch automations 
             let autoQuery = supabase.from('automations').select('*');

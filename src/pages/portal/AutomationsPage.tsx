@@ -99,7 +99,7 @@ export default function AutomationsPage() {
                 profile?.role === 'super_admin' ||
                 profile?.is_admin ||
                 profile?.is_owner ||
-                ['konamak@icloud.com', 'keitemplaysgames@gmail.com'].includes(profile?.email || '');
+                ['konamak@icloud.com', 'keitemplaysgames@gmail.com'].includes((profile?.email || '').toLowerCase());
 
             loadLogsAndMetrics(selectedAuto.id, userId, isAdmin);
             setNewName(selectedAuto.name || (selectedAuto as any).display_name || '');
