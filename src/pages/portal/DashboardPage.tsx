@@ -105,9 +105,9 @@ export default function DashboardPage() {
                 profileData?.is_owner ||
                 ['konamak@icloud.com', 'keitemplaysgames@gmail.com'].includes((user.email || '').toLowerCase());
 
-            // Fetch automations 
-            let autoQuery = supabase.from('automations').select('*');
-            if (!isAdmin) autoQuery = autoQuery.eq('user_id', user.id);
+            // Fetch automations (Strictly Own Automations Only to prevent Data Leakage)
+            let autoQuery = supabase.from('automations').select('*').eq('user_id', user.id);
+            // if (!isAdmin) autoQuery = autoQuery.eq('user_id', user.id); // DISABLED GLOBAL ADMIN VIEW
 
             const { data: automationData, error: autoError } = await autoQuery;
             if (autoError) console.error('Automations fetch failed:', autoError);

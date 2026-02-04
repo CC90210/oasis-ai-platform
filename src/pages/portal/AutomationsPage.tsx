@@ -120,8 +120,8 @@ export default function AutomationsPage() {
 
             const isAdmin = profileData?.role === 'admin' || profileData?.role === 'super_admin' || profileData?.is_admin || profileData?.is_owner || ['konamak@icloud.com', 'keitemplaysgames@gmail.com'].includes(user.email || '');
 
-            let query = supabase.from('automations').select('*');
-            if (!isAdmin) query = query.eq('user_id', user.id);
+            let query = supabase.from('automations').select('*').eq('user_id', user.id);
+            // if (!isAdmin) query = query.eq('user_id', user.id); // DISABLED GLOBAL ADMIN VIEW
 
             const { data, error } = await query;
             if (error) console.error('Automations fetch error:', error);
