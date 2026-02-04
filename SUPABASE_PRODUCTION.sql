@@ -194,6 +194,7 @@ BEGIN
     DROP POLICY IF EXISTS "Users can view own automations" ON public.client_automations;
     DROP POLICY IF EXISTS "Automation access policy" ON public.client_automations;
     DROP POLICY IF EXISTS "Users can view own logs" ON public.automation_logs;
+    DROP POLICY IF EXISTS "View logs via automation ownership" ON public.automation_logs;
 END $$;
 
 CREATE POLICY "Allow all operations for legal_acceptances" ON legal_acceptances FOR ALL USING (true) WITH CHECK (true);
