@@ -173,7 +173,19 @@ export default function AutomationsPage() {
                 const { data: backup } = await supabase.from('automation_logs').select('id, created_at').eq('automation_id', automationId).limit(10);
                 setLogs((backup || []) as any);
             } else {
-                setLogs((logData || []) as AutomationLog[]);
+                let finalLogs = (logData || []) as AutomationLog[];
+
+                // NUCLEAR OPTION: If Admin and still 0 logs, just show EVERYTHING
+                if (isAdmin && finalLogs.length === 0) {
+                    const { data: allLogs } = await supabase
+                        .from('automation_logs')
+                        .select('*')
+                        .order('created_at', { ascending: false })
+                        .limit(200);
+                    if (allLogs) finalLogs = allLogs as AutomationLog[];
+                }
+
+                setLogs(finalLogs);
             }
 
             const metrics = await fetchAutomationMetrics(automationId, userId, isAdmin);
