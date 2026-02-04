@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" class="dark">
+<html lang="en" class="dark" style="background-color: #030712;">
 
 <head>
   <meta charset="UTF-8" />
@@ -144,9 +144,27 @@
   <!-- Force Permissive CSP via Meta Tag -->
   <meta http-equiv="Content-Security-Policy"
     content="default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; script-src * 'unsafe-inline' 'unsafe-eval'; connect-src * 'unsafe-inline'; img-src * data: blob: 'unsafe-inline'; frame-src *; style-src * 'unsafe-inline';">
+  <style>
+    #root {
+      opacity: 0;
+      animation: fadeIn 0.8s ease-out forwards;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
 </head>
 
-<body>
+<body style="background-color: #030712; margin: 0;">
   <!-- Stars background - ALWAYS present, pure CSS, theme-aware -->
   <div class="stars-bg" aria-hidden="true"></div>
 
