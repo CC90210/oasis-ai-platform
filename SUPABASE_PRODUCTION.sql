@@ -98,7 +98,7 @@ CREATE TABLE IF NOT EXISTS product_purchases (
 );
 
 -- 4. PROFILES (Client data after signup)
-CREATE TABLE IF NOT EXISTS profiles (
+CREATE TABLE IF NOT EXISTS public.profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   full_name TEXT,
   email TEXT UNIQUE,
@@ -106,36 +106,48 @@ CREATE TABLE IF NOT EXISTS profiles (
   website_url TEXT,
   phone TEXT,
   avatar_url TEXT,
+  role TEXT DEFAULT 'client',
   onboarding_completed BOOLEAN DEFAULT false,
   onboarding_steps JSONB DEFAULT '[]',
   stripe_customer_id TEXT,
   subscription_status TEXT DEFAULT 'inactive',
-  subscription_tier TEXT, -- 'launchpad', 'integration', etc.
+  subscription_tier TEXT,
   automation_webhook_id TEXT,
+  is_admin BOOLEAN DEFAULT false,
+  is_owner BOOLEAN DEFAULT false,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 5. AUTOMATIONS (Configured active agents)
-CREATE TABLE IF NOT EXISTS automations (
+-- 5. CLIENT AUTOMATIONS (Configured active agents)
+CREATE TABLE IF NOT EXISTS public.client_automations (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
-  name TEXT NOT NULL,
-  type TEXT NOT NULL,
+  user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
+  automation_type TEXT NOT NULL,
+  display_name TEXT NOT NULL,
+  tier TEXT DEFAULT 'standard',
   status TEXT DEFAULT 'active',
+  webhook_secret TEXT DEFAULT gen_random_uuid()::text,
   config JSONB DEFAULT '{}',
   stats JSONB DEFAULT '{"total_runs": 0, "hours_saved": 0}',
-  created_at TIMESTAMPTZ DEFAULT NOW()
+  last_run_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Create a view for "automations" to support both naming conventions during transition
+CREATE OR REPLACE VIEW public.automations AS SELECT * FROM public.client_automations;
+
 -- 6. AUTOMATION LOGS (Activity history)
-CREATE TABLE IF NOT EXISTS automation_logs (
+CREATE TABLE IF NOT EXISTS public.automation_logs (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  automation_id UUID REFERENCES automations(id) ON DELETE CASCADE,
-  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
-  action_type TEXT NOT NULL,
-  status TEXT NOT NULL, -- 'success', 'failed'
-  details TEXT,
+  automation_id UUID REFERENCES public.client_automations(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
+  event_type TEXT,
+  event_name TEXT NOT NULL,
+  status TEXT NOT NULL, -- 'success', 'error', 'failed'
+  metadata JSONB DEFAULT '{}',
+  description TEXT,
   execution_time_ms INTEGER,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -144,9 +156,9 @@ CREATE TABLE IF NOT EXISTS automation_logs (
 ALTER TABLE legal_acceptances ENABLE ROW LEVEL SECURITY;
 ALTER TABLE custom_agreements ENABLE ROW LEVEL SECURITY;
 ALTER TABLE product_purchases ENABLE ROW LEVEL SECURITY;
-ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
-ALTER TABLE automations ENABLE ROW LEVEL SECURITY;
-ALTER TABLE automation_logs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.client_automations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.automation_logs ENABLE ROW LEVEL SECURITY;
 
 -- DROP AND RECREATE POLICIES TO AVOID "ALREADY EXISTS" ERRORS
 DO $$ 
@@ -158,21 +170,28 @@ BEGIN
     DROP POLICY IF EXISTS "Allow all operations for automations" ON automations;
     DROP POLICY IF EXISTS "Automation access policy" ON automations;
     DROP POLICY IF EXISTS "Allow all operations for automation_logs" ON automation_logs;
+
+    DROP POLICY IF EXISTS "Users view own profile" ON public.profiles;
+    DROP POLICY IF EXISTS "Users can view own automations" ON public.client_automations;
+    DROP POLICY IF EXISTS "Automation access policy" ON public.client_automations;
+    DROP POLICY IF EXISTS "Users can view own logs" ON public.automation_logs;
 END $$;
 
 CREATE POLICY "Allow all operations for legal_acceptances" ON legal_acceptances FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow all operations for custom_agreements" ON custom_agreements FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow all operations for product_purchases" ON product_purchases FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Allow all operations for profiles" ON profiles FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Allow all operations for automation_logs" ON automation_logs FOR ALL USING (true) WITH CHECK (true);
+
+-- New policies
+CREATE POLICY "Users view own profile" ON public.profiles
+  FOR ALL USING (auth.uid() = id) WITH CHECK (auth.uid() = id);
 
 -- ROBURST AUTOMATION POLICY: Users see own, Admins see all
-CREATE POLICY "Automation access policy" ON automations
+CREATE POLICY "Automation access policy" ON public.client_automations
   FOR ALL USING (
     auth.uid() = user_id 
     OR 
     EXISTS (
-      SELECT 1 FROM profiles 
+      SELECT 1 FROM public.profiles 
       WHERE id = auth.uid() 
       AND (role IN ('admin', 'super_admin') OR is_admin = true OR is_owner = true)
     )
@@ -181,7 +200,18 @@ CREATE POLICY "Automation access policy" ON automations
     auth.uid() = user_id 
     OR 
     EXISTS (
-      SELECT 1 FROM profiles 
+      SELECT 1 FROM public.profiles 
+      WHERE id = auth.uid() 
+      AND (role IN ('admin', 'super_admin') OR is_admin = true OR is_owner = true)
+    )
+  );
+
+CREATE POLICY "Users can view own logs" ON public.automation_logs
+  FOR SELECT USING (
+    auth.uid() = user_id 
+    OR 
+    EXISTS (
+      SELECT 1 FROM public.profiles 
       WHERE id = auth.uid() 
       AND (role IN ('admin', 'super_admin') OR is_admin = true OR is_owner = true)
     )
@@ -199,9 +229,13 @@ $$ language 'plpgsql';
 -- Drop triggers if they exist before creating
 DROP TRIGGER IF EXISTS update_custom_agreements_updated_at ON custom_agreements;
 DROP TRIGGER IF EXISTS update_product_purchases_updated_at ON product_purchases;
+DROP TRIGGER IF EXISTS update_profiles_updated_at ON public.profiles;
+DROP TRIGGER IF EXISTS update_client_automations_updated_at ON public.client_automations;
 
 CREATE TRIGGER update_custom_agreements_updated_at BEFORE UPDATE ON custom_agreements FOR EACH ROW EXECUTE PROCEDURE update_updated_at_column();
 CREATE TRIGGER update_product_purchases_updated_at BEFORE UPDATE ON product_purchases FOR EACH ROW EXECUTE PROCEDURE update_updated_at_column();
+CREATE TRIGGER update_profiles_updated_at BEFORE UPDATE ON public.profiles FOR EACH ROW EXECUTE PROCEDURE update_updated_at_column();
+CREATE TRIGGER update_client_automations_updated_at BEFORE UPDATE ON public.client_automations FOR EACH ROW EXECUTE PROCEDURE update_updated_at_column();
 
 -- DATABASE CORRECTION SCRIPT (Run this if tables already exist but are missing columns)
 DO $$ 
@@ -259,10 +293,56 @@ BEGIN
         ALTER TABLE custom_agreements ADD COLUMN user_agent TEXT;
     END IF;
 
-    -- Add role column to profiles
-    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='profiles' AND column_name='role') THEN
-        ALTER TABLE profiles ADD COLUMN role TEXT DEFAULT 'client';
+    -- profiles
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='profiles' AND column_name='role') THEN
+        ALTER TABLE public.profiles ADD COLUMN role TEXT DEFAULT 'client';
     END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='profiles' AND column_name='is_admin') THEN
+        ALTER TABLE public.profiles ADD COLUMN is_admin BOOLEAN DEFAULT false;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='profiles' AND column_name='is_owner') THEN
+        ALTER TABLE public.profiles ADD COLUMN is_owner BOOLEAN DEFAULT false;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='profiles' AND column_name='updated_at') THEN
+        ALTER TABLE public.profiles ADD COLUMN updated_at TIMESTAMPTZ DEFAULT NOW();
+    END IF;
+
+    -- client_automations
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='client_automations' AND column_name='display_name') THEN
+        ALTER TABLE public.client_automations ADD COLUMN display_name TEXT;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='client_automations' AND column_name='automation_type') THEN
+        ALTER TABLE public.client_automations ADD COLUMN automation_type TEXT;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='client_automations' AND column_name='tier') THEN
+        ALTER TABLE public.client_automations ADD COLUMN tier TEXT DEFAULT 'standard';
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='client_automations' AND column_name='webhook_secret') THEN
+        ALTER TABLE public.client_automations ADD COLUMN webhook_secret TEXT DEFAULT gen_random_uuid()::text;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='client_automations' AND column_name='last_run_at') THEN
+        ALTER TABLE public.client_automations ADD COLUMN last_run_at TIMESTAMPTZ;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='client_automations' AND column_name='updated_at') THEN
+        ALTER TABLE public.client_automations ADD COLUMN updated_at TIMESTAMPTZ DEFAULT NOW();
+    END IF;
+
+    -- automation_logs
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='automation_logs' AND column_name='metadata') THEN
+        ALTER TABLE public.automation_logs ADD COLUMN metadata JSONB DEFAULT '{}';
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='automation_logs' AND column_name='event_type') THEN
+        ALTER TABLE public.automation_logs ADD COLUMN event_type TEXT;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='automation_logs' AND column_name='event_name') THEN
+        ALTER TABLE public.automation_logs ADD COLUMN event_name TEXT;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='automation_logs' AND column_name='description') THEN
+        ALTER TABLE public.automation_logs ADD COLUMN description TEXT;
+    END IF;
+    -- Update foreign key for automation_logs if it points to old automations table
+    -- This is more complex and might require dropping and re-adding the constraint.
+    -- For now, we'll assume the table creation handles it, and this script is for missing columns.
 END $$;
 
 -- Populate role column if it was empty, based on is_admin/is_owner flags

@@ -111,7 +111,7 @@ export default function AutomationsPage() {
             const { data: profileData } = await supabase.from('profiles').select('*').eq('id', user.id).single();
             const isAdmin = profileData?.role === 'admin' || profileData?.role === 'super_admin' || profileData?.is_admin || profileData?.is_owner;
 
-            let query = supabase.from('automations').select('*');
+            let query = supabase.from('client_automations').select('*');
 
             if (!isAdmin) {
                 query = query.eq('user_id', user.id);
@@ -120,10 +120,18 @@ export default function AutomationsPage() {
             const { data, error } = await query.order('created_at', { ascending: false });
 
             if (error) throw error;
-            setAutomations(data || []);
 
-            if (data && data.length > 0) {
-                setSelectedAuto(data[0]);
+            // Map data for resilience
+            const mappedData = (data || []).map(a => ({
+                ...a,
+                name: a.display_name || a.name || 'Untitled Automation',
+                type: a.automation_type || a.type || 'default'
+            }));
+
+            setAutomations(mappedData);
+
+            if (mappedData.length > 0) {
+                setSelectedAuto(mappedData[0]);
             }
         } catch (err: any) {
             console.error('Error loading automations:', err);

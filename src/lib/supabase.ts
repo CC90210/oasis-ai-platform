@@ -61,21 +61,23 @@ export function isBillingExempt(profile: Profile | null): boolean {
 export interface Automation {
     id: string;
     user_id: string;
-    name: string;
-    type: string;
-    status: 'active' | 'paused' | 'pending_setup' | 'cancelled';
+    automation_type: string;
+    display_name: string;
+    tier: string;
+    status: 'pending_setup' | 'active' | 'paused' | 'cancelled';
+    webhook_secret?: string;
     config: Record<string, any>;
-    stats: {
+    stats?: {
         total_runs: number;
         hours_saved: number;
         successful_runs?: number;
         failed_runs?: number;
     };
+    last_run_at: string | null;
     created_at: string;
-    // Keep legacy fields as optional for compatibility during transition
-    display_name?: string;
-    automation_type?: string;
-    tier?: string;
+    // Compatibility fields
+    name?: string;
+    type?: string;
 }
 
 export interface AutomationLog {
@@ -84,8 +86,10 @@ export interface AutomationLog {
     user_id: string;
     event_type: string;
     event_name: string;
-    status: 'success' | 'error' | 'warning' | 'info';
+    status: string;
     metadata: Record<string, any>;
+    description?: string;
+    execution_time_ms?: number;
     created_at: string;
 }
 

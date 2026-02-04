@@ -95,9 +95,10 @@ const getStartOfToday = (): Date => {
  */
 export async function fetchDashboardMetrics(userId: string): Promise<DashboardMetrics> {
     // Fetch ALL logs for this user (single query for consistency)
+    // Removed metadata to ensure query doesn't fail if column is missing/different
     const { data: allLogs, error } = await supabase
         .from('automation_logs')
-        .select('id, status, created_at, metadata')
+        .select('id, status, created_at')
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
 
@@ -110,8 +111,9 @@ export async function fetchDashboardMetrics(userId: string): Promise<DashboardMe
 
     // Calculate all metrics from this single dataset
     const totalExecutions = logs.length;
-    const successfulExecutions = logs.filter(l => l.status === 'success').length;
-    const failedExecutions = logs.filter(l => l.status === 'error').length;
+    // Handle both 'success' and 'failed/error' formats
+    const successfulExecutions = logs.filter(l => l.status === 'success' || l.status === 'completed').length;
+    const failedExecutions = logs.filter(l => l.status === 'error' || l.status === 'failed').length;
 
     // Time-based filtering
     const startOfWeek = getStartOfWeek();
@@ -164,7 +166,7 @@ export async function fetchAutomationMetrics(automationId: string, userId: strin
     // Fetch logs for this specific automation
     const { data: logs, error } = await supabase
         .from('automation_logs')
-        .select('id, status, created_at, metadata')
+        .select('id, status, created_at')
         .eq('automation_id', automationId)
         .eq('user_id', userId) // Security: ensure user owns this automation
         .order('created_at', { ascending: false });
@@ -176,8 +178,8 @@ export async function fetchAutomationMetrics(automationId: string, userId: strin
 
     const allLogs = logs || [];
     const totalRuns = allLogs.length;
-    const successfulRuns = allLogs.filter(l => l.status === 'success').length;
-    const failedRuns = allLogs.filter(l => l.status === 'error').length;
+    const successfulRuns = allLogs.filter(l => l.status === 'success' || l.status === 'completed').length;
+    const failedRuns = allLogs.filter(l => l.status === 'error' || l.status === 'failed').length;
 
     const reliability = totalRuns > 0
         ? Math.round((successfulRuns / totalRuns) * 100)
@@ -205,9 +207,9 @@ export async function fetchAutomationMetrics(automationId: string, userId: strin
  * Returns a map of automationId -> metrics
  */
 export async function fetchAllAutomationMetrics(userId: string): Promise<Map<string, AutomationMetrics>> {
-    // Fetch all automations for this user
+    // Fetch all automations for this user from client_automations
     const { data: automations, error: automationsError } = await supabase
-        .from('automations')
+        .from('client_automations')
         .select('id')
         .eq('user_id', userId);
 
@@ -229,8 +231,8 @@ export async function fetchAllAutomationMetrics(userId: string): Promise<Map<str
     for (const automation of automations || []) {
         const automationLogs = logs.filter(l => l.automation_id === automation.id);
         const totalRuns = automationLogs.length;
-        const successfulRuns = automationLogs.filter(l => l.status === 'success').length;
-        const failedRuns = automationLogs.filter(l => l.status === 'error').length;
+        const successfulRuns = automationLogs.filter(l => l.status === 'success' || l.status === 'completed').length;
+        const failedRuns = automationLogs.filter(l => l.status === 'error' || l.status === 'failed').length;
         const reliability = totalRuns > 0 ? Math.round((successfulRuns / totalRuns) * 100) : 100;
 
         const sortedLogs = [...automationLogs].sort((a, b) =>

@@ -71,8 +71,8 @@ export default function DashboardPage() {
                 });
             }
 
-            // Fetch automations with role-based filtering
-            let query = supabase.from('automations').select('*');
+            // Fetch automations with role-based filtering from client_automations
+            let query = supabase.from('client_automations').select('*');
 
             // Admins/Owners see all automations, clients only see their own
             const isAdmin = profileData?.role === 'admin' || profileData?.role === 'super_admin' || profileData?.is_admin || profileData?.is_owner;
@@ -81,8 +81,17 @@ export default function DashboardPage() {
                 query = query.eq('user_id', user.id);
             }
 
-            const { data: automationData } = await query.order('created_at', { ascending: false });
-            setAutomations(automationData || []);
+            const { data: automationData, error: autoError } = await query.order('created_at', { ascending: false });
+            if (autoError) throw autoError;
+
+            // Robust data mapping: handle both 'name' and 'display_name'
+            const mappedAutomations = (automationData || []).map(a => ({
+                ...a,
+                name: a.display_name || a.name || 'Untitled Automation',
+                type: a.automation_type || a.type || 'default'
+            }));
+
+            setAutomations(mappedAutomations);
 
             // Fetch recent logs (admins see all, clients see their own)
             let logsQuery = supabase.from('automation_logs').select('*');
@@ -90,9 +99,11 @@ export default function DashboardPage() {
                 logsQuery = logsQuery.eq('user_id', user.id);
             }
 
-            const { data: logData } = await logsQuery
+            const { data: logData, error: logError } = await logsQuery
                 .order('created_at', { ascending: false })
                 .limit(10);
+
+            if (logError) throw logError;
             setRecentLogs(logData || []);
 
             // CRITICAL: Fetch metrics using centralized service
