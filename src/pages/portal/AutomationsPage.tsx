@@ -158,6 +158,10 @@ export default function AutomationsPage() {
             // but we use OR to allow logs that only have the automation_id.
             if (!isAdmin) {
                 logsQuery = logsQuery.or(`user_id.eq.${userId},automation_id.eq.${automationId}`);
+            } else {
+                // For admins/owners, we broaden the search to recover ALL logs matching this user/type
+                logsQuery = supabase.from('automation_logs').select('*')
+                    .or(`user_id.eq.${userId},event_name.ilike.%${selectedAuto?.name || ''}%,event_type.ilike.%${selectedAuto?.type || ''}%`);
             }
 
             const { data: logData, error } = await logsQuery
