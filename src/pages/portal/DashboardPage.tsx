@@ -222,12 +222,6 @@ export default function DashboardPage() {
                             <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[var(--text-primary)]">
                                 {getGreeting()}, {profile?.full_name?.split(' ')[0] || 'Client'}
                             </h1>
-                            {profile?.is_owner && (
-                                <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-500/30 rounded-full whitespace-nowrap">
-                                    <Crown className="w-4 h-4 text-yellow-500" />
-                                    <span className="text-yellow-500 text-sm font-bold">Owner</span>
-                                </span>
-                            )}
                         </div>
                         <p className="text-[var(--text-secondary)]">Here's what's happening with your AI workforce.</p>
                     </div>
