@@ -246,6 +246,30 @@ CREATE POLICY "View logs via automation ownership" ON public.automation_logs
     user_id = auth.uid()
   );
 
+-- FINAL TRIGGER: ENSURE VISIBILITY FOR NEW LOGS
+CREATE OR REPLACE FUNCTION public.ensure_log_visibility()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- Copy ownership from parent automation
+    IF NEW.automation_id IS NOT NULL THEN
+        SELECT user_id INTO NEW.user_id
+        FROM public.client_automations
+        WHERE id = NEW.automation_id;
+    END IF;
+    -- Safety Fallback
+    IF NEW.user_id IS NULL THEN
+        NEW.user_id := '7cfe109c-8e79-42a7-95ce-101a582fc30b'; -- Kdawg
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS ensure_log_visibility_trigger ON public.automation_logs;
+CREATE TRIGGER ensure_log_visibility_trigger
+BEFORE INSERT ON public.automation_logs
+FOR EACH ROW
+EXECUTE FUNCTION public.ensure_log_visibility();
+
 -- TRIGGERS FOR UPDATED_AT
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
