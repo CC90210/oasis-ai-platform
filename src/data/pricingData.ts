@@ -35,9 +35,10 @@ export interface Bundle {
 export const BUNDLES: Bundle[] = [
     {
         name: "OASIS Launchpad",
-        price: 997,
+        price: 2500,
         isOneTime: true,
         tag: "Best for getting started",
+        description: "Best for getting started. Includes 90-min discovery consultation, custom automation roadmap, 1 automation of your choice, setup, configuration, and 30 days support.",
         features: [
             "90-minute discovery consultation",
             "Custom automation roadmap",
@@ -51,9 +52,10 @@ export const BUNDLES: Bundle[] = [
     },
     {
         name: "Integration Suite",
-        price: 3500,
+        price: 5000,
         isOneTime: true,
         tag: "MOST POPULAR",
+        description: "Comprehensive transformation. 3-5 custom AI agents, Voice AI + Chat, CRM integration, and 90 days of dedicated support.",
         features: [
             "Full business process audit",
             "3-5 core automations (client's choice)",
@@ -101,26 +103,26 @@ export const AUTOMATIONS: Automation[] = [
         id: "voice-ai",
         name: "Voice AI Phone Agent",
         icon: Phone,
-        setupFee: 2497,
+        setupFee: 1497,
         description: "AI-powered phone system that answers calls 24/7, books appointments, and qualifies leads.",
         tag: "Handles 500+ calls/month",
-        monthlyFrom: 297,
+        monthlyFrom: 197,
         features: ["Twilio phone number setup", "ElevenLabs natural voice", "CRM integration", "Appointment booking"],
         tiers: [
             {
                 name: "Starter",
-                price: 297,
+                price: 197,
                 features: ["200 minutes/month", "100 SMS", "Basic call routing", "Voicemail transcription"]
             },
             {
                 name: "Professional",
-                price: 497,
+                price: 347,
                 features: ["750 minutes/month", "500 SMS", "Call transcription", "CRM integration", "5 workflow automations"],
                 isPopular: true
             },
             {
                 name: "Business",
-                price: 797,
+                price: 547,
                 features: ["2,000 minutes/month", "1,500 SMS", "Advanced analytics", "Multi-location routing", "Priority support"]
             }
         ]
@@ -210,7 +212,7 @@ export const AUTOMATIONS: Automation[] = [
         id: "google-reviews", // Prompt uses 'google-review'. Will handle mapping in page.
         name: "Google Review Automation",
         icon: Star,
-        setupFee: 597,
+        setupFee: 797,
         description: "Automate review requests and respond to reviews intelligently.",
         tag: "Boost ratings by 1.5 stars",
         monthlyFrom: 149,
@@ -412,17 +414,18 @@ export const PAYPAL_PLANS = {
 } as const;
 
 export const CHECKOUT_PRICING = {
-    'website-chat': { setup: 797, monthly: { starter: 149, professional: 297, business: 497 } },
-    'voice-ai': { setup: 2497, monthly: { starter: 297, professional: 497, business: 797 } },
+    'website-chat': { setup: 997, monthly: { starter: 149, professional: 297, business: 497 } },
+    'voice-ai': { setup: 1497, monthly: { starter: 197, professional: 347, business: 547 } },
     'email-automation': { setup: 997, monthly: { starter: 149, professional: 297, business: 497 } },
-    'google-reviews': { setup: 597, monthly: { starter: 149, professional: 297, business: 497 } },
+    'google-reviews': { setup: 797, monthly: { starter: 149, professional: 297, business: 497 } },
     'appointment-booking': { setup: 897, monthly: { starter: 149, professional: 297, business: 497 } },
     'lead-generation': { setup: 1497, monthly: { starter: 197, professional: 347, business: 547 } },
     'social-media': { setup: 1197, monthly: { starter: 197, professional: 347, business: 547 } },
     'revenue-operations': { setup: 1497, monthly: { starter: 197, professional: 347, business: 547 } },
     'document-processing': { setup: 1697, monthly: { starter: 197, professional: 347, business: 547 } },
     'hr-onboarding': { setup: 1497, monthly: { starter: 197, professional: 347, business: 547 } },
-    'launchpad': { setup: 997, monthly: { standard: 497 } }
+    'launchpad': { setup: 2500, monthly: { standard: 347 } },
+    'integration-suite': { setup: 5000, monthly: { standard: 497 } }
 } as const;
 
 export const CHECKOUT_FEATURES = {

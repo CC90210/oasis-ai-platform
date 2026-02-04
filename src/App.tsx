@@ -3,7 +3,6 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { MainLayout } from './components/layout/MainLayout';
 import ScrollToTop from './components/ScrollToTop';
 import ErrorBoundary from './components/ErrorBoundary';
-import SplashScreen from './components/SplashScreen';
 import { CartDrawer } from './components/cart/CartDrawer';
 import { Analytics } from '@vercel/analytics/react';
 import { ThemeProvider } from './contexts/ThemeContext';
@@ -49,16 +48,6 @@ const CustomAgreementPage = lazy(() => import('./pages/custom-agreement/CustomAg
 const CustomAgreementSuccessPage = lazy(() => import('./pages/custom-agreement/CustomAgreementSuccessPage'));
 
 function App() {
-    // Initialize state based on session storage to prevent flash of content
-    const [showSplash, setShowSplash] = useState(() => {
-        return !sessionStorage.getItem('splashPlayed');
-    });
-
-    const handleSplashComplete = () => {
-        setShowSplash(false);
-        sessionStorage.setItem('splashPlayed', 'true');
-    };
-
     // Loading fallback
     const PageLoader = () => (
         <div className="min-h-screen flex items-center justify-center bg-black">
@@ -69,10 +58,7 @@ function App() {
     return (
         <ErrorBoundary>
             <ThemeProvider>
-                {/* Stars background is in index.html as pure CSS - always visible, theme-aware */}
-                {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
-
-                {/* Main content is always rendered behind the splash screen for seamless transition */}
+                {/* Main content - immediate access */}
                 <Router>
                     <ScrollToTop />
                     {/* Global Cart Drawer - Persists across route transitions */}
@@ -80,26 +66,26 @@ function App() {
                     <Suspense fallback={<PageLoader />}>
                         <Routes>
                             {/* Public Routes */}
-                            <Route path="/" element={<MainLayout showChat={!showSplash} showNav={!showSplash}><LandingPage /></MainLayout>} />
-                            <Route path="/services" element={<MainLayout showChat={!showSplash}><ServicesPage /></MainLayout>} />
-                            <Route path="/pricing" element={<MainLayout showChat={!showSplash}><PricingPage /></MainLayout>} />
-                            <Route path="/pricing/:productId" element={<MainLayout showChat={!showSplash}><ProductConfigPage /></MainLayout>} />
-                            <Route path="/contact" element={<MainLayout showChat={!showSplash}><ContactPage /></MainLayout>} />
-                            <Route path="/blog" element={<MainLayout showChat={!showSplash}><BlogPage /></MainLayout>} />
-                            <Route path="/blog/:slug" element={<MainLayout showChat={!showSplash}><BlogPost /></MainLayout>} />
-                            <Route path="/case-studies" element={<MainLayout showChat={!showSplash}><CaseStudiesPage /></MainLayout>} />
-                            <Route path="/checkout" element={<MainLayout showChat={!showSplash}><CheckoutPage /></MainLayout>} />
+                            <Route path="/" element={<MainLayout><LandingPage /></MainLayout>} />
+                            <Route path="/services" element={<MainLayout><ServicesPage /></MainLayout>} />
+                            <Route path="/pricing" element={<MainLayout><PricingPage /></MainLayout>} />
+                            <Route path="/pricing/:productId" element={<MainLayout><ProductConfigPage /></MainLayout>} />
+                            <Route path="/contact" element={<MainLayout><ContactPage /></MainLayout>} />
+                            <Route path="/blog" element={<MainLayout><BlogPage /></MainLayout>} />
+                            <Route path="/blog/:slug" element={<MainLayout><BlogPost /></MainLayout>} />
+                            <Route path="/case-studies" element={<MainLayout><CaseStudiesPage /></MainLayout>} />
+                            <Route path="/checkout" element={<MainLayout><CheckoutPage /></MainLayout>} />
                             <Route path="/checkout/success" element={<CheckoutSuccessPage />} />
                             <Route path="/checkout/legal" element={<LegalCheckoutPage />} />
-                            <Route path="/subscription-success" element={<MainLayout showChat={!showSplash}><SubscriptionSuccessPage /></MainLayout>} />
+                            <Route path="/subscription-success" element={<MainLayout><SubscriptionSuccessPage /></MainLayout>} />
 
                             {/* Custom Agreement Pages */}
-                            <Route path="/custom-agreement" element={<MainLayout showChat={!showSplash}><CustomAgreementPage /></MainLayout>} />
+                            <Route path="/custom-agreement" element={<MainLayout><CustomAgreementPage /></MainLayout>} />
                             <Route path="/custom-agreement/success" element={<CustomAgreementSuccessPage />} />
 
                             {/* Legal Pages */}
-                            <Route path="/privacy" element={<MainLayout showChat={!showSplash}><PrivacyPage /></MainLayout>} />
-                            <Route path="/terms" element={<MainLayout showChat={!showSplash}><TermsPage /></MainLayout>} />
+                            <Route path="/privacy" element={<MainLayout><PrivacyPage /></MainLayout>} />
+                            <Route path="/terms" element={<MainLayout><TermsPage /></MainLayout>} />
 
                             {/* Portal Auth Routes (No Protection) */}
                             <Route path="/portal/login" element={<PortalLoginPage />} />

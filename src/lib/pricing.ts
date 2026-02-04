@@ -4,8 +4,8 @@ export const BUNDLES = {
         name: 'OASIS Launchpad',
         tag: 'BEST FOR GETTING STARTED',
         description: 'Best for getting started. Includes 90-min discovery consultation, custom automation roadmap, 1 automation of your choice, setup, configuration, and 30 days support.',
-        setupFee: 997,
-        monthlyFee: 497,
+        setupFee: 2500,
+        monthlyFee: 347,
         features: [
             '90-minute discovery consultation',
             'Custom automation roadmap',
@@ -22,7 +22,7 @@ export const BUNDLES = {
         name: 'Integration Suite',
         tag: 'MOST POPULAR',
         description: 'Comprehensive transformation. 3-5 custom AI agents, Voice AI + Chat, CRM integration, and 90 days of dedicated support.',
-        setupFee: 3500, // Starting price as per system message
+        setupFee: 5000,
         monthlyFee: 497,
         features: [
             '3-5 custom AI agents',
@@ -44,7 +44,7 @@ export const STANDARD_AUTOMATIONS = {
         name: 'Website Chat Automation',
         description: '24/7 intelligent chat that captures leads and answers questions.',
         icon: 'MessageSquare',
-        setupFee: 797,
+        setupFee: 997,
         tiers: {
             starter: { price: 149, name: 'Starter' },
             professional: { price: 297, name: 'Professional' },
@@ -101,7 +101,7 @@ export const STANDARD_AUTOMATIONS = {
         name: 'Google Review Automation',
         description: 'Automate review requests and respond to reviews intelligently.',
         icon: 'Star',
-        setupFee: 597,
+        setupFee: 797,
         tiers: {
             starter: { price: 149, name: 'Starter' },
             professional: { price: 297, name: 'Professional' },
@@ -120,11 +120,11 @@ export const STANDARD_AUTOMATIONS = {
         name: 'Lead Capture & Qualification Automation',
         description: 'Captures and qualifies leads 24/7 from your website and social channels.',
         icon: 'Target',
-        setupFee: 897,
+        setupFee: 1497,
         tiers: {
-            starter: { price: 149, name: 'Starter' },
-            professional: { price: 297, name: 'Professional' },
-            business: { price: 497, name: 'Business' }
+            starter: { price: 197, name: 'Starter' },
+            professional: { price: 347, name: 'Professional' },
+            business: { price: 547, name: 'Business' }
         },
         highlight: 'Zero missed opportunities',
         features: [

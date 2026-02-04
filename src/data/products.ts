@@ -105,7 +105,7 @@ export const agents = {
 export const bundles = {
     'launchpad': {
         title: 'OASIS Launchpad',
-        price: 1497,
+        price: 2500,
         description: 'Get started with one custom workflow and essential automation.',
         icon: Zap,
         features: ['1 Custom Workflow', 'Website Chat Widget', '30 Days Support'],
@@ -113,7 +113,7 @@ export const bundles = {
     },
     'integration-suite': {
         title: 'Integration Suite',
-        price: 4997,
+        price: 5000,
         description: 'Comprehensive multi-channel automation for scaling businesses.',
         icon: Layers,
         features: ['3-5 Custom Agents', 'Voice AI + Chat', 'CRM Integration', '90 Days Support'],

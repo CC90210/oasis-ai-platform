@@ -92,11 +92,11 @@ export default function LegalCheckoutPage() {
         monthlyFee = bundle.monthlyFee;
     }
 
-    // Apply currency conversion (prices are in CAD)
-    const EXCHANGE_RATE = 0.71;
-    if (checkoutData.currency === 'usd') {
-        setupFee = Math.round(setupFee * EXCHANGE_RATE);
-        monthlyFee = Math.round(monthlyFee * EXCHANGE_RATE);
+    // Base prices are now in USD
+    const EXCHANGE_RATE_USD_TO_CAD = 1.41; // 1 / 0.71
+    if (checkoutData.currency === 'cad') {
+        setupFee = Math.round(setupFee * EXCHANGE_RATE_USD_TO_CAD);
+        monthlyFee = Math.round(monthlyFee * EXCHANGE_RATE_USD_TO_CAD);
     }
 
     // Apply discount if applicable
@@ -136,6 +136,36 @@ export default function LegalCheckoutPage() {
         setGeneralError(null);
 
         try {
+            // Create record in product_purchases
+            const { data: insertion, error: insertError } = await supabase
+                .from('product_purchases')
+                .insert({
+                    client_name: formData.clientName,
+                    client_email: formData.clientEmail,
+                    company_name: formData.companyName || null,
+                    phone: formData.phone || null,
+                    product_tier: productId,
+                    product_name: productName,
+                    upfront_cost_cents: discountedSetup * 100,
+                    monthly_cost_cents: monthlyFee * 100,
+                    currency: checkoutData.currency?.toUpperCase() || 'USD',
+                    tos_accepted: true,
+                    tos_accepted_at: acceptanceData.tosAcceptedAt,
+                    tos_version: acceptanceData.tosVersion,
+                    privacy_accepted: true,
+                    privacy_accepted_at: acceptanceData.privacyAcceptedAt,
+                    privacy_version: acceptanceData.privacyVersion,
+                    service_agreement_accepted: true,
+                    service_agreement_accepted_at: acceptanceData.serviceAgreementAcceptedAt,
+                    service_agreement_signature: acceptanceData.serviceAgreementSignature,
+                    user_agent: navigator.userAgent,
+                    status: 'legal_accepted',
+                })
+                .select()
+                .single();
+
+            if (insertError) throw insertError;
+
             // Log to legal_acceptances for audit trail
             await supabase.from('legal_acceptances').insert([
                 {
@@ -176,17 +206,13 @@ export default function LegalCheckoutPage() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
+                    purchaseId: insertion.id, // We need to create a record first or use a placeholder
                     productId: checkoutData.productId,
-                    productType: checkoutData.productType,
-                    tier: checkoutData.tier,
-                    items: checkoutData.items,
+                    productName: productName,
+                    clientEmail: formData.clientEmail,
+                    upfrontCents: discountedSetup * 100,
+                    monthlyCents: monthlyFee * 100,
                     currency: checkoutData.currency,
-                    customerName: formData.clientName,
-                    businessName: formData.companyName,
-                    customerEmail: formData.clientEmail,
-                    customerPhone: formData.phone,
-                    discountPercent: checkoutData.discountPercent,
-                    promoCode: checkoutData.promoCode,
                 }),
             });
 

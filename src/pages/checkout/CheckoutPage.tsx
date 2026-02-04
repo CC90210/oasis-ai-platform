@@ -18,8 +18,8 @@ const PRODUCTS: Record<string, {
     launchpad: {
         name: 'OASIS Launchpad',
         description: 'Perfect for getting started with AI automation',
-        price: 997,
-        monthly: 0,
+        price: 2500,
+        monthly: 347,
         features: [
             'AI-powered chatbot setup',
             'Lead capture automation',
@@ -32,8 +32,8 @@ const PRODUCTS: Record<string, {
     integration: {
         name: 'Integration Suite',
         description: 'Complete AI automation setup for growing businesses',
-        price: 4500,
-        monthly: 0,
+        price: 5000,
+        monthly: 497,
         features: [
             'Full automation ecosystem',
             'Voice AI agent setup',
@@ -191,9 +191,12 @@ export default function CheckoutPage() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
+                    purchaseId: purchase.id,
                     productId: productId,
-                    productType: 'bundle', // All our products are bundles
-                    tier: 'professional', // Default tier
+                    productName: product.name,
+                    clientEmail: formData.clientEmail,
+                    upfrontCents: product.price * 100,
+                    monthlyCents: product.monthly * 100,
                     currency: 'usd',
                 }),
             });

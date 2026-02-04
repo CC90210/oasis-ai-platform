@@ -182,14 +182,14 @@ const LandingPage = () => {
                         {/* Launchpad */}
                         <div className="glass-card p-8 flex flex-col">
                             <h3 className="text-2xl font-bold text-white mb-2">OASIS Launchpad</h3>
-                            <div className="text-3xl font-bold text-oasis-cyan mb-4">$1,497</div>
+                            <div className="text-3xl font-bold text-oasis-cyan mb-4">$2,500</div>
                             <p className="text-text-secondary mb-6">Perfect for getting started with one powerful workflow.</p>
                             <ul className="space-y-3 mb-8 flex-1">
                                 <li className="flex items-center text-sm text-text-secondary"><CheckCircle className="w-4 h-4 text-oasis-cyan mr-2" /> 1 Custom AI Agent</li>
                                 <li className="flex items-center text-sm text-text-secondary"><CheckCircle className="w-4 h-4 text-oasis-cyan mr-2" /> Website Chat Widget</li>
                                 <li className="flex items-center text-sm text-text-secondary"><CheckCircle className="w-4 h-4 text-oasis-cyan mr-2" /> 30 Days Support</li>
                             </ul>
-                            <Link to="/pricing/launchpad" className="btn-secondary w-full text-center">Get Started</Link>
+                            <Link to="/checkout?product=launchpad" className="btn-secondary w-full text-center">Get Started</Link>
                         </div>
 
                         {/* Integration Suite */}

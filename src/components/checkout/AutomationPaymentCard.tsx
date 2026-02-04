@@ -31,15 +31,17 @@ export function AutomationPaymentCard({
     const [discountPercent, setDiscountPercent] = useState(0);
 
     const Icon = (LucideIcons as any)[automation.icon] || LucideIcons.Zap;
+    // Exchange Rate
+    const EXCHANGE_RATE_USD_TO_CAD = 1.41; // 1 / 0.71
     const currencySymbol = currency === 'usd' ? '$' : 'CA$';
 
     // Price Calculation
     let selectedPrice = automation.tiers[tier].price;
     let setupFee = automation.setupFee;
 
-    if (currency === 'usd') {
-        selectedPrice = Math.round(selectedPrice * EXCHANGE_RATE_CAD_TO_USD);
-        setupFee = Math.round(setupFee * EXCHANGE_RATE_CAD_TO_USD);
+    if (currency === 'cad') {
+        selectedPrice = Math.round(selectedPrice * EXCHANGE_RATE_USD_TO_CAD);
+        setupFee = Math.round(setupFee * EXCHANGE_RATE_USD_TO_CAD);
     }
 
     // CRITICAL FIX: Discount ONLY applies to setup fee, NOT monthly retainer
