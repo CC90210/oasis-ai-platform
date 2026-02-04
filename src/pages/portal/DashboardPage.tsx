@@ -33,16 +33,37 @@ export default function DashboardPage() {
 
     useEffect(() => {
         loadDashboardData();
-        loadingTimeout.current = setTimeout(() => {
-            if (loading) setLoading(false);
-        }, 10000);
+
+        // REAL-TIME: Subscribe to logs for instant dashboard updates
+        let channel: any;
+        const setupRealtime = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return;
+
+            // Listen to any changes in specific user's logs
+            channel = supabase.channel('dashboard-realtime')
+                .on('postgres_changes', {
+                    event: '*',
+                    schema: 'public',
+                    table: 'automation_logs',
+                    filter: `user_id=eq.${user.id}`
+                }, () => {
+                    console.log('Real-time event: Refreshing metrics...');
+                    loadDashboardData(false); // Silent refresh
+                })
+                .subscribe();
+        };
+        setupRealtime();
+
+        loadingTimeout.current = setTimeout(() => { if (loading) setLoading(false); }, 10000);
         return () => {
             if (loadingTimeout.current) clearTimeout(loadingTimeout.current);
+            if (channel) supabase.removeChannel(channel);
         };
     }, []);
 
-    const loadDashboardData = async () => {
-        setLoading(true);
+    const loadDashboardData = async (showLoading = true) => {
+        if (showLoading) setLoading(true);
         setError(null);
 
         try {
@@ -63,22 +84,17 @@ export default function DashboardPage() {
                 profileData = data;
                 setProfile(data);
             } catch (err) {
-                console.warn('Profile fetch failed, using metadata fallback', err);
                 const fallbackProfile = {
                     id: user.id,
                     email: user.email!,
                     full_name: user.user_metadata?.full_name || 'Client',
-                    company_name: '',
-                    phone: null,
-                    avatar_url: null,
-                    created_at: new Date().toISOString(),
                     role: 'client' as const
                 };
                 setProfile(fallbackProfile as any);
                 profileData = fallbackProfile;
             }
 
-            // Determine admin status (check role, flags, or known admin emails)
+            // Determine admin status
             const isAdmin =
                 profileData?.role === 'admin' ||
                 profileData?.role === 'super_admin' ||
@@ -86,20 +102,14 @@ export default function DashboardPage() {
                 profileData?.is_owner ||
                 user.email === 'konamak@icloud.com';
 
-            // Fetch automations with role-based filtering from 'automations' table
+            // Fetch automations 
             let autoQuery = supabase.from('automations').select('*');
-            if (!isAdmin) {
-                autoQuery = autoQuery.eq('user_id', user.id);
-            }
+            if (!isAdmin) autoQuery = autoQuery.eq('user_id', user.id);
 
-            // Order by created_at safely
             const { data: automationData, error: autoError } = await autoQuery;
-            if (autoError) {
-                console.error('Automations fetch failed:', autoError);
-                // Try again without ordering if it was an order error, but we removed it for safety
-            }
+            if (autoError) console.error('Automations fetch failed:', autoError);
 
-            // Robust data mapping: handle possible undefined fields
+            // Robust data mapping
             const mappedAutomations = (automationData || []).map(a => ({
                 ...a,
                 name: a.display_name || a.name || 'Untitled Automation',
@@ -110,25 +120,22 @@ export default function DashboardPage() {
 
             setAutomations(mappedAutomations);
 
-            // Fetch recent logs (platform-wide for admins, client-specific for users)
-            // Select Only Guaranteed Columns
-            let logsQuery = supabase.from('automation_logs').select('id, event_name, status, created_at');
-            if (!isAdmin) {
-                logsQuery = logsQuery.eq('user_id', user.id);
-            }
+            // RESILIENT LOG FETCH: Select all columns to avoid 400 errors from missing 'status' column
+            let logsQuery = supabase.from('automation_logs').select('*');
+            if (!isAdmin) logsQuery = logsQuery.eq('user_id', user.id);
 
             const { data: logData, error: logError } = await logsQuery
+                .order('created_at', { ascending: false })
                 .limit(10);
 
             if (logError) {
-                console.warn('Logs fetch failed (likely missing columns), retrying basic fetch:', logError);
-                const { data: backupLogs } = await supabase.from('automation_logs').select('id, status').limit(5);
-                setRecentLogs((backupLogs || []) as any);
+                console.warn('Dashboard logs fetch failed:', logError);
+                setRecentLogs([]);
             } else {
                 setRecentLogs((logData || []) as AutomationLog[]);
             }
 
-            // CRITICAL: Fetch metrics (Role-aware: admins see platform totals)
+            // REFRESH METRICS (Role-aware)
             const dashboardMetrics = await fetchDashboardMetrics(user.id, isAdmin);
             setMetrics(dashboardMetrics);
 
@@ -149,12 +156,11 @@ export default function DashboardPage() {
         }
     };
 
-    const getLogStatusColor = (status: string) => {
-        switch (status) {
-            case 'success': return 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]';
-            case 'error': return 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]';
-            default: return 'bg-gray-500';
-        }
+    const getLogStatusColor = (status: string | undefined) => {
+        const s = String(status || '').toLowerCase();
+        if (s === 'success' || s === 'completed' || s === '') return 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]';
+        if (s === 'error' || s === 'failed') return 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]';
+        return 'bg-gray-500';
     };
 
     const getGreeting = () => {
@@ -164,31 +170,19 @@ export default function DashboardPage() {
         return 'Good evening';
     };
 
-    // Get primary automation config for insights
-    const getPrimaryAutomationConfig = () => {
-        if (automations.length === 0) return getAutomationTypeConfig('default');
-        return getAutomationTypeConfig(automations[0]?.automation_type || 'default');
-    };
+    const primaryConfig = getAutomationTypeConfig(automations[0]?.automation_type || 'default');
 
-    const primaryConfig = getPrimaryAutomationConfig();
-
-    // Calculate dynamic insights based on metrics
     const getInsightValue = (index: number): string | number => {
         if (!metrics) return 0;
-
         switch (index) {
-            case 0: // Tickets/Tasks resolved
-                return metrics.executionsThisWeek;
-            case 1: // Response time
-                return metrics.avgResponseTime;
-            case 2: // Cost reduction
-                return `${metrics.costReduction}%`;
-            default:
-                return 0;
+            case 0: return metrics.executionsThisWeek;
+            case 1: return metrics.avgResponseTime;
+            case 2: return `${metrics.costReduction}%`;
+            default: return 0;
         }
     };
 
-    if (loading) {
+    if (loading && automations.length === 0) {
         return (
             <PortalLayout>
                 <div className="flex items-center justify-center h-64">
@@ -208,26 +202,18 @@ export default function DashboardPage() {
                             <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[var(--text-primary)]">
                                 {getGreeting()}, {profile?.full_name?.split(' ')[0] || 'Client'}
                             </h1>
-                            {/* Owner Badge - NEVER truncate */}
                             {profile?.is_owner && (
-                                <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-500/30 rounded-full whitespace-nowrap flex-shrink-0" style={{ minWidth: 'fit-content' }}>
-                                    <Crown className="w-4 h-4 text-yellow-500 flex-shrink-0" />
-                                    <span className="text-yellow-500 text-sm font-bold whitespace-nowrap">Owner</span>
-                                </span>
-                            )}
-                            {profile?.is_admin && !profile?.is_owner && (
-                                <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-purple-500/20 border border-purple-500/30 rounded-full">
-                                    <Shield className="w-4 h-4 text-purple-400" />
-                                    <span className="text-purple-400 text-sm font-bold">Admin</span>
+                                <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-500/30 rounded-full whitespace-nowrap">
+                                    <Crown className="w-4 h-4 text-yellow-500" />
+                                    <span className="text-yellow-500 text-sm font-bold">Owner</span>
                                 </span>
                             )}
                         </div>
                         <p className="text-[var(--text-secondary)]">Here's what's happening with your AI workforce.</p>
                     </div>
                     <button
-                        onClick={loadDashboardData}
-                        disabled={loading}
-                        className="p-2.5 rounded-lg bg-[var(--bg-tertiary)] hover:bg-[var(--bg-tertiary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border)] transition disabled:opacity-50"
+                        onClick={() => loadDashboardData()}
+                        className="p-2.5 rounded-lg bg-[var(--bg-tertiary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border)] transition"
                     >
                         <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
                     </button>
@@ -237,55 +223,20 @@ export default function DashboardPage() {
                     <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-xl mb-8 flex items-center gap-3">
                         <AlertCircle className="w-5 h-5 flex-shrink-0" />
                         <span>{error}</span>
-                        <button onClick={loadDashboardData} className="ml-auto text-sm underline hover:text-red-300">Retry</button>
+                        <button onClick={() => loadDashboardData()} className="ml-auto text-sm underline hover:text-red-300">Retry</button>
                     </div>
                 )}
 
-                {/* Stats Grid - Using HYBRID METRICS (Logs + Automation Aggregates) */}
+                {/* Stats Grid */}
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-4 md:gap-5 mb-8">
                     {[
-                        {
-                            label: 'Total Executions',
-                            value: metrics?.totalExecutions || automations.reduce((sum, a) => sum + (a.stats?.total_runs || (a as any).total_runs || 0), 0),
-                            icon: Activity,
-                            color: 'text-cyan-400',
-                            sub: 'All time',
-                            glow: 'shadow-[0_0_20px_rgba(6,182,212,0.1)]'
-                        },
-                        {
-                            label: 'Tasks This Week',
-                            value: metrics?.executionsThisWeek || automations.reduce((sum, a) => sum + (a.stats?.successful_runs || (a as any).successful_runs || 0), 0),
-                            icon: Flame,
-                            color: 'text-orange-400',
-                            sub: 'Recent activity',
-                            glow: 'shadow-[0_0_20px_rgba(251,146,60,0.1)]'
-                        },
-                        {
-                            label: 'Hours Saved',
-                            value: metrics?.hoursSaved || automations.reduce((sum, a) => sum + (a.stats?.hours_saved || (a as any).hours_saved || 0), 0),
-                            icon: Clock,
-                            color: 'text-purple-400',
-                            sub: 'vs manual work',
-                            glow: 'shadow-[0_0_20px_rgba(168,85,247,0.1)]'
-                        },
-                        {
-                            label: 'Money Saved',
-                            value: metrics?.moneySaved ? formatMoneySaved(metrics.moneySaved) : formatMoneySaved(automations.reduce((sum, a) => sum + (a.stats?.hours_saved || (a as any).hours_saved || 0), 0) * 25),
-                            icon: DollarSign,
-                            color: 'text-emerald-400',
-                            sub: `vs ${formatMoneySaved(metrics?.humanCostEquivalent || 0)} human`,
-                            glow: 'shadow-[0_0_20px_rgba(16,185,129,0.1)]'
-                        },
-                        {
-                            label: 'Success Rate',
-                            value: metrics?.successRate ? formatPercentage(metrics.successRate) : formatPercentage(automations.length > 0 ? 100 : 0),
-                            icon: TrendingUp,
-                            color: 'text-green-400',
-                            sub: 'Reliability score',
-                            glow: 'shadow-[0_0_20px_rgba(34,197,94,0.1)]'
-                        }
+                        { label: 'Total Executions', value: metrics?.totalExecutions || 0, icon: Activity, color: 'text-cyan-400', sub: 'All time' },
+                        { label: 'Tasks This Week', value: metrics?.executionsThisWeek || 0, icon: Flame, color: 'text-orange-400', sub: 'Recent activity' },
+                        { label: 'Hours Saved', value: metrics?.hoursSaved || 0, icon: Clock, color: 'text-purple-400', sub: 'vs manual' },
+                        { label: 'Money Saved', value: formatMoneySaved(metrics?.moneySaved || 0), icon: DollarSign, color: 'text-emerald-400', sub: `vs platform avg` },
+                        { label: 'Success Rate', value: formatPercentage(metrics?.successRate || 100), icon: TrendingUp, color: 'text-green-400', sub: 'Reliability' }
                     ].map((stat, i) => (
-                        <div key={i} className={`bg-[var(--bg-card-strong)] border border-[var(--bg-tertiary)] p-4 md:p-5 rounded-2xl hover:border-[var(--border)] transition ${stat.glow} ${i === 4 ? 'col-span-2 md:col-span-1' : ''}`}>
+                        <div key={i} className={`bg-[var(--bg-card-strong)] border border-[var(--bg-tertiary)] p-4 md:p-5 rounded-2xl hover:border-[var(--border)] transition ${i === 4 ? 'col-span-2 md:col-span-1' : ''}`}>
                             <div className="flex justify-between items-start mb-3">
                                 <span className="text-[var(--text-secondary)] font-medium text-xs">{stat.label}</span>
                                 <stat.icon className={`w-4 h-4 ${stat.color}`} />
@@ -296,9 +247,8 @@ export default function DashboardPage() {
                     ))}
                 </div>
 
-                {/* Main Content Grid */}
+                {/* Main Content */}
                 <div className="grid lg:grid-cols-3 gap-6 md:gap-8 mb-8">
-                    {/* Automations Column */}
                     <div className="lg:col-span-2 space-y-6">
                         <h2 className="text-lg font-bold text-[var(--text-primary)] flex items-center gap-2">
                             <Bot className="w-5 h-5 text-cyan-500" />
@@ -307,41 +257,35 @@ export default function DashboardPage() {
 
                         {automations.length === 0 ? (
                             <div className="bg-[var(--bg-card-strong)] border border-[var(--bg-tertiary)] rounded-2xl p-8 text-center border-dashed">
-                                <div className="w-16 h-16 bg-[var(--bg-tertiary)] rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <Bot className="w-8 h-8 text-[var(--text-muted)]" />
-                                </div>
+                                <Bot className="w-8 h-8 text-[var(--text-muted)] mx-auto mb-4 opacity-30" />
                                 <h3 className="text-lg font-bold text-[var(--text-primary)] mb-2">No Active Automations</h3>
-                                <p className="text-[var(--text-muted)] mb-6 max-w-sm mx-auto text-sm">
-                                    Your AI agents will appear here once configured.
-                                </p>
+                                <p className="text-[var(--text-muted)] mb-6 text-sm">Your agents will appear here once configured.</p>
                                 <Link to="/portal/support" className="text-cyan-400 hover:text-cyan-300 font-medium">Contact Support →</Link>
                             </div>
                         ) : (
                             <div className="grid gap-4">
                                 {automations.map(auto => {
-                                    const autoType = auto.type || (auto as any).automation_type || 'default';
-                                    const config = getAutomationTypeConfig(autoType);
+                                    const config = getAutomationTypeConfig(auto.type || (auto as any).automation_type || 'default');
                                     return (
-                                        <Link key={auto.id} to="/portal/automations" className="bg-[var(--bg-card-strong)] border border-[var(--bg-tertiary)] p-4 md:p-5 rounded-xl hover:border-cyan-500/30 transition-all group relative overflow-hidden block">
-                                            <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 opacity-0 group-hover:opacity-100 transition duration-500"></div>
-                                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 relative z-10">
-                                                <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
-                                                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[var(--bg-tertiary)] rounded-xl flex items-center justify-center border border-[var(--border)] group-hover:border-cyan-500/30 transition flex-shrink-0">
-                                                        <Bot className={`w-5 h-5 sm:w-6 sm:h-6 text-${config.color}-400`} />
+                                        <Link key={auto.id} to="/portal/automations" className="bg-[var(--bg-card-strong)] border border-[var(--bg-tertiary)] p-5 rounded-xl hover:border-cyan-500/30 transition-all group block">
+                                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                                <div className="flex items-center gap-4 min-w-0 flex-1">
+                                                    <div className="w-12 h-12 bg-[var(--bg-tertiary)] rounded-xl flex items-center justify-center border border-[var(--border)] group-hover:border-cyan-500/30 flex-shrink-0">
+                                                        <Bot className={`w-6 h-6 text-${config.color}-400`} />
                                                     </div>
                                                     <div className="min-w-0 flex-1">
-                                                        <h3 className="font-bold text-[var(--text-primary)] text-base sm:text-lg group-hover:text-cyan-400 transition truncate sm:whitespace-normal">
-                                                            {auto.name || (auto as any).display_name || 'Untitled Automation'}
+                                                        <h3 className="font-bold text-[var(--text-primary)] text-lg group-hover:text-cyan-400 transition truncate">
+                                                            {auto.name}
                                                         </h3>
-                                                        <div className="flex flex-wrap items-center gap-1 sm:gap-2 text-xs sm:text-sm text-[var(--text-muted)]">
-                                                            <span className="capitalize">{(auto as any).tier || 'Standard'} Plan</span>
-                                                            <span className="hidden sm:inline">•</span>
+                                                        <div className="flex items-center gap-2 text-sm text-[var(--text-muted)]">
+                                                            <span className="capitalize">{auto.type.replace('-', ' ')}</span>
+                                                            <span>•</span>
                                                             <span className="text-emerald-500">${config.hourlyRate}/hr saved</span>
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <div className={`px-2 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold uppercase border flex-shrink-0 self-start sm:self-center ${getStatusColor(auto.status || 'unknown')}`}>
-                                                    {(auto.status || 'unknown').replace('_', ' ')}
+                                                <div className={`px-3 py-1 rounded-full text-xs font-bold uppercase border flex-shrink-0 self-start sm:self-center ${getStatusColor(auto.status || 'active')}`}>
+                                                    {(auto.status || 'active').replace('_', ' ')}
                                                 </div>
                                             </div>
                                         </Link>
@@ -351,28 +295,26 @@ export default function DashboardPage() {
                         )}
                     </div>
 
-                    {/* Recent Activity */}
                     <div className="space-y-6">
                         <h2 className="text-lg font-bold text-[var(--text-primary)] flex items-center gap-2">
                             <Activity className="w-5 h-5 text-purple-500" />
                             Recent Activity
                         </h2>
-
-                        <div className="bg-[var(--bg-card-strong)] border border-[var(--bg-tertiary)] rounded-2xl p-2 min-h-[280px]">
+                        <div className="bg-[var(--bg-card-strong)] border border-[var(--bg-tertiary)] rounded-2xl p-2 min-h-[300px]">
                             {recentLogs.length === 0 ? (
-                                <div className="h-full flex flex-col items-center justify-center text-center p-8 text-[var(--text-muted)]">
+                                <div className="h-full flex flex-col items-center justify-center p-8 text-[var(--text-muted)] text-center">
                                     <Activity className="w-8 h-8 mb-3 opacity-20" />
-                                    <p className="text-sm">Activity will appear here once your agents start working.</p>
+                                    <p className="text-sm">Activity will appear here as your agents work.</p>
                                 </div>
                             ) : (
-                                <div className="space-y-1 max-h-[280px] overflow-y-auto">
+                                <div className="space-y-1 max-h-[400px] overflow-y-auto">
                                     {recentLogs.map((log) => (
                                         <div key={log.id} className="p-3 hover:bg-[var(--bg-tertiary)] rounded-lg transition group">
                                             <div className="flex items-start gap-3">
                                                 <div className={`mt-1.5 w-2 h-2 rounded-full flex-shrink-0 ${getLogStatusColor(log.status)}`} />
                                                 <div className="min-w-0 flex-1">
-                                                    <p className="text-[var(--text-primary)] text-sm font-medium truncate group-hover:text-cyan-400 transition">{log.event_name}</p>
-                                                    <p className="text-[var(--text-muted)] text-xs truncate mt-0.5">{log.event_type}</p>
+                                                    <p className="text-[var(--text-primary)] text-sm font-medium truncate group-hover:text-cyan-400">{log.event_name}</p>
+                                                    <p className="text-[var(--text-muted)] text-xs truncate">{log.event_type || 'Automation Execution'}</p>
                                                 </div>
                                                 <span className="text-[var(--text-muted)] text-xs whitespace-nowrap">{formatRelativeTime(log.created_at)}</span>
                                             </div>
@@ -384,81 +326,48 @@ export default function DashboardPage() {
                     </div>
                 </div>
 
-                {/* Bottom Section - Dynamic Performance Insights & Quick Actions */}
+                {/* Performance & Actions */}
                 <div className="grid md:grid-cols-3 gap-6">
-                    {/* Dynamic Performance Insights */}
                     <div className="md:col-span-2 bg-gradient-to-br from-[var(--bg-card-strong)] to-[var(--bg-secondary)] border border-[var(--bg-tertiary)] rounded-2xl p-6">
                         <h3 className="text-lg font-bold text-[var(--text-primary)] mb-4 flex items-center gap-2">
                             <BarChart3 className="w-5 h-5 text-cyan-500" />
                             AI Performance Insights
-                            {automations.length > 0 && (
-                                <span className="text-xs text-[var(--text-muted)] font-normal ml-2">
-                                    Based on {automations[0]?.name || (automations[0] as any).display_name}
-                                </span>
-                            )}
                         </h3>
                         <div className="grid sm:grid-cols-3 gap-4">
                             {primaryConfig.insights.map((insight, idx) => (
-                                <div key={idx} className="bg-[var(--bg-secondary)] border border-[var(--border)] rounded-xl p-4 hover:border-[var(--border-hover)] transition">
-                                    <div className="flex items-center gap-3 mb-3">
-                                        <div className={`w-10 h-10 rounded-lg bg-${insight.color}-500/10 flex items-center justify-center`}>
-                                            {idx === 0 && <Target className={`w-5 h-5 text-${insight.color}-400`} />}
-                                            {idx === 1 && <Timer className={`w-5 h-5 text-${insight.color}-400`} />}
-                                            {idx === 2 && <Percent className={`w-5 h-5 text-${insight.color}-400`} />}
-                                        </div>
+                                <div key={idx} className="bg-[var(--bg-secondary)] border border-[var(--border)] rounded-xl p-4">
+                                    <div className="flex items-center gap-3 mb-2">
                                         <span className="text-[var(--text-secondary)] text-sm">{insight.label}</span>
                                     </div>
                                     <p className="text-2xl font-bold text-[var(--text-primary)]">{getInsightValue(idx)}</p>
-                                    <p className={`text-xs text-${insight.color}-400 mt-1`}>↑ {insight.unit}</p>
+                                    <p className={`text-xs text-${insight.color}-400 mt-1 uppercase font-bold tracking-tighter`}>{insight.unit}</p>
                                 </div>
                             ))}
                         </div>
-
-                        {/* Value Proposition Banner */}
-                        <div className="mt-4 bg-gradient-to-r from-cyan-500/10 to-purple-500/10 border border-cyan-500/20 rounded-xl p-4">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-purple-500 flex items-center justify-center flex-shrink-0">
-                                    <Sparkles className="w-5 h-5 text-[var(--text-primary)]" />
-                                </div>
-                                <div>
-                                    <p className="text-[var(--text-primary)] font-medium">Your AI is working 24/7</p>
-                                    <p className="text-[var(--text-secondary)] text-sm">
-                                        That's <span className="text-cyan-400 font-bold">{metrics?.hoursSaved || 0}+ hours</span> saved so far vs. hiring a human employee at ${METRICS_CONFIG.HOURLY_RATE}/hr
-                                    </p>
-                                </div>
-                            </div>
+                        <div className="mt-4 bg-gradient-to-r from-cyan-500/10 to-purple-500/10 border border-cyan-500/20 rounded-xl p-4 flex items-center gap-3">
+                            <Sparkles className="w-5 h-5 text-cyan-400 flex-shrink-0" />
+                            <p className="text-[var(--text-secondary)] text-sm">
+                                Your AI has saved <span className="text-cyan-400 font-bold">{metrics?.hoursSaved || 0} hours</span> so far this month.
+                            </p>
                         </div>
                     </div>
 
-                    {/* Quick Actions */}
-                    <div className="bg-gradient-to-br from-[var(--bg-card-strong)] to-[var(--bg-secondary)] border border-[var(--bg-tertiary)] rounded-2xl p-6">
-                        <h3 className="text-lg font-bold text-[var(--text-primary)] mb-4 flex items-center gap-2">
-                            <Sparkles className="w-5 h-5 text-yellow-500" />
-                            Quick Actions
+                    <div className="bg-gradient-to-br from-[var(--bg-card-strong)] to-[var(--bg-secondary)] border border-[var(--bg-tertiary)] rounded-2xl p-6 space-y-4">
+                        <h3 className="text-lg font-bold text-[var(--text-primary)] mb-2 flex items-center gap-2">
+                            <Zap className="w-5 h-5 text-yellow-500" /> Quick Actions
                         </h3>
-                        <div className="space-y-3">
-                            <Link to="/portal/automations" className="flex items-center justify-between p-3 bg-[var(--bg-secondary)] border border-[var(--border)] rounded-xl hover:border-cyan-500/30 transition group">
-                                <div className="flex items-center gap-3">
-                                    <Bot className="w-5 h-5 text-cyan-400" />
-                                    <span className="text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition">View Automations</span>
+                        {[
+                            { label: 'View Automations', to: '/portal/automations', icon: Bot, color: 'text-cyan-400' },
+                            { label: 'View Reports', to: '/portal/reports', icon: BarChart3, color: 'text-purple-400' },
+                            { label: 'Support', to: '/portal/support', icon: HeadphonesIcon, color: 'text-green-400' }
+                        ].map((action, i) => (
+                            <Link key={i} to={action.to} className="flex items-center justify-between p-3 bg-[var(--bg-secondary)] border border-[var(--border)] rounded-xl hover:border-[var(--border-hover)] transition group">
+                                <div className="flex items-center gap-3 text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]">
+                                    <action.icon className={`w-5 h-5 ${action.color}`} /> {action.label}
                                 </div>
-                                <ArrowRight className="w-4 h-4 text-[var(--text-muted)] group-hover:text-cyan-400 transition" />
+                                <ArrowRight className="w-4 h-4 text-[var(--text-muted)] group-hover:translate-x-1 transition" />
                             </Link>
-                            <Link to="/portal/reports" className="flex items-center justify-between p-3 bg-[var(--bg-secondary)] border border-[var(--border)] rounded-xl hover:border-purple-500/30 transition group">
-                                <div className="flex items-center gap-3">
-                                    <Calendar className="w-5 h-5 text-purple-400" />
-                                    <span className="text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition">View Reports</span>
-                                </div>
-                                <ArrowRight className="w-4 h-4 text-[var(--text-muted)] group-hover:text-purple-400 transition" />
-                            </Link>
-                            <Link to="/portal/support" className="flex items-center justify-between p-3 bg-[var(--bg-secondary)] border border-[var(--border)] rounded-xl hover:border-green-500/30 transition group">
-                                <div className="flex items-center gap-3">
-                                    <HeadphonesIcon className="w-5 h-5 text-green-400" />
-                                    <span className="text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition">Get Support</span>
-                                </div>
-                                <ArrowRight className="w-4 h-4 text-[var(--text-muted)] group-hover:text-green-400 transition" />
-                            </Link>
-                        </div>
+                        ))}
                     </div>
                 </div>
             </div>
