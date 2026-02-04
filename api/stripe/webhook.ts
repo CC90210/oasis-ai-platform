@@ -379,6 +379,89 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             break;
         }
 
+        case 'checkout.session.expired':
+        case 'checkout.session.async_payment_failed': {
+            const session = event.data.object;
+            const metadata = session.metadata || {};
+            const customerEmail = session.customer_email || session.customer_details?.email;
+            const type = metadata.type;
+
+            console.log(`🧹 Checkout cancelled/expired: ${session.id}`);
+
+            if (!customerEmail) {
+                console.log('No email found in session, skipping cleanup');
+                break;
+            }
+
+            if (type === 'custom_agreement') {
+                // Delete incomplete custom agreements
+                const { data: deletedAgreements, error: agreementError } = await supabase
+                    .from('custom_agreements')
+                    .delete()
+                    .eq('client_email', customerEmail)
+                    .in('status', ['pending', 'nda_signed', 'legal_accepted'])
+                    .select();
+
+                if (agreementError) {
+                    console.error('Error deleting custom_agreements:', agreementError);
+                } else {
+                    console.log(`🗑️ Deleted ${deletedAgreements?.length || 0} incomplete custom agreements for ${customerEmail}`);
+                }
+
+                // Delete related legal_acceptances
+                const { error: legalError } = await supabase
+                    .from('legal_acceptances')
+                    .delete()
+                    .eq('client_email', customerEmail)
+                    .eq('related_purchase_type', 'custom');
+
+                if (legalError) {
+                    console.error('Error deleting legal_acceptances:', legalError);
+                } else {
+                    console.log(`🗑️ Cleaned up legal acceptances for cancelled custom agreement: ${customerEmail}`);
+                }
+            } else {
+                // Standard product purchase cleanup
+                const { data: deletedPurchases, error: purchaseError } = await supabase
+                    .from('product_purchases')
+                    .delete()
+                    .eq('client_email', customerEmail)
+                    .in('status', ['draft', 'legal_accepted', 'payment_pending'])
+                    .select();
+
+                if (purchaseError) {
+                    console.error('Error deleting product_purchases:', purchaseError);
+                } else {
+                    console.log(`🗑️ Deleted ${deletedPurchases?.length || 0} incomplete purchases for ${customerEmail}`);
+                }
+
+                // Delete related legal_acceptances
+                const productId = metadata.productId;
+                if (productId) {
+                    const { error: legalError } = await supabase
+                        .from('legal_acceptances')
+                        .delete()
+                        .eq('client_email', customerEmail)
+                        .eq('related_purchase_type', productId);
+
+                    if (legalError) {
+                        console.error('Error deleting legal_acceptances:', legalError);
+                    }
+                }
+            }
+
+            // Also delete pending session
+            const { error: pendingError } = await supabase
+                .from('pending_stripe_sessions')
+                .delete()
+                .eq('stripe_session_id', session.id);
+
+            if (!pendingError) {
+                console.log(`🗑️ Removed pending session: ${session.id}`);
+            }
+            break;
+        }
+
         default:
             console.log(`ℹ️ Unhandled event type: ${event.type}`);
     }

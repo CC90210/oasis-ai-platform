@@ -116,14 +116,62 @@ export default function CustomAgreementPage() {
         ndaAgreed: false
     });
 
-    // Check for cancelled payment
+    // Check for cancelled payment and clean up incomplete records
     useEffect(() => {
-        if (searchParams.get('cancelled') === 'true') {
-            setShowCancelledMessage(true);
-            // Clear the URL param
-            window.history.replaceState({}, '', '/custom-agreement');
-        }
+        const handleCancellation = async () => {
+            if (searchParams.get('cancelled') === 'true') {
+                setShowCancelledMessage(true);
+
+                // Get email from sessionStorage if available (from previous form submission)
+                const savedEmail = sessionStorage.getItem('custom_agreement_email');
+
+                if (savedEmail) {
+                    console.log('Cleaning up incomplete records for:', savedEmail);
+
+                    // Delete incomplete custom_agreements
+                    const { error: agreementError } = await supabase
+                        .from('custom_agreements')
+                        .delete()
+                        .eq('client_email', savedEmail)
+                        .in('status', ['pending', 'nda_signed', 'legal_accepted']);
+
+                    if (agreementError) {
+                        console.error('Error cleaning up agreements:', agreementError);
+                    } else {
+                        console.log('Cleaned up incomplete agreements');
+                    }
+
+                    // Delete related legal_acceptances
+                    const { error: legalError } = await supabase
+                        .from('legal_acceptances')
+                        .delete()
+                        .eq('client_email', savedEmail)
+                        .eq('related_purchase_type', 'custom');
+
+                    if (legalError) {
+                        console.error('Error cleaning up legal acceptances:', legalError);
+                    } else {
+                        console.log('Cleaned up incomplete legal acceptances');
+                    }
+
+                    // Clear the saved email
+                    sessionStorage.removeItem('custom_agreement_email');
+                }
+
+                // Clear the URL param
+                window.history.replaceState({}, '', '/custom-agreement');
+            }
+        };
+
+        handleCancellation();
     }, [searchParams]);
+
+    // Save email to sessionStorage when proceeding to NDA
+    const saveEmailForCleanup = () => {
+        if (formData.email) {
+            sessionStorage.setItem('custom_agreement_email', formData.email);
+        }
+    };
 
     const handleInputChange = (field: keyof FormData, value: string | boolean) => {
         setFormData(prev => ({ ...prev, [field]: value }));
@@ -170,6 +218,7 @@ export default function CustomAgreementPage() {
 
     const handleContinue = () => {
         if (currentStep === 1 && validateStep1()) {
+            saveEmailForCleanup(); // Save email for cleanup if payment is cancelled
             setCurrentStep(2);
         }
     };
