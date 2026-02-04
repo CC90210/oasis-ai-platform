@@ -100,7 +100,7 @@ export default function DashboardPage() {
                 profileData?.role === 'super_admin' ||
                 profileData?.is_admin ||
                 profileData?.is_owner ||
-                user.email === 'konamak@icloud.com';
+                ['konamak@icloud.com', 'keitemplaysgames@gmail.com'].includes(user.email || '');
 
             // Fetch automations 
             let autoQuery = supabase.from('automations').select('*');
@@ -120,9 +120,21 @@ export default function DashboardPage() {
 
             setAutomations(mappedAutomations);
 
-            // RESILIENT LOG FETCH: Select all columns to avoid 400 errors from missing 'status' column
+            // Fetch metrics (Initial)
+            const metricsResult = await fetchDashboardMetrics(user.id, isAdmin);
+            setMetrics(metricsResult);
+
+            // RESILIENT LOG FETCH
             let logsQuery = supabase.from('automation_logs').select('*');
-            if (!isAdmin) logsQuery = logsQuery.eq('user_id', user.id);
+            if (!isAdmin) {
+                const ids = mappedAutomations.map(a => a.id);
+                if (ids.length > 0) {
+                    const idList = ids.map(id => `'${id}'`).join(',');
+                    logsQuery = logsQuery.or(`user_id.eq.${user.id},automation_id.in.(${idList})`);
+                } else {
+                    logsQuery = logsQuery.eq('user_id', user.id);
+                }
+            }
 
             const { data: logData, error: logError } = await logsQuery
                 .order('created_at', { ascending: false })
@@ -135,9 +147,6 @@ export default function DashboardPage() {
                 setRecentLogs((logData || []) as AutomationLog[]);
             }
 
-            // REFRESH METRICS (Role-aware)
-            const dashboardMetrics = await fetchDashboardMetrics(user.id, isAdmin);
-            setMetrics(dashboardMetrics);
 
         } catch (err: any) {
             console.error('Dashboard error:', err);
@@ -170,7 +179,7 @@ export default function DashboardPage() {
         return 'Good evening';
     };
 
-    const primaryConfig = getAutomationTypeConfig(automations[0]?.automation_type || 'default');
+    const primaryConfig = getAutomationTypeConfig((automations[0] as any)?.type || (automations[0] as any)?.automation_type || 'default');
 
     const getInsightValue = (index: number): string | number => {
         if (!metrics) return 0;
@@ -182,15 +191,17 @@ export default function DashboardPage() {
         }
     };
 
-    if (loading && automations.length === 0) {
-        return (
-            <PortalLayout>
-                <div className="flex items-center justify-center h-64">
-                    <RefreshCw className="w-8 h-8 animate-spin text-cyan-500" />
-                </div>
-            </PortalLayout>
-        );
-    }
+    // Helper to calculate aggregate stats if metrics are zero
+    const getAggValue = (key: 'runs' | 'hours' | 'money') => {
+        if (!automations.length) return 0;
+        const totalRuns = automations.reduce((sum, a) => sum + (a.stats?.total_runs || (a as any).total_runs || 0), 0);
+        const totalHours = automations.reduce((sum, a) => sum + (a.stats?.hours_saved || (a as any).hours_saved || 0), 0);
+
+        if (key === 'runs') return totalRuns;
+        if (key === 'hours') return totalHours;
+        if (key === 'money') return totalHours * 25;
+        return 0;
+    };
 
     return (
         <PortalLayout>
@@ -230,10 +241,10 @@ export default function DashboardPage() {
                 {/* Stats Grid */}
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-4 md:gap-5 mb-8">
                     {[
-                        { label: 'Total Executions', value: metrics?.totalExecutions || 0, icon: Activity, color: 'text-cyan-400', sub: 'All time' },
+                        { label: 'Total Executions', value: metrics?.totalExecutions || getAggValue('runs'), icon: Activity, color: 'text-cyan-400', sub: 'All time' },
                         { label: 'Tasks This Week', value: metrics?.executionsThisWeek || 0, icon: Flame, color: 'text-orange-400', sub: 'Recent activity' },
-                        { label: 'Hours Saved', value: metrics?.hoursSaved || 0, icon: Clock, color: 'text-purple-400', sub: 'vs manual' },
-                        { label: 'Money Saved', value: formatMoneySaved(metrics?.moneySaved || 0), icon: DollarSign, color: 'text-emerald-400', sub: `vs platform avg` },
+                        { label: 'Hours Saved', value: metrics?.hoursSaved || getAggValue('hours'), icon: Clock, color: 'text-purple-400', sub: 'vs manual' },
+                        { label: 'Money Saved', value: formatMoneySaved(metrics?.moneySaved || getAggValue('money')), icon: DollarSign, color: 'text-emerald-400', sub: `vs platform avg` },
                         { label: 'Success Rate', value: formatPercentage(metrics?.successRate || 100), icon: TrendingUp, color: 'text-green-400', sub: 'Reliability' }
                     ].map((stat, i) => (
                         <div key={i} className={`bg-[var(--bg-card-strong)] border border-[var(--bg-tertiary)] p-4 md:p-5 rounded-2xl hover:border-[var(--border)] transition ${i === 4 ? 'col-span-2 md:col-span-1' : ''}`}>
@@ -278,7 +289,7 @@ export default function DashboardPage() {
                                                             {auto.name}
                                                         </h3>
                                                         <div className="flex items-center gap-2 text-sm text-[var(--text-muted)]">
-                                                            <span className="capitalize">{auto.type.replace('-', ' ')}</span>
+                                                            <span className="capitalize">{(auto.type || '').replace('-', ' ')}</span>
                                                             <span>•</span>
                                                             <span className="text-emerald-500">${config.hourlyRate}/hr saved</span>
                                                         </div>

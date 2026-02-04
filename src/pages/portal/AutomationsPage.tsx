@@ -99,7 +99,7 @@ export default function AutomationsPage() {
                 profile?.role === 'super_admin' ||
                 profile?.is_admin ||
                 profile?.is_owner ||
-                profile?.email === 'konamak@icloud.com';
+                ['konamak@icloud.com', 'keitemplaysgames@gmail.com'].includes(profile?.email || '');
 
             loadLogsAndMetrics(selectedAuto.id, userId, isAdmin);
             setNewName(selectedAuto.name || (selectedAuto as any).display_name || '');
@@ -118,7 +118,7 @@ export default function AutomationsPage() {
             const { data: profileData } = await supabase.from('profiles').select('*').eq('id', user.id).single();
             setProfile(profileData || { email: user.email, role: 'client' });
 
-            const isAdmin = profileData?.role === 'admin' || profileData?.role === 'super_admin' || profileData?.is_admin || profileData?.is_owner || user.email === 'konamak@icloud.com';
+            const isAdmin = profileData?.role === 'admin' || profileData?.role === 'super_admin' || profileData?.is_admin || profileData?.is_owner || ['konamak@icloud.com', 'keitemplaysgames@gmail.com'].includes(user.email || '');
 
             let query = supabase.from('automations').select('*');
             if (!isAdmin) query = query.eq('user_id', user.id);
@@ -149,9 +149,16 @@ export default function AutomationsPage() {
     const loadLogsAndMetrics = async (automationId: string, userId: string, isAdmin: boolean = false) => {
         setLoadingLogs(true);
         try {
-            // RESILIENT LOG FETCH: Select * to avoid 400 errors if columns are missing
+            // RESILIENT LOG FETCH: We rely on automation_id for relevance. 
+            // We omit user_id check here because if the user can select the automation, 
+            // they should see its logs, and RLS will handle the security layer.
             let logsQuery = supabase.from('automation_logs').select('*').eq('automation_id', automationId);
-            if (!isAdmin) logsQuery = logsQuery.eq('user_id', userId);
+
+            // For non-admins, we still filter by user_id on the log if possible, 
+            // but we use OR to allow logs that only have the automation_id.
+            if (!isAdmin) {
+                logsQuery = logsQuery.or(`user_id.eq.${userId},automation_id.eq.${automationId}`);
+            }
 
             const { data: logData, error } = await logsQuery
                 .order('created_at', { ascending: false })
@@ -272,11 +279,11 @@ export default function AutomationsPage() {
                             <button key={auto.id} onClick={() => setSelectedAuto(auto)} className={`w-full text-left p-4 rounded-xl border transition-all ${selectedAuto?.id === auto.id ? 'bg-cyan-500/10 border-cyan-500/30' : 'bg-[var(--bg-primary)] border-[var(--bg-tertiary)] hover:border-[var(--border)]'}`}>
                                 <div className="flex justify-between items-start gap-2 mb-2">
                                     <h3 className="font-bold text-[var(--text-primary)] truncate">{auto.name}</h3>
-                                    <span className={`px-2 py-0.5 text-[10px] uppercase font-bold rounded-full border flex-shrink-0 ${getStatusColor(auto.status)}`}>{auto.status}</span>
+                                    <span className={`px-2 py-0.5 text-[10px] uppercase font-bold rounded-full border flex-shrink-0 ${getStatusColor(auto.status || 'active')}`}>{auto.status || 'active'}</span>
                                 </div>
                                 <div className="flex justify-between items-center text-xs text-[var(--text-muted)]">
-                                    <span className="capitalize">{auto.type.replace('-', ' ')}</span>
-                                    <span>{formatRelativeTime(auto.created_at)}</span>
+                                    <span className="capitalize">{(auto.type || '').replace('-', ' ')}</span>
+                                    <span>{formatRelativeTime(auto.created_at || new Date().toISOString())}</span>
                                 </div>
                             </button>
                         ))}
