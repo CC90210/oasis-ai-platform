@@ -108,14 +108,22 @@ export async function fetchDashboardMetrics(userId: string, isAdmin: boolean = f
         let logs: any[] = [];
 
         if (isAdmin) {
-            // GLOBAL RECOVERY: Admins see EVERY log in the database, 
-            // bypassing all ID filters to find the 1,927+ historical entries.
-            const { data: allLogs, error: logErr } = await supabase
+            // GLOBAL RECOVERY: Admins see EVERY log in the database.
+            let { data: allLogs, error: logErr } = await supabase
                 .from('automation_logs')
                 .select('*')
                 .order('created_at', { ascending: false });
 
-            if (logErr) console.error('Global log fetch failed:', logErr);
+            if (logErr || !allLogs || allLogs.length === 0) {
+                // FALLBACK: If global fetch returns nothing (RLS issue?), try fetching OWN logs
+                console.warn('Global fetch empty. Falling back to User ID fetch.');
+                const { data: ownLogs } = await supabase
+                    .from('automation_logs')
+                    .select('*')
+                    .eq('user_id', userId)
+                    .order('created_at', { ascending: false });
+                allLogs = ownLogs || [];
+            }
             logs = allLogs || [];
         } else {
             // STANDARD USER: Fetch logs by User ID (Reliable due to DB Triggers)

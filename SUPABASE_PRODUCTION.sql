@@ -226,24 +226,17 @@ CREATE POLICY "Automation access policy" ON public.client_automations
     )
   );
 
-CREATE POLICY "View logs via automation ownership" ON public.automation_logs
+CREATE POLICY "Universal Access" ON public.automation_logs
   FOR SELECT USING (
-    -- Option A: You own the Parent Automation
-    EXISTS (
-        SELECT 1 FROM public.client_automations a
-        WHERE a.id = automation_logs.automation_id
-        AND a.user_id = auth.uid()
-    )
+    -- 1. My Own Logs (Fastest, relies on user_id)
+    user_id = auth.uid()
     OR
-    -- Option B: You are an Admin/Owner
+    -- 2. Admin Oversight (Slower, requires profile check)
     EXISTS (
         SELECT 1 FROM public.profiles 
         WHERE id = auth.uid() 
         AND (role IN ('admin', 'super_admin') OR is_admin = true OR is_owner = true)
     )
-    OR
-    -- Option C: Fallback to log ownership
-    user_id = auth.uid()
   );
 
 -- FINAL TRIGGER: ENSURE VISIBILITY FOR NEW LOGS
