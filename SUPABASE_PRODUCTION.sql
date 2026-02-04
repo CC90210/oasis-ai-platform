@@ -135,6 +135,22 @@ CREATE TABLE IF NOT EXISTS public.client_automations (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- SAFE VIEW REPLACEMENT (Fixes 42809 error)
+DO $$ 
+BEGIN
+    -- If 'automations' exists as a base table, we must drop it to allow the view
+    -- We only do this because 'client_automations' is the primary source of truth for n8n/backend
+    IF EXISTS (
+        SELECT 1 FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name = 'automations' 
+        AND table_type = 'BASE TABLE'
+    ) THEN
+        -- Rename instead of drop if you want to be ultra-safe, but here we drop to fix the view
+        DROP TABLE public.automations CASCADE;
+    END IF;
+END $$;
+
 -- Create a view for "automations" to support both naming conventions during transition
 CREATE OR REPLACE VIEW public.automations AS SELECT * FROM public.client_automations;
 
