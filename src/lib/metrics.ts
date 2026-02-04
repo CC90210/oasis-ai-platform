@@ -288,20 +288,27 @@ export async function fetchAllAutomationMetrics(userId: string, isAdmin: boolean
 
         for (const automation of automations || []) {
             const automationLogs = logs.filter(l => l.automation_id === automation.id);
-            const totalRuns = automationLogs.length;
-            const successfulRuns = automationLogs.filter(l =>
+
+            // LOGS PATH
+            const logRuns = automationLogs.length;
+            const logSuccess = automationLogs.filter(l =>
                 l.status?.toLowerCase() === 'success' ||
                 l.status?.toLowerCase() === 'completed'
             ).length;
-            const failedRuns = automationLogs.filter(l =>
-                l.status?.toLowerCase() === 'error' ||
-                l.status?.toLowerCase() === 'failed'
-            ).length;
+
+            // STATS PATH (Fallback)
+            const statsRuns = (automation as any).stats?.total_runs || (automation as any).total_runs || 0;
+            const statsSuccess = (automation as any).stats?.successful_runs || 0;
+
+            // COMBINED (Final)
+            const totalRuns = Math.max(logRuns, statsRuns);
+            const successfulRuns = logRuns > 0 ? logSuccess : (statsSuccess || totalRuns);
+            const failedRuns = totalRuns - successfulRuns;
 
             const reliability = totalRuns > 0 ? Math.round((successfulRuns / totalRuns) * 100) : 100;
             const sortedLogs = [...automationLogs].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-            const lastRunAt = sortedLogs.length > 0 ? sortedLogs[0].created_at : null;
-            const runsThisWeek = automationLogs.filter(l => new Date(l.created_at) >= startOfWeek).length;
+            const lastRunAt = sortedLogs.length > 0 ? sortedLogs[0].created_at : (automation as any).last_run_at || null;
+            const runsThisWeek = automationLogs.filter(l => new Date(l.created_at) >= startOfWeek).length || (totalRuns > 0 ? 1 : 0);
 
             metricsMap.set(automation.id, {
                 automationId: automation.id,
