@@ -226,12 +226,12 @@ CREATE POLICY "Automation access policy" ON public.client_automations
     )
   );
 
-CREATE POLICY "Universal Access" ON public.automation_logs
+CREATE POLICY "Admin God Mode" ON public.automation_logs
   FOR SELECT USING (
-    -- 1. My Own Logs (Fastest, relies on user_id)
+    -- Standard User Check
     user_id = auth.uid()
     OR
-    -- 2. Admin Oversight (Slower, requires profile check)
+    -- Admin Super Check (Bypasses everything)
     EXISTS (
         SELECT 1 FROM public.profiles 
         WHERE id = auth.uid() 
