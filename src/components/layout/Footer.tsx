@@ -5,7 +5,7 @@ export const Footer = () => {
     return (
         <footer className="relative z-50 bg-bg-secondary border-t border-white/5 pt-20 pb-10">
             <div className="section-container">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12 mb-16">
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-8 md:gap-12 mb-16">
                     <div className="col-span-2">
                         <Link to="/" className="flex items-center gap-2 mb-6 group">
                             <img src="/images/oasis-logo.jpg" alt="OASIS AI" className="w-10 h-10 rounded-xl shadow-lg shadow-oasis-cyan/20 group-hover:shadow-oasis-cyan/40 transition-all" />
@@ -14,8 +14,8 @@ export const Footer = () => {
                             </span>
                         </Link>
                         <p className="text-gray-300 mb-8 max-w-md leading-relaxed">
-                            Empowering businesses with intelligent automation solutions.
-                            We build the digital workforce of tomorrow, today.
+                            Custom Software. Intelligent Automation.
+                            Empowering businesses with enterprise-grade technology.
                         </p>
                         <div className="flex gap-4">
                             <a href="https://www.instagram.com/oasisaisolutions?igsh=MWtjYWk3bHdreXYxYg%3D%3D&utm_source=qr" target="_blank" rel="noopener noreferrer" className="p-2 bg-white/5 rounded-lg hover:bg-oasis-cyan/20 hover:text-oasis-cyan transition-colors">
@@ -35,14 +35,22 @@ export const Footer = () => {
                     </div>
 
                     <div>
+                        <h4 className="font-bold text-white mb-6">Products</h4>
+                        <ul className="space-y-4">
+                            <li><Link to="/pricing" className="text-text-secondary hover:text-oasis-cyan transition-colors">OASIS Launchpad</Link></li>
+                            <li><Link to="/pricing" className="text-text-secondary hover:text-oasis-cyan transition-colors">Integration Suite</Link></li>
+                            <li><Link to="/contact" className="text-text-secondary hover:text-oasis-cyan transition-colors">Enterprise Partnership</Link></li>
+                            <li><Link to="/services" className="text-text-secondary hover:text-oasis-cyan transition-colors">Custom Automations</Link></li>
+                        </ul>
+                    </div>
+
+                    <div>
                         <h4 className="font-bold text-white mb-6">Company</h4>
                         <ul className="space-y-4">
-                            <li><Link to="/services" className="text-text-secondary hover:text-oasis-cyan transition-colors">Services</Link></li>
-                            <li><Link to="/pricing" className="text-text-secondary hover:text-oasis-cyan transition-colors">Pricing</Link></li>
+                            <li><Link to="/about" className="text-text-secondary hover:text-oasis-cyan transition-colors">About</Link></li>
                             <li><Link to="/case-studies" className="text-text-secondary hover:text-oasis-cyan transition-colors">Case Studies</Link></li>
                             <li><Link to="/blog" className="text-text-secondary hover:text-oasis-cyan transition-colors">Blog</Link></li>
                             <li><Link to="/contact" className="text-text-secondary hover:text-oasis-cyan transition-colors">Contact</Link></li>
-                            <li><Link to="/portal/login" className="text-text-secondary hover:text-oasis-cyan transition-colors">Client Portal</Link></li>
                         </ul>
                     </div>
 

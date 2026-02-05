@@ -343,18 +343,18 @@ const ContactPage = () => {
                         {[
                             {
                                 step: "1",
-                                title: "We Listen",
-                                description: "Tell us about your business, your processes, and your pain points. No sales pitch—just honest conversation."
+                                title: "Discovery Call",
+                                description: "We discuss your business goals, current bottlenecks, and vision. No sales pitch—just strategy."
                             },
                             {
                                 step: "2",
-                                title: "We Propose",
-                                description: "Within 2-3 days, you'll receive a detailed automation plan with fixed pricing and clear timelines."
+                                title: "Architecture Plan",
+                                description: "We design a comprehensive Technical Architecture Map showing exactly how your custom software will work."
                             },
                             {
                                 step: "3",
-                                title: "We Build",
-                                description: "Once approved, we build your AI workforce in 5-14 days. You approve each milestone before we proceed."
+                                title: "Build & Launch",
+                                description: "Our team builds your platform and integrates intelligent agents. We launch only when you're 100% satisfied."
                             }
                         ].map((item, index) => (
                             <motion.div

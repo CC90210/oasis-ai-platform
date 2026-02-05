@@ -78,24 +78,27 @@ const LandingPage = () => {
                 </div>
             </section>
 
-            {/* Section 3: Services Overview */}
+            {/* Section 3: Custom Solutions */}
             <section className="py-24 relative overflow-hidden">
                 <div className="section-container relative z-10">
                     <div className="text-center mb-20">
-                        <span className="text-oasis-cyan font-medium tracking-wider uppercase text-sm">What We Automate</span>
-                        <h2 className="text-4xl md:text-5xl font-display font-bold mt-2 mb-6">AI Agents That Work 24/7</h2>
+                        <span className="text-oasis-cyan font-medium tracking-wider uppercase text-sm">We Build What You Need</span>
+                        <h2 className="text-4xl md:text-5xl font-display font-bold mt-2 mb-6">Custom Software. Powered by AI.</h2>
+                        <p className="text-xl text-text-secondary max-w-3xl mx-auto">
+                            We don't sell templates. We architect enterprise-grade platforms tailored to your business, then embed intelligent agents to run them.
+                        </p>
                     </div>
 
                     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                         {[
-                            { icon: MessageSquare, title: "Customer Support", desc: "Instant answers to FAQs and support tickets, 24/7.", slug: "chat-widget" },
-                            { icon: Target, title: "Lead Capture", desc: "Qualify and route leads from your website automatically.", slug: "lead-capture" },
-                            { icon: Calendar, title: "Appointment Booking", desc: "Schedule meetings without the back-and-forth emails.", slug: "appointment-booking" },
-                            { icon: Mail, title: "Email Automation", desc: "Draft and send personalized responses to common emails.", slug: "email-automation" },
-                            { icon: Star, title: "Review Management", desc: "Monitor and respond to Google reviews instantly.", slug: "google-reviews" },
-                            { icon: Phone, title: "Voice AI (Phone)", desc: "Handle inbound and outbound calls with natural AI voice.", slug: "voice-ai" }
+                            { icon: Database, title: "Custom Portals", desc: "Client dashboards, internal tools, and management systems built from scratch.", slug: "custom-software" },
+                            { icon: MessageSquare, title: "Intelligent Chat", desc: "Embedded AI support agents that know your business inside out.", slug: "chat-widget" },
+                            { icon: Target, title: "Lead Engines", desc: "Automated lead capture, qualification, and routing systems.", slug: "lead-capture" },
+                            { icon: Calendar, title: "Smart Scheduling", desc: "Booking systems that manage your calendar without you.", slug: "appointment-booking" },
+                            { icon: Mail, title: "Inbox Zero", desc: "Email agents that draft, sort, and reply to communications.", slug: "email-automation" },
+                            { icon: Phone, title: "Voice AI", desc: "Phone systems that handle calls naturally, 24/7.", slug: "voice-ai" }
                         ].map((service, index) => (
-                            <Link to={`/pricing`} key={index}>
+                            <Link to={`/services`} key={index}>
                                 <motion.div
                                     initial={{ opacity: 0, y: 20 }}
                                     whileInView={{ opacity: 1, y: 0 }}
@@ -132,11 +135,10 @@ const LandingPage = () => {
                             <div className="absolute left-6 md:left-1/2 top-0 bottom-0 w-0.5 bg-gradient-to-b from-oasis-cyan/50 to-transparent md:-translate-x-1/2" />
 
                             {[
-                                { title: "Discovery Call", desc: "We learn your processes and identify automation opportunities.", time: "15-30 min" },
-                                { title: "Custom Proposal", desc: "We design a detailed plan with fixed pricing and deliverables.", time: "2-3 days" },
-                                { title: "Build & Deploy", desc: "Our team builds your agents. You approve each milestone.", time: "5-14 days" },
-                                { title: "Training & Launch", desc: "We train your team and ensure a smooth handover.", time: "1 day" },
-                                { title: "Ongoing Support", desc: "We monitor and optimize your agents to ensure performance.", time: "Monthly" }
+                                { title: "Discovery", desc: "We dive deep into your business to understand your workflows, pain points, and vision.", time: "Day 1" },
+                                { title: "Design & Build", desc: "Our team architects and develops a custom software solution tailored to your exact needs.", time: "Week 1-2" },
+                                { title: "Automate & Integrate", desc: "We embed intelligent automations that handle repetitive tasks and sync data.", time: "Week 3" },
+                                { title: "Launch & Optimize", desc: "We deploy, train your team, and continuously improve based on real usage data.", time: "Ongoing" }
                             ].map((step, index) => (
                                 <motion.div
                                     key={index}
@@ -196,8 +198,8 @@ const LandingPage = () => {
                         <div className="glass-card p-8 flex flex-col border-oasis-cyan relative transform md:-translate-y-4 shadow-oasis">
                             <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-oasis-cyan text-bg-primary px-4 py-1 rounded-full text-sm font-bold">MOST POPULAR</div>
                             <h3 className="text-2xl font-bold text-white mb-2">Integration Suite</h3>
-                            <div className="text-3xl font-bold text-oasis-cyan mb-4">$5,000</div>
-                            <p className="text-text-secondary mb-6">Comprehensive automation for growing businesses.</p>
+                            <div className="text-3xl font-bold text-oasis-cyan mb-4">$7,500</div>
+                            <p className="text-text-secondary mb-6">Custom software + 3 integrated automations.</p>
                             <ul className="space-y-3 mb-8 flex-1">
                                 <li className="flex items-center text-sm text-text-secondary"><CheckCircle className="w-4 h-4 text-oasis-cyan mr-2" /> 3-5 Custom Agents</li>
                                 <li className="flex items-center text-sm text-text-secondary"><CheckCircle className="w-4 h-4 text-oasis-cyan mr-2" /> Voice AI + Chat</li>
@@ -294,23 +296,23 @@ const LandingPage = () => {
                         <div className="grid md:grid-cols-2 gap-12 items-center">
                             <div>
                                 <span className="text-oasis-cyan font-medium tracking-wider uppercase text-sm">Real Results</span>
-                                <h2 className="text-3xl md:text-4xl font-display font-bold mt-2 mb-6">How We Transformed an E-Commerce Brand</h2>
+                                <h2 className="text-3xl md:text-4xl font-display font-bold mt-2 mb-6">PropFlow: Real Estate Management, Reimagined</h2>
                                 <div className="space-y-4 mb-8">
                                     <div className="flex items-start">
                                         <div className="w-1.5 h-1.5 rounded-full bg-oasis-cyan mt-2 mr-3" />
-                                        <p className="text-text-secondary"><strong className="text-white">Challenge:</strong> Overwhelmed support team, missed opportunities.</p>
+                                        <p className="text-text-secondary"><strong className="text-white">Challenge:</strong> 200+ properties managed via spreadsheets.</p>
                                     </div>
                                     <div className="flex items-start">
                                         <div className="w-1.5 h-1.5 rounded-full bg-oasis-cyan mt-2 mr-3" />
-                                        <p className="text-text-secondary"><strong className="text-white">Solution:</strong> 24/7 AI support + cart recovery + upsells.</p>
+                                        <p className="text-text-secondary"><strong className="text-white">Solution:</strong> Custom portal + auto-documents + rent reminders.</p>
                                     </div>
                                     <div className="flex items-start">
                                         <div className="w-1.5 h-1.5 rounded-full bg-oasis-cyan mt-2 mr-3" />
-                                        <p className="text-text-secondary"><strong className="text-white">Results:</strong> 40% reduction in workload, 15% revenue increase.</p>
+                                        <p className="text-text-secondary"><strong className="text-white">Results:</strong> 40+ hours/week saved, zero missed renewals.</p>
                                     </div>
                                 </div>
                                 <blockquote className="border-l-4 border-oasis-cyan pl-4 italic text-text-tertiary mb-8">
-                                    "OASIS AI transformed how we handle customer interactions. What used to take hours now happens automatically."
+                                    "PropFlow completely transformed how we manage 200+ properties. The automation sends invoices before I even remember to."
                                 </blockquote>
                                 <Link to="/case-studies" className="btn-secondary">Read Full Case Study</Link>
                             </div>

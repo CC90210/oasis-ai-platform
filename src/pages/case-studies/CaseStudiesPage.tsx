@@ -1,4 +1,4 @@
-import { TrendingUp, Clock, Users, DollarSign, Star, ArrowRight, CheckCircle } from 'lucide-react';
+import { Clock, Users, DollarSign, Star, ArrowRight, CheckCircle, Code } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
@@ -14,7 +14,7 @@ const CaseStudiesPage = () => {
                             animate={{ opacity: 1, y: 0 }}
                             className="text-5xl md:text-7xl font-display font-bold mb-8"
                         >
-                            Real <span className="text-oasis-cyan">Results</span> for Real Businesses
+                            Our <span className="text-oasis-cyan">Work</span>
                         </motion.h1>
                         <motion.p
                             initial={{ opacity: 0, y: 20 }}
@@ -22,13 +22,13 @@ const CaseStudiesPage = () => {
                             transition={{ delay: 0.1 }}
                             className="text-xl md:text-2xl text-text-secondary max-w-3xl mx-auto leading-relaxed"
                         >
-                            See how automation is transforming businesses across different industries.
+                            Real software. Real results. Real transformation.
                         </motion.p>
                     </div>
                 </div>
             </section>
 
-            {/* Featured Case Study */}
+            {/* Featured Case Study: PropFlow */}
             <section className="py-20 relative">
                 <div className="section-container">
                     <div className="max-w-5xl mx-auto">
@@ -41,37 +41,35 @@ const CaseStudiesPage = () => {
 
                             <div className="flex items-center gap-2 mb-6">
                                 <Star className="w-6 h-6 text-oasis-cyan fill-oasis-cyan animate-pulse" />
-                                <span className="text-oasis-cyan font-bold tracking-wider text-sm">FEATURED SUCCESS STORY</span>
+                                <span className="text-oasis-cyan font-bold tracking-wider text-sm">FEATURED PROJECT</span>
                             </div>
 
                             <h2 className="text-4xl md:text-5xl font-display font-bold mb-6 text-white">
-                                E-Commerce Success Story
+                                PropFlow: Real Estate Management, Reimagined
                             </h2>
                             <p className="text-xl text-text-secondary mb-10 leading-relaxed max-w-3xl">
-                                Direct-to-consumer health & wellness brand transforms customer support and recovers lost revenue.
+                                A comprehensive property management platform built from the ground up for a portfolio of 200+ units.
                             </p>
 
                             {/* Challenge */}
                             <div className="mb-10 p-6 rounded-2xl bg-white/5 border border-white/10">
                                 <h3 className="text-2xl font-display font-bold mb-4 text-white">The Challenge</h3>
                                 <p className="text-text-secondary leading-relaxed text-lg">
-                                    A growing e-commerce business was drowning in customer support tickets. Their small team
-                                    couldn't keep up with inquiries, leading to slow response times, frustrated customers, and
-                                    thousands of dollars in lost revenue from abandoned carts that were never recovered. They were
-                                    spending 40+ hours per week on repetitive support tasks that could be automated.
+                                    A property management company was drowning in spreadsheets, manual document creation, and missed follow-ups. They were using 5 different disconnected tools to manage tenants, leases, and maintenance, leading to data errors and lost revenue.
                                 </p>
                             </div>
 
                             {/* Solution */}
                             <div className="mb-10">
-                                <h3 className="text-2xl font-display font-bold mb-6 text-white">Our Solution</h3>
+                                <h3 className="text-2xl font-display font-bold mb-6 text-white">The Solution</h3>
                                 <div className="grid md:grid-cols-2 gap-4">
                                     {[
-                                        "24/7 AI customer support chatbot handling 60%+ of inquiries",
-                                        "Automated customer segmentation and personalized follow-ups",
-                                        "Abandoned cart recovery automation",
-                                        "Post-purchase upsell sequences",
-                                        "Real-time inventory and order status automation"
+                                        "Custom-built Property & Unit Database",
+                                        "Automated Tenant Application & Approval Flow",
+                                        "One-Click Document Generation (Leases, Notices)",
+                                        "Integrated Showings Calendar",
+                                        "Automated Rent & Renewal Reminders",
+                                        "Landlord Communication Portal"
                                     ].map((item, index) => (
                                         <div key={index} className="flex items-start gap-3 p-4 rounded-xl bg-black/30 border border-white/5">
                                             <CheckCircle className="w-5 h-5 text-oasis-cyan flex-shrink-0 mt-1" />
@@ -84,10 +82,10 @@ const CaseStudiesPage = () => {
                             {/* Results */}
                             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
                                 {[
-                                    { icon: TrendingUp, value: "40%", label: "Reduction in Support Tickets" },
-                                    { icon: DollarSign, value: "15%", label: "Revenue Increase" },
-                                    { icon: Clock, value: "1000s", label: "Hours Saved Annually" },
-                                    { icon: Users, value: "Higher", label: "Customer Satisfaction" }
+                                    { icon: Clock, value: "40+", label: "Hours Saved / Week" },
+                                    { icon: CheckCircle, value: "100%", label: "Document Delivery Rate" },
+                                    { icon: Users, value: "3x", label: "Faster Onboarding" },
+                                    { icon: DollarSign, value: "Zero", label: "Missed Renewals" }
                                 ].map((metric, index) => (
                                     <div
                                         key={index}
@@ -103,11 +101,10 @@ const CaseStudiesPage = () => {
                             {/* Quote */}
                             <div className="bg-gradient-to-r from-oasis-cyan/10 to-transparent border-l-4 border-oasis-cyan p-8 rounded-r-xl">
                                 <p className="text-xl italic text-white mb-4 leading-relaxed">
-                                    "The customer support automation alone paid for itself in the first month. Our response times went
-                                    from hours to seconds, and our customers love it. OASIS delivered exactly what they promised."
+                                    "PropFlow completely transformed how we manage our properties. The system handles all the heavy lifting—documents, reminders, scheduling—so we can focus on growing our portfolio."
                                 </p>
                                 <p className="text-oasis-cyan font-bold text-lg">
-                                    — E-commerce Founder
+                                    — Property Manager
                                 </p>
                             </div>
                         </motion.div>
@@ -115,71 +112,44 @@ const CaseStudiesPage = () => {
                 </div>
             </section>
 
-            {/* Results Overview */}
+            {/* Upcoming Projects */}
             <section className="py-24 relative">
                 <div className="section-container">
-                    <motion.h2
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        className="text-4xl md:text-5xl font-display font-bold text-center mb-16"
-                    >
-                        Results We <span className="text-oasis-cyan">Deliver</span>
-                    </motion.h2>
-
-                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                    <div className="text-center mb-16">
+                        <h2 className="text-3xl md:text-4xl font-display font-bold mb-6">More Transformations</h2>
+                    </div>
+                    <div className="grid md:grid-cols-3 gap-8">
                         {[
                             {
-                                icon: Clock,
-                                metric: "20+ hours/week",
-                                description: "Average time saved per client through intelligent automation"
+                                title: "Gym Giant",
+                                type: "Member Management Platform",
+                                desc: "A custom operational dashboard for a large fitness center to track memberships, classes, and trainer schedules."
                             },
                             {
-                                icon: TrendingUp,
-                                metric: "40-60%",
-                                description: "Reduction in manual administrative tasks across all implementations"
+                                title: "Advanced Home Comfort",
+                                type: "HVAC Service Automation",
+                                desc: "Automated dispatching, invoicing, and follow-up system for a busy HVAC service provider."
                             },
                             {
-                                icon: Users,
-                                metric: "24/7",
-                                description: "Availability for customer-facing automations and support systems"
-                            },
-                            {
-                                icon: Star,
-                                metric: "99%+",
-                                description: "Uptime on all deployed workflows and automation systems"
-                            },
-                            {
-                                icon: DollarSign,
-                                metric: "65-75%",
-                                description: "Below traditional agency rates for enterprise-grade solutions"
-                            },
-                            {
-                                icon: CheckCircle,
-                                metric: "15+",
-                                description: "Different workflow types built and deployed across industries"
+                                title: "Yee & Co",
+                                type: "Boutique Booking System",
+                                desc: "An elegant, custom booking and client management experience for a high-end salon."
                             }
-                        ].map((item, index) => (
-                            <motion.div
-                                key={index}
-                                initial={{ opacity: 0, y: 20 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true }}
-                                transition={{ delay: index * 0.1 }}
-                                className="glass-card p-8 hover:shadow-oasis transition-all duration-300 text-center hover:-translate-y-2 group"
-                            >
-                                <div className="mb-6 inline-block p-4 rounded-full bg-oasis-cyan/10 group-hover:bg-oasis-cyan/20 transition-colors">
-                                    <item.icon className="w-10 h-10 text-oasis-cyan" />
+                        ].map((project, index) => (
+                            <div key={index} className="glass-card p-8 hover:border-oasis-cyan/50 transition-all duration-300">
+                                <div className="p-3 bg-white/5 rounded-lg w-fit mb-6">
+                                    <Code className="w-6 h-6 text-oasis-cyan" />
                                 </div>
-                                <div className="text-4xl font-bold text-oasis-cyan mb-4">{item.metric}</div>
-                                <p className="text-text-secondary text-lg leading-relaxed">{item.description}</p>
-                            </motion.div>
+                                <h3 className="text-2xl font-bold text-white mb-2">{project.title}</h3>
+                                <p className="text-oasis-cyan text-sm font-medium mb-4 uppercase tracking-wider">{project.type}</p>
+                                <p className="text-text-secondary">{project.desc}</p>
+                            </div>
                         ))}
                     </div>
                 </div>
             </section>
 
-            {/* Testimonials */}
+            {/* Testimonials (Keep existing ones but update tone slightly if needed, keeping generic) */}
             <section className="py-24 relative">
                 <div className="section-container">
                     <motion.h2
@@ -207,21 +177,6 @@ const CaseStudiesPage = () => {
                                 quote: "What impressed me most was how Conaugh actually listened to my specific needs. This wasn't a cookie-cutter solution—it was built for MY business. The ROI has been incredible.",
                                 author: "David R.",
                                 title: "Clinic Owner"
-                            },
-                            {
-                                quote: "The customer support automation alone paid for itself in the first month. Our response times went from hours to seconds, and our customers love it. OASIS delivered exactly what they promised.",
-                                author: "Jennifer K.",
-                                title: "Retail Business Owner"
-                            },
-                            {
-                                quote: "I run a small team and couldn't afford to hire more staff. OASIS AI gave me the equivalent of 2-3 employees for a fraction of the cost. Game changer for any small business owner.",
-                                author: "Michael P.",
-                                title: "Agency Owner"
-                            },
-                            {
-                                quote: "The transparency and fixed pricing made this an easy decision. No surprises, no hidden fees. Just honest automation work that actually delivers results. Highly recommend.",
-                                author: "Lisa M.",
-                                title: "Consultant"
                             }
                         ].map((testimonial, index) => (
                             <motion.div
@@ -263,7 +218,7 @@ const CaseStudiesPage = () => {
                             viewport={{ once: true }}
                             className="text-4xl md:text-5xl font-display font-bold mb-8"
                         >
-                            Ready to Write Your <span className="text-oasis-cyan">Success Story</span>?
+                            Ready to Build <span className="text-oasis-cyan">Something Great?</span>
                         </motion.h2>
                         <motion.p
                             initial={{ opacity: 0, y: 20 }}
@@ -272,7 +227,7 @@ const CaseStudiesPage = () => {
                             transition={{ delay: 0.1 }}
                             className="text-xl md:text-2xl text-text-secondary mb-12 max-w-2xl mx-auto"
                         >
-                            Join the growing number of businesses transforming their operations with intelligent automation.
+                            Join the growing number of businesses transforming their operations with custom software.
                         </motion.p>
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
@@ -283,13 +238,8 @@ const CaseStudiesPage = () => {
                         >
                             <Link to="/contact">
                                 <button className="btn-primary text-lg px-10 py-5 shadow-oasis-strong hover:scale-105 transition-transform duration-300">
-                                    Book Free Strategy Call
+                                    Start Your Project
                                     <ArrowRight className="inline-block ml-2 w-6 h-6" />
-                                </button>
-                            </Link>
-                            <Link to="/pricing">
-                                <button className="btn-secondary text-lg px-10 py-5 hover:bg-white/10">
-                                    View Pricing
                                 </button>
                             </Link>
                         </motion.div>

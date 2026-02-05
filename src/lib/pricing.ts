@@ -2,8 +2,8 @@ export const BUNDLES = {
     launchpad: {
         id: 'launchpad',
         name: 'OASIS Launchpad',
-        tag: 'BEST FOR GETTING STARTED',
-        description: 'Best for getting started. Includes 90-min discovery consultation, custom automation roadmap, 1 automation of your choice, setup, configuration, and 30 days support.',
+        tag: 'AUTOMATE FIRST',
+        description: 'Perfect for businesses ready to automate key workflows without a full software build.',
         setupFee: 2500,
         monthlyFee: 347,
         features: [
@@ -12,28 +12,30 @@ export const BUNDLES = {
             '1 automation of your choice',
             'Setup, configuration, and deployment',
             '7-day priority implementation',
-            '30 days technical support'
+            'Monthly ROI documentation'
         ],
-        idealFor: 'Small businesses testing automation for the first time',
+        idealFor: 'Small businesses testing automation, specific workflow pain points, quick wins',
         cta: 'Get Started'
     },
     integrationSuite: {
         id: 'integration-suite',
         name: 'Integration Suite',
         tag: 'MOST POPULAR',
-        description: 'Comprehensive transformation. 3-5 custom AI agents, Voice AI + Chat, CRM integration, and 90 days of dedicated support.',
-        setupFee: 5000,
-        monthlyFee: 497,
+        description: 'A custom software application built for your business, powered by 3 intelligent automations.',
+        setupFee: 7500,
+        monthlyFee: 597,
         features: [
-            '3-5 custom AI agents',
-            'AI-powered website chat widget',
-            'Voice AI phone system',
-            'CRM integration and synchronization',
-            '90 days optimization and support',
-            'Comprehensive documentation'
+            'Full-day strategy & discovery workshop',
+            'Custom software application',
+            'White-labeled under your brand',
+            '3 integrated automations',
+            'CRM/database integration',
+            'First 2 months subscription included',
+            'Bi-weekly optimization calls (90 days)',
+            'Monthly ROI documentation'
         ],
         roi: 'Average 312% ROI within 90 days',
-        idealFor: 'Growing businesses ready to scale operations',
+        idealFor: 'Growing businesses ready for a complete operational upgrade',
         cta: 'Book Consultation'
     }
 };

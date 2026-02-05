@@ -16,11 +16,11 @@ const PricingPage: React.FC = () => {
             {/* 1. Hero Section */}
             <div className="container mx-auto px-4 text-center mb-16">
                 <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 tracking-tight">
-                    Automation Solutions <br className="hidden md:block" />
-                    Built for <span className="text-cyan-400">Your Business</span>
+                    Custom Software. <br className="hidden md:block" />
+                    Intelligent <span className="text-cyan-400">Automation</span>.
                 </h1>
                 <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-                    Every automation includes monthly ROI documentation and personalized setup consultation.
+                    Transparent pricing for enterprise-grade solutions. Own your code, own your data.
                 </p>
             </div>
 
@@ -33,20 +33,17 @@ const PricingPage: React.FC = () => {
                                 <Gift className="w-8 h-8 text-cyan-400" />
                             </div>
                             <div>
-                                <p className="text-white font-bold text-lg">First-time customers update</p>
+                                <p className="text-white font-bold text-lg">Partner with OASIS</p>
                                 <p className="text-gray-300">
-                                    Use code <span className="text-cyan-400 font-mono font-bold mx-1">OASISAI15</span> for <span className="text-white font-semibold">15% OFF</span> your first automation!
+                                    Book a discovery call today and get a <span className="text-white font-semibold">Free Technical Architecture Map</span> for your business.
                                 </p>
                             </div>
                         </div>
                         <button
-                            onClick={() => {
-                                navigator.clipboard.writeText('OASISAI15');
-                                // Could add a toast here
-                            }}
+                            onClick={() => navigate('/contact')}
                             className="bg-cyan-500 hover:bg-cyan-400 text-black px-6 py-2.5 rounded-lg text-sm font-bold transition shadow-lg shadow-cyan-500/20 whitespace-nowrap w-full md:w-auto"
                         >
-                            Copy Code
+                            Book Call
                         </button>
                     </div>
                 </div>
@@ -54,7 +51,7 @@ const PricingPage: React.FC = () => {
 
             {/* 2. Bundle Packages */}
             <div className="container mx-auto px-4 mb-24">
-                <h2 className="text-3xl font-bold text-white mb-8 text-center">Comprehensive Bundles</h2>
+                <h2 className="text-3xl font-bold text-white mb-8 text-center">Core Solutions</h2>
                 <div className="grid lg:grid-cols-2 gap-8 max-w-5xl mx-auto">
                     {BUNDLES.map((bundle, idx) => (
                         <SimplePricingCard
@@ -69,8 +66,8 @@ const PricingPage: React.FC = () => {
             {/* 3. Automations Grid */}
             <div className="container mx-auto px-4 mb-24">
                 <div className="text-center mb-12">
-                    <h2 className="text-3xl font-bold text-white mb-4">Custom Automations</h2>
-                    <p className="text-gray-400">Specific solutions for specific problems. Setup fee + monthly subscription.</p>
+                    <h2 className="text-3xl font-bold text-white mb-4">Individual Modules</h2>
+                    <p className="text-gray-400">Add integrated capabilities to your custom software.</p>
                 </div>
 
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
@@ -88,7 +85,7 @@ const PricingPage: React.FC = () => {
             <div className="container mx-auto px-4 mb-24">
                 <div className="bg-gray-900/80 backdrop-blur-sm border border-gray-800 rounded-2xl p-8 md:p-12">
                     <div className="text-center mb-10">
-                        <h3 className="text-2xl font-bold text-white mb-4">Included with Every Automation</h3>
+                        <h3 className="text-2xl font-bold text-white mb-4">Included with Every Build</h3>
                         <div className="h-1 w-20 bg-cyan-500 mx-auto rounded-full" />
                     </div>
 
@@ -107,13 +104,12 @@ const PricingPage: React.FC = () => {
             <div className="container mx-auto px-4 mb-16">
                 <div className="max-w-4xl mx-auto bg-gradient-to-r from-gray-900 to-[#1A1A2E] border border-gray-800 rounded-2xl p-8 md:p-12 relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-
                     <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8 text-center md:text-left">
                         <div>
                             <h2 className="text-3xl font-bold text-white mb-2">Need something bigger?</h2>
-                            <p className="text-xl text-cyan-400 font-semibold mb-4">Enterprise Transformation</p>
+                            <p className="text-xl text-cyan-400 font-semibold mb-4">Enterprise Partnership</p>
                             <p className="text-gray-400 max-w-lg">
-                                Full-scale automation infrastructure, HIPAA/SOC 2 compliance, and dedicated success managers for large organizations.
+                                Full-scale custom software infrastructure, white-labeled platforms, and dedicated engineering teams.
                             </p>
                         </div>
                         <button
