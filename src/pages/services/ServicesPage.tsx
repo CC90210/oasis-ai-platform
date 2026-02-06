@@ -39,7 +39,7 @@ const ServicesPage = () => {
                         <span className="text-oasis-cyan font-medium tracking-wider uppercase text-sm block mb-2">Foundation</span>
                         <h2 className="text-4xl md:text-5xl font-display font-bold mb-6">Enterprise Applications Built for You</h2>
                         <p className="text-text-secondary text-lg max-w-3xl leading-relaxed">
-                            We don't do one-size-fits-all. Every software application we build is designed from scratch based on your unique business needs, white-labeled under your brand, and fully owned by you.
+                            We don't do one-size-fits-all. Every software application we build is designed from scratch based on your unique business needs, white-labeled under your brand, and built for your secure workflows.
                         </p>
                     </div>
 
@@ -67,10 +67,10 @@ const ServicesPage = () => {
                         ))}
                     </div>
                 </div>
-            </section>
+            </section >
 
             {/* Section 2: Intelligent Automation */}
-            <section className="py-20 relative">
+            < section className="py-20 relative" >
                 <div className="section-container">
                     <div className="mb-16">
                         <span className="text-oasis-cyan font-medium tracking-wider uppercase text-sm block mb-2">Intelligence</span>
@@ -104,10 +104,10 @@ const ServicesPage = () => {
                         ))}
                     </div>
                 </div>
-            </section>
+            </section >
 
             {/* Section 3: Integration & Data */}
-            <section className="py-24 relative overflow-hidden bg-bg-secondary/30">
+            < section className="py-24 relative overflow-hidden bg-bg-secondary/30" >
                 <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-oasis-cyan/30 to-transparent" />
 
                 <div className="section-container relative z-10">
@@ -146,10 +146,10 @@ const ServicesPage = () => {
                         ))}
                     </div>
                 </div>
-            </section>
+            </section >
 
             {/* CTA Section */}
-            <section className="py-32 relative overflow-hidden">
+            < section className="py-32 relative overflow-hidden" >
                 <div className="absolute inset-0 pointer-events-none">
                 </div>
 
@@ -169,8 +169,8 @@ const ServicesPage = () => {
                         </Link>
                     </div>
                 </div>
-            </section>
-        </div>
+            </section >
+        </div >
     );
 };
 

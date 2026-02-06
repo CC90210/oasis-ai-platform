@@ -20,7 +20,7 @@ const PricingPage: React.FC = () => {
                     Intelligent <span className="text-cyan-400">Automation</span>.
                 </h1>
                 <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-                    Transparent pricing for enterprise-grade solutions. Own your code, own your data.
+                    Transparent pricing for enterprise-grade solutions. Secure your workflows, control your data.
                 </p>
             </div>
 
