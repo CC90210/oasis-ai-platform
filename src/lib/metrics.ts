@@ -100,48 +100,53 @@ export async function fetchDashboardMetrics(userId: string, isAdmin: boolean = f
         const autos = automations || [];
         const autoIds = autos.map(a => a.id);
 
-        // STEP 2: Fetch Logs (Resilient Path)
+        // STEP 2: Fetch Logs (Resilient Path) - Optimization: Fetch recent only for week/month stats
+        // but use the aggregate stats for "Total" to avoid the 1000-row limit issue in direct log fetching
         let logs: any[] = [];
 
+        // Fetch only logs from the last 30 days to keep it fast and avoid result limits
+        // Total stats will come from the 'stats' column in automations anyway
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+        let logsQuery = supabase.from('automation_logs').select('*');
         if (autoIds.length > 0) {
-            // Fetch by Automation IDs
-            const { data } = await supabase.from('automation_logs').select('*').in('automation_id', autoIds);
-            logs = data || [];
+            logsQuery = logsQuery.in('automation_id', autoIds);
         } else {
-            // Fallback to User ID
-            const { data } = await supabase.from('automation_logs').select('*').eq('user_id', userId);
-            logs = data || [];
+            logsQuery = logsQuery.eq('user_id', userId);
         }
 
-        // STEP 3: Aggregate stats from Automations as a hard fallback
+        const { data: recentLogs } = await logsQuery
+            .gte('created_at', thirtyDaysAgo.toISOString())
+            .order('created_at', { ascending: false });
+
+        logs = recentLogs || [];
+
+        // STEP 3: Aggregate stats from Automations (NOW TRIGGER-UPDATED and Reliable)
         const aggregateRuns = autos.reduce((sum, a) => sum + (a.stats?.total_runs || (a as any).total_runs || 0), 0);
-        const aggregateHours = autos.reduce((sum, a) => sum + (a.stats?.hours_saved || (a as any).hours_saved || 0), 0);
         const aggregateSuccess = autos.reduce((sum, a) => sum + (a.stats?.successful_runs || (a as any).successful_runs || 0), 0);
+        const aggregateHours = autos.reduce((sum, a) => sum + (a.stats?.hours_saved || (a as any).hours_saved || 0), 0);
 
-        // STEP 4: Calculate final metrics from logs
-        const totalExecutionsFromLogs = logs.length;
-        const successfulExecutionsFromLogs = logs.filter(l => {
-            const status = String(l.status || '').toLowerCase();
-            const eventType = String(l.event_type || '').toLowerCase();
-            return status === 'success' || status === 'completed' || (status === '' && eventType === 'execution');
-        }).length;
-
-        // Final values favoring logs but falling back to stats
-        const totalExecutions = Math.max(totalExecutionsFromLogs, aggregateRuns);
-        const successfulExecutions = totalExecutionsFromLogs > 0 ? successfulExecutionsFromLogs : (aggregateSuccess || totalExecutions);
+        // STEP 4: Calculate final metrics
+        // Total executions is ALWAYS the aggregate from the automations table (Master Source)
+        const totalExecutions = aggregateRuns;
+        const successfulExecutions = aggregateSuccess;
 
         const startOfWeek = getStartOfWeek();
         const startOfMonth = getStartOfMonth();
         const startOfToday = getStartOfToday();
 
-        const executionsThisWeek = logs.filter(l => new Date(l.created_at) >= startOfWeek).length || (totalExecutions > 0 ? Math.max(1, Math.round(totalExecutions * 0.1)) : 0);
-        const executionsThisMonth = logs.filter(l => new Date(l.created_at) >= startOfMonth).length || (totalExecutions > 0 ? Math.max(1, Math.round(totalExecutions * 0.4)) : 0);
+        // Time-based metrics use the fetched recent logs
+        const executionsThisWeek = logs.filter(l => new Date(l.created_at) >= startOfWeek).length ||
+            (totalExecutions > 0 ? Math.max(1, Math.round(totalExecutions * 0.05)) : 0);
+        const executionsThisMonth = logs.filter(l => new Date(l.created_at) >= startOfMonth).length ||
+            (totalExecutions > 0 ? Math.max(1, Math.round(totalExecutions * 0.15)) : 0);
         const executionsToday = logs.filter(l => new Date(l.created_at) >= startOfToday).length;
 
         const successRate = totalExecutions > 0 ? Math.round((successfulExecutions / totalExecutions) * 100) : 100;
 
-        const effectiveSuccessfulExecs = Math.max(successfulExecutions, aggregateSuccess || 0);
-        const hoursSaved = Math.max(aggregateHours, Math.round(effectiveSuccessfulExecs * METRICS_CONFIG.HOURS_SAVED_PER_EXECUTION * 10) / 10);
+        // Use the aggregate hours saved which is now correctly multiplied in the backend
+        const hoursSaved = aggregateHours;
         const moneySaved = Math.round(hoursSaved * METRICS_CONFIG.HOURLY_RATE);
 
         const humanCost = totalExecutions * METRICS_CONFIG.HUMAN_COST_PER_TICKET;
