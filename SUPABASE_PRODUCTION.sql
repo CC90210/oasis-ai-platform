@@ -190,13 +190,12 @@ BEGIN
     DROP POLICY IF EXISTS "Automation access policy" ON automations;
     DROP POLICY IF EXISTS "Allow all operations for automation_logs" ON automation_logs;
 
-    DROP POLICY IF EXISTS "Users view own profile" ON public.profiles;
-    DROP POLICY IF EXISTS "Users can view own automations" ON public.client_automations;
-    DROP POLICY IF EXISTS "Automation access policy" ON public.client_automations;
-    DROP POLICY IF EXISTS "Users can view own logs" ON public.automation_logs;
-    DROP POLICY IF EXISTS "View logs via automation ownership" ON public.automation_logs;
-    DROP POLICY IF EXISTS "Universal Log Deletion" ON public.automation_logs;
-    DROP POLICY IF EXISTS "Universal Log Visibility" ON public.automation_logs;
+    DROP POLICY IF EXISTS "Profiles access" ON public.profiles;
+    DROP POLICY IF EXISTS "Profiles Access" ON public.profiles;
+    DROP POLICY IF EXISTS "Automations access" ON public.client_automations;
+    DROP POLICY IF EXISTS "Automations Access" ON public.client_automations;
+    DROP POLICY IF EXISTS "Logs access" ON public.automation_logs;
+    DROP POLICY IF EXISTS "Logs Access" ON public.automation_logs;
 END $$;
 
 CREATE POLICY "Allow all operations for legal_acceptances" ON legal_acceptances FOR ALL USING (true) WITH CHECK (true);
