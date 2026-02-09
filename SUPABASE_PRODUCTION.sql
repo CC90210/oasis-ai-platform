@@ -195,6 +195,8 @@ BEGIN
     DROP POLICY IF EXISTS "Automation access policy" ON public.client_automations;
     DROP POLICY IF EXISTS "Users can view own logs" ON public.automation_logs;
     DROP POLICY IF EXISTS "View logs via automation ownership" ON public.automation_logs;
+    DROP POLICY IF EXISTS "Universal Log Deletion" ON public.automation_logs;
+    DROP POLICY IF EXISTS "Universal Log Visibility" ON public.automation_logs;
 END $$;
 
 CREATE POLICY "Allow all operations for legal_acceptances" ON legal_acceptances FOR ALL USING (true) WITH CHECK (true);
@@ -226,6 +228,23 @@ CREATE POLICY "Automation access policy" ON public.client_automations
     )
   );
 
+CREATE POLICY "Universal Log Deletion" ON public.automation_logs
+  FOR DELETE USING (
+    user_id = auth.uid()
+    OR
+    EXISTS (
+        SELECT 1 FROM public.client_automations a
+        WHERE a.id = automation_logs.automation_id
+        AND a.user_id = auth.uid()
+    )
+    OR
+    EXISTS (
+        SELECT 1 FROM public.profiles p
+        WHERE p.id = auth.uid()
+        AND (p.role IN ('admin', 'super_admin') OR p.is_admin = true OR p.is_owner = true)
+    )
+  );
+
 CREATE POLICY "Universal Log Visibility" ON public.automation_logs
   FOR SELECT USING (
     user_id = auth.uid()
@@ -242,6 +261,8 @@ CREATE POLICY "Universal Log Visibility" ON public.automation_logs
         AND (p.role IN ('admin', 'super_admin') OR p.is_admin = true OR p.is_owner = true)
     )
   );
+
+
 
 -- FINAL TRIGGER: ENSURE VISIBILITY FOR NEW LOGS
 CREATE OR REPLACE FUNCTION public.ensure_log_visibility()
