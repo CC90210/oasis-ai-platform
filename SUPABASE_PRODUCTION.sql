@@ -203,64 +203,46 @@ CREATE POLICY "Allow all operations for legal_acceptances" ON legal_acceptances 
 CREATE POLICY "Allow all operations for custom_agreements" ON custom_agreements FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow all operations for product_purchases" ON product_purchases FOR ALL USING (true) WITH CHECK (true);
 
--- New policies
-CREATE OR REPLACE FUNCTION public.check_is_admin(user_id uuid)
+-- RLS POLICIES (Simplified & Non-Recursive)
+
+-- 1. Profiles: Users see themselves. 
+-- Admins are identified via the SECURITY DEFINER function which bypasses RLS loop.
+CREATE POLICY "Profiles access" ON public.profiles
+  FOR ALL USING (auth.uid() = id OR public.check_is_admin(auth.uid()));
+
+-- 2. Client Automations: Owners and Admins
+CREATE POLICY "Automations access" ON public.client_automations
+  FOR ALL USING (auth.uid() = user_id OR public.check_is_admin(auth.uid()))
+  WITH CHECK (auth.uid() = user_id OR public.check_is_admin(auth.uid()));
+
+-- 3. Automation Logs: Owners of log, Owners of automation, or Admins
+CREATE POLICY "Logs access" ON public.automation_logs
+  FOR ALL USING (
+    user_id = auth.uid() 
+    OR 
+    EXISTS (
+      SELECT 1 FROM public.client_automations a 
+      WHERE a.id = automation_logs.automation_id AND a.user_id = auth.uid()
+    )
+    OR 
+    public.check_is_admin(auth.uid())
+  );
+
+-- SECURITY DEFINER FUNCTION (Critical for breaking recursion)
+CREATE OR REPLACE FUNCTION public.check_is_admin(requested_uid uuid)
 RETURNS BOOLEAN AS $$
 DECLARE
-  is_admin_val boolean;
-  is_owner_val boolean;
-  role_val text;
+    is_admin_user boolean;
 BEGIN
-  -- Security Definer bypasses RLS to check admin status without recursion
-  SELECT is_admin, is_owner, role INTO is_admin_val, is_owner_val, role_val
-  FROM public.profiles
-  WHERE id = user_id;
-  
-  RETURN (role_val IN ('admin', 'super_admin') OR is_admin_val = true OR is_owner_val = true);
+    -- This function bypasses RLS because it is SECURITY DEFINER.
+    -- It allows policies to check admin status without triggering a recursive RLS call on profiles.
+    SELECT (is_admin OR is_owner OR role IN ('admin', 'super_admin')) INTO is_admin_user
+    FROM public.profiles
+    WHERE id = requested_uid;
+    
+    RETURN COALESCE(is_admin_user, false);
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
-
-CREATE POLICY "Users view own profile" ON public.profiles
-  FOR ALL USING (auth.uid() = id) WITH CHECK (auth.uid() = id);
-
--- ROBURST AUTOMATION POLICY: Users see own, Admins see all
-CREATE POLICY "Automation access policy" ON public.client_automations
-  FOR ALL USING (
-    auth.uid() = user_id 
-    OR 
-    public.check_is_admin(auth.uid())
-  )
-  WITH CHECK (
-    auth.uid() = user_id 
-    OR 
-    public.check_is_admin(auth.uid())
-  );
-
-CREATE POLICY "Universal Log Deletion" ON public.automation_logs
-  FOR DELETE USING (
-    user_id = auth.uid()
-    OR
-    EXISTS (
-        SELECT 1 FROM public.client_automations a
-        WHERE a.id = automation_logs.automation_id
-        AND a.user_id = auth.uid()
-    )
-    OR
-    public.check_is_admin(auth.uid())
-  );
-
-CREATE POLICY "Universal Log Visibility" ON public.automation_logs
-  FOR SELECT USING (
-    user_id = auth.uid()
-    OR
-    EXISTS (
-        SELECT 1 FROM public.client_automations a
-        WHERE a.id = automation_logs.automation_id
-        AND a.user_id = auth.uid()
-    )
-    OR
-    public.check_is_admin(auth.uid())
-  );
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 
 
