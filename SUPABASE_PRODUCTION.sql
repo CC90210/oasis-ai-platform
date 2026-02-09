@@ -168,6 +168,11 @@ CREATE TABLE IF NOT EXISTS public.automation_logs (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Indices for performance (Essential for real-time metrics)
+CREATE INDEX IF NOT EXISTS idx_automation_logs_user_id ON public.automation_logs(user_id);
+CREATE INDEX IF NOT EXISTS idx_automation_logs_automation_id ON public.automation_logs(automation_id);
+CREATE INDEX IF NOT EXISTS idx_automation_logs_created_at ON public.automation_logs(created_at);
+
 -- SET RLS POLICIES
 ALTER TABLE legal_acceptances ENABLE ROW LEVEL SECURITY;
 ALTER TABLE custom_agreements ENABLE ROW LEVEL SECURITY;

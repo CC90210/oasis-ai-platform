@@ -95,58 +95,38 @@ const getStartOfToday = (): Date => {
  */
 export async function fetchDashboardMetrics(userId: string, isAdmin: boolean = false): Promise<DashboardMetrics> {
     try {
-        // STEP 1: Fetch Automations
-        const { data: automations } = await supabase.from('automations').select('*').eq('user_id', userId);
-        const autos = automations || [];
-        const autoIds = autos.map(a => a.id);
-
-        // STEP 2: Fetch Logs (Resilient Path) - Optimization: Fetch recent only for week/month stats
-        // but use the aggregate stats for "Total" to avoid the 1000-row limit issue in direct log fetching
-        let logs: any[] = [];
-
-        // Fetch only logs from the last 30 days to keep it fast and avoid result limits
-        // Total stats will come from the 'stats' column in automations anyway
-        const thirtyDaysAgo = new Date();
-        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
-        let logsQuery = supabase.from('automation_logs').select('*');
-        if (autoIds.length > 0) {
-            logsQuery = logsQuery.in('automation_id', autoIds);
-        } else {
-            logsQuery = logsQuery.eq('user_id', userId);
-        }
-
-        const { data: recentLogs } = await logsQuery
-            .gte('created_at', thirtyDaysAgo.toISOString())
-            .order('created_at', { ascending: false });
-
-        logs = recentLogs || [];
-
-        // STEP 3: Aggregate stats from Automations (NOW TRIGGER-UPDATED and Reliable)
-        const aggregateRuns = autos.reduce((sum, a) => sum + (a.stats?.total_runs || (a as any).total_runs || 0), 0);
-        const aggregateSuccess = autos.reduce((sum, a) => sum + (a.stats?.successful_runs || (a as any).successful_runs || 0), 0);
-        const aggregateHours = autos.reduce((sum, a) => sum + (a.stats?.hours_saved || (a as any).hours_saved || 0), 0);
-
-        // STEP 4: Calculate final metrics
-        // Total executions is ALWAYS the aggregate from the automations table (Master Source)
-        const totalExecutions = aggregateRuns;
-        const successfulExecutions = aggregateSuccess;
-
         const startOfWeek = getStartOfWeek();
         const startOfMonth = getStartOfMonth();
         const startOfToday = getStartOfToday();
 
-        // Time-based metrics use the fetched recent logs
-        const executionsThisWeek = logs.filter(l => new Date(l.created_at) >= startOfWeek).length ||
-            (totalExecutions > 0 ? Math.max(1, Math.round(totalExecutions * 0.05)) : 0);
-        const executionsThisMonth = logs.filter(l => new Date(l.created_at) >= startOfMonth).length ||
-            (totalExecutions > 0 ? Math.max(1, Math.round(totalExecutions * 0.15)) : 0);
-        const executionsToday = logs.filter(l => new Date(l.created_at) >= startOfToday).length;
+        // STEP 1: Fetch Live Counts from Logs (The Single Source of Truth)
+        // We run these in parallel for maximum performance
+        const [
+            totalRes,
+            successRes,
+            weekRes,
+            monthRes,
+            todayRes
+        ] = await Promise.all([
+            supabase.from('automation_logs').select('*', { count: 'exact', head: true }).eq('user_id', userId),
+            supabase.from('automation_logs').select('*', { count: 'exact', head: true }).eq('user_id', userId).in('status', ['success', 'completed', 'Success', 'Completed', '']),
+            supabase.from('automation_logs').select('*', { count: 'exact', head: true }).eq('user_id', userId).gte('created_at', startOfWeek.toISOString()),
+            supabase.from('automation_logs').select('*', { count: 'exact', head: true }).eq('user_id', userId).gte('created_at', startOfMonth.toISOString()),
+            supabase.from('automation_logs').select('*', { count: 'exact', head: true }).eq('user_id', userId).gte('created_at', startOfToday.toISOString()),
+        ]);
 
+        const totalExecutions = totalRes.count || 0;
+        const successfulExecutions = successRes.count || 0;
+        const executionsThisWeek = weekRes.count || 0;
+        const executionsThisMonth = monthRes.count || 0;
+        const executionsToday = todayRes.count || 0;
+
+        // STEP 2: Calculate Derived Metrics
         const successRate = totalExecutions > 0 ? Math.round((successfulExecutions / totalExecutions) * 100) : 100;
 
-        // Use the aggregate hours saved which is now correctly multiplied in the backend
-        const hoursSaved = aggregateHours;
+        // Hours Saved: Based on real execution count * platform average
+        // This ensures that deleting a log immediately updates time/money saved.
+        const hoursSaved = parseFloat((totalExecutions * METRICS_CONFIG.HOURS_SAVED_PER_EXECUTION).toFixed(2));
         const moneySaved = Math.round(hoursSaved * METRICS_CONFIG.HOURLY_RATE);
 
         const humanCost = totalExecutions * METRICS_CONFIG.HUMAN_COST_PER_TICKET;
@@ -192,42 +172,32 @@ const DEFAULT_DASHBOARD_METRICS: DashboardMetrics = {
 
 /**
  * Fetch metrics for a specific automation
+ * MASTER SOURCE: Count rows in automation_logs
  */
 export async function fetchAutomationMetrics(automationId: string, userId: string, isAdmin: boolean = false): Promise<AutomationMetrics> {
     try {
-        // STEP 1: Fetch the Automation record for fallback stats
-        const { data: auto } = await supabase.from('automations').select('*').eq('id', automationId).single();
-        const stats = (auto as any)?.stats || {};
+        const startOfWeek = getStartOfWeek();
 
-        // STEP 2: Fetch Logs (Resilient Path)
-        let query = supabase.from('automation_logs').select('*').eq('automation_id', automationId);
-        if (!isAdmin) {
-            query = query.or(`user_id.eq.${userId},automation_id.eq.${automationId}`);
-        } else {
-            // Admin Global Sweep for this specific automation (search by type/name if ID yields nothing)
-            const { data: targetLogs } = await query;
-            if (!targetLogs || targetLogs.length === 0) {
-                query = supabase.from('automation_logs').select('*')
-                    .or(`event_name.ilike.%${auto?.name || ''}%,event_type.ilike.%${auto?.type || ''}%`);
-            }
-        }
+        // Parallel count queries for specific automation
+        const [totalRes, successRes, weekRes] = await Promise.all([
+            supabase.from('automation_logs').select('*', { count: 'exact', head: true }).eq('automation_id', automationId),
+            supabase.from('automation_logs').select('*', { count: 'exact', head: true }).eq('automation_id', automationId).in('status', ['success', 'completed', 'Success', 'Completed', '']),
+            supabase.from('automation_logs').select('*', { count: 'exact', head: true }).eq('automation_id', automationId).gte('created_at', startOfWeek.toISOString()),
+        ]);
 
-        const { data: logs } = await query.order('created_at', { ascending: false });
-        const allLogs = logs || [];
-
-        // STEP 3: Combine Data (Logs take priority, Stats as fallback)
-        const logRuns = allLogs.length;
-        const logSuccess = allLogs.filter(l => {
-            const status = String(l.status || '').toLowerCase();
-            return status === 'success' || status === 'completed' || (status === '' && String(l.event_type || '') === 'execution');
-        }).length;
-
-        const totalRuns = Math.max(logRuns, stats.total_runs || 0);
-        const successfulRuns = logRuns > 0 ? logSuccess : (stats.successful_runs || totalRuns);
-
+        const totalRuns = totalRes.count || 0;
+        const successfulRuns = successRes.count || 0;
+        const runsThisWeek = weekRes.count || 0;
         const reliability = totalRuns > 0 ? Math.round((successfulRuns / totalRuns) * 100) : 100;
-        const lastRunAt = allLogs.length > 0 ? allLogs[0].created_at : (auto as any)?.last_run_at || null;
-        const runsThisWeek = allLogs.filter(l => new Date(l.created_at) >= getStartOfWeek()).length || (totalRuns > 0 ? 1 : 0);
+
+        // Fetch last run date
+        const { data: lastLog } = await supabase
+            .from('automation_logs')
+            .select('created_at')
+            .eq('automation_id', automationId)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .single();
 
         return {
             automationId,
@@ -235,7 +205,7 @@ export async function fetchAutomationMetrics(automationId: string, userId: strin
             successfulRuns,
             failedRuns: totalRuns - successfulRuns,
             reliability,
-            lastRunAt,
+            lastRunAt: lastLog?.created_at || null,
             runsThisWeek,
             avgExecutionTime: 2,
         };
@@ -256,63 +226,41 @@ export async function fetchAutomationMetrics(automationId: string, userId: strin
 
 /**
  * Fetch metrics for ALL automations belonging to the user
+ * MASTER SOURCE: Count rows in automation_logs grouped by automation_id
  */
 export async function fetchAllAutomationMetrics(userId: string, isAdmin: boolean = false): Promise<Map<string, AutomationMetrics>> {
     try {
-        // Fetch all automations from "automations" table
+        // STEP 1: Fetch list of automations
         let autoQuery = supabase.from('automations').select('id');
         if (!isAdmin) autoQuery = autoQuery.eq('user_id', userId);
-
         const { data: automations } = await autoQuery;
+        const autos = automations || [];
 
-        // Fetch ALL logs (Resilient Path)
-        let logQuery = supabase.from('automation_logs').select('id, automation_id, status, created_at, user_id');
-
-        if (!isAdmin) {
-            const autoIds = (automations || []).map(a => a.id);
-            if (autoIds.length > 0) {
-                const idList = autoIds.map(id => `'${id}'`).join(',');
-                logQuery = logQuery.or(`user_id.eq.${userId},automation_id.in.(${idList})`);
-            } else {
-                logQuery = logQuery.eq('user_id', userId);
-            }
-        }
-
+        // STEP 2: Fetch ALL logs for stats calculation
+        // Optimization: For huge datasets, we'd use grouped counts, but for standard user logs,
+        // fetching all rows (id, automation_id, status) is fast and reliable.
+        let logQuery = supabase.from('automation_logs').select('automation_id, status, created_at').eq('user_id', userId);
         const { data: allLogs } = await logQuery;
-
         const logs = allLogs || [];
+
         const metricsMap = new Map<string, AutomationMetrics>();
         const startOfWeek = getStartOfWeek();
 
-        for (const automation of automations || []) {
-            const automationLogs = logs.filter(l => l.automation_id === automation.id);
-
-            // LOGS PATH
-            const logRuns = automationLogs.length;
-            const logSuccess = automationLogs.filter(l =>
-                l.status?.toLowerCase() === 'success' ||
-                l.status?.toLowerCase() === 'completed'
-            ).length;
-
-            // STATS PATH (Fallback)
-            const statsRuns = (automation as any).stats?.total_runs || (automation as any).total_runs || 0;
-            const statsSuccess = (automation as any).stats?.successful_runs || 0;
-
-            // COMBINED (Final)
-            const totalRuns = Math.max(logRuns, statsRuns);
-            const successfulRuns = logRuns > 0 ? logSuccess : (statsSuccess || totalRuns);
-            const failedRuns = totalRuns - successfulRuns;
-
+        for (const auto of autos) {
+            const autoLogs = logs.filter(l => l.automation_id === auto.id);
+            const totalRuns = autoLogs.length;
+            const successfulRuns = autoLogs.filter(l => ['success', 'completed', 'Success', 'Completed', ''].includes(l.status || '')).length;
             const reliability = totalRuns > 0 ? Math.round((successfulRuns / totalRuns) * 100) : 100;
-            const sortedLogs = [...automationLogs].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-            const lastRunAt = sortedLogs.length > 0 ? sortedLogs[0].created_at : (automation as any).last_run_at || null;
-            const runsThisWeek = automationLogs.filter(l => new Date(l.created_at) >= startOfWeek).length || (totalRuns > 0 ? 1 : 0);
 
-            metricsMap.set(automation.id, {
-                automationId: automation.id,
+            const sortedLogs = [...autoLogs].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+            const lastRunAt = sortedLogs.length > 0 ? sortedLogs[0].created_at : null;
+            const runsThisWeek = autoLogs.filter(l => new Date(l.created_at) >= startOfWeek).length;
+
+            metricsMap.set(auto.id, {
+                automationId: auto.id,
                 totalRuns,
                 successfulRuns,
-                failedRuns,
+                failedRuns: totalRuns - successfulRuns,
                 reliability,
                 lastRunAt,
                 runsThisWeek,
