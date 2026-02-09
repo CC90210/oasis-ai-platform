@@ -220,29 +220,64 @@ export default function AutomationsPage() {
         if (!userId) return;
         setDeletingLog(true);
         try {
-            const { error } = await supabase.from('automation_logs').delete().eq('id', logId).eq('user_id', userId);
-            if (!error) {
-                setLogs(prev => prev.filter(log => log.id !== logId));
-                setDeleteLogId(null);
-                // Refresh metrics
-                const metrics = await fetchAutomationMetrics(selectedAuto?.id || '', userId);
-                setAutomationMetrics(metrics);
-            } else alert('Failed to delete log');
-        } catch (err) { alert('Failed to delete log'); } finally { setDeletingLog(false); }
+            // Validate deletion by selecting returned rows
+            const { error, data } = await supabase
+                .from('automation_logs')
+                .delete()
+                .eq('id', logId)
+                .select();
+
+            if (error) {
+                console.error('Delete Log Error:', error);
+                throw error;
+            }
+
+            // Note: If RLS blocks deletion but throws no error, data will be empty.
+            if (!data || data.length === 0) {
+                throw new Error('Log entry could not be verified as deleted. Check permissions.');
+            }
+
+            // Success
+            setLogs(prev => prev.filter(log => log.id !== logId));
+            setDeleteLogId(null);
+
+            // Refresh metrics
+            const metrics = await fetchAutomationMetrics(selectedAuto?.id || '', userId);
+            setAutomationMetrics(metrics);
+        } catch (err: any) {
+            console.error('Delete operation failed:', err);
+            alert(`Failed to delete log: ${err.message || 'Unknown error'}`);
+        } finally {
+            setDeletingLog(false);
+        }
     };
 
     const handleClearAllLogs = async () => {
         if (!selectedAuto || !userId) return;
         setClearingAllLogs(true);
         try {
-            const { error } = await supabase.from('automation_logs').delete().eq('automation_id', selectedAuto.id).eq('user_id', userId);
-            if (!error) {
-                setLogs([]);
-                setShowClearAllLogs(false);
-                const metrics = await fetchAutomationMetrics(selectedAuto.id, userId);
-                setAutomationMetrics(metrics);
-            } else alert('Failed to clear logs');
-        } catch (err) { alert('Failed to clear logs'); } finally { setClearingAllLogs(false); }
+            // Use count to confirm deletion of multiple rows
+            const { error, count } = await supabase
+                .from('automation_logs')
+                .delete({ count: 'exact' })
+                .eq('automation_id', selectedAuto.id);
+
+            if (error) {
+                console.error('Clear Logs Error:', error);
+                throw error;
+            }
+
+            // Success
+            setLogs([]);
+            setShowClearAllLogs(false);
+            const metrics = await fetchAutomationMetrics(selectedAuto.id, userId);
+            setAutomationMetrics(metrics);
+        } catch (err: any) {
+            console.error('Clear operation failed:', err);
+            alert(`Failed to clear logs: ${err.message || 'Unknown error'}`);
+        } finally {
+            setClearingAllLogs(false);
+        }
     };
 
     const exportLogsToCSV = () => {
