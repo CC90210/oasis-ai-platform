@@ -42,6 +42,12 @@ const ConnectionDebugger = lazy(() => import('./pages/portal/ConnectionDebugger'
 // Legal Pages
 const PrivacyPage = lazy(() => import('./pages/legal/PrivacyPage'));
 const TermsPage = lazy(() => import('./pages/legal/TermsPage'));
+const MSAPage = lazy(() => import('./pages/legal/MSAPage'));
+const LegalHubPage = lazy(() => import('./pages/legal/LegalHubPage'));
+const IPAssignmentPage = lazy(() => import('./pages/legal/IPAssignmentPage'));
+const SOWTemplatePage = lazy(() => import('./pages/legal/SOWTemplatePage'));
+const PartnershipTermSheetPage = lazy(() => import('./pages/legal/PartnershipTermSheetPage'));
+const ContractorAgreementPage = lazy(() => import('./pages/legal/ContractorAgreementPage'));
 
 // Custom Agreement Pages
 const CustomAgreementPage = lazy(() => import('./pages/custom-agreement/CustomAgreementPage'));
@@ -84,8 +90,14 @@ function App() {
                             <Route path="/custom-agreement/success" element={<CustomAgreementSuccessPage />} />
 
                             {/* Legal Pages */}
-                            <Route path="/privacy" element={<MainLayout><PrivacyPage /></MainLayout>} />
-                            <Route path="/terms" element={<MainLayout><TermsPage /></MainLayout>} />
+                            <Route path="/legal" element={<MainLayout><LegalHubPage /></MainLayout>} />
+                            <Route path="/legal/privacy-policy" element={<MainLayout><PrivacyPage /></MainLayout>} />
+                            <Route path="/legal/terms-of-service" element={<MainLayout><TermsPage /></MainLayout>} />
+                            <Route path="/legal/master-services-agreement" element={<MainLayout><MSAPage /></MainLayout>} />
+                            <Route path="/legal/ip-assignment" element={<MainLayout><IPAssignmentPage /></MainLayout>} />
+                            <Route path="/legal/statement-of-work" element={<MainLayout><SOWTemplatePage /></MainLayout>} />
+                            <Route path="/legal/partnership-term-sheet" element={<MainLayout><PartnershipTermSheetPage /></MainLayout>} />
+                            <Route path="/legal/contractor-agreement" element={<MainLayout><ContractorAgreementPage /></MainLayout>} />
 
                             {/* Portal Auth Routes (No Protection) */}
                             <Route path="/portal/login" element={<PortalLoginPage />} />
@@ -144,6 +156,8 @@ function App() {
                             } />
 
                             {/* Convenience Redirects */}
+                            <Route path="/privacy" element={<Navigate to="/legal/privacy-policy" replace />} />
+                            <Route path="/terms" element={<Navigate to="/legal/terms-of-service" replace />} />
                             <Route path="/login" element={<Navigate to="/portal/login" replace />} />
                             <Route path="/portal" element={<Navigate to="/portal/dashboard" replace />} />
                         </Routes>

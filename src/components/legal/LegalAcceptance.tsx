@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { Check, Shield, ExternalLink, ChevronDown, ChevronUp } from 'lucide-react';
 
 // Version constants - UPDATE THESE when legal docs change
-export const CURRENT_TOS_VERSION = '2026-01-28-v1';
-export const CURRENT_PRIVACY_VERSION = '2026-01-28-v1';
-export const CURRENT_SERVICE_AGREEMENT_VERSION = '2026-01-28-v1';
+export const CURRENT_TOS_VERSION = '2026-02-09-v1';
+export const CURRENT_PRIVACY_VERSION = '2026-02-09-v1';
+export const CURRENT_SERVICE_AGREEMENT_VERSION = '2026-02-09-v1';
 
 export interface AcceptanceData {
     tosAccepted: boolean;
@@ -80,8 +80,8 @@ export default function LegalAcceptance({
                             className="sr-only"
                         />
                         <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${tosChecked
-                                ? 'bg-purple-500 border-purple-500'
-                                : 'border-[var(--text-muted)] group-hover:border-purple-400'
+                            ? 'bg-purple-500 border-purple-500'
+                            : 'border-[var(--text-muted)] group-hover:border-purple-400'
                             }`}>
                             {tosChecked && <Check className="w-3 h-3 text-white" />}
                         </div>
@@ -90,7 +90,7 @@ export default function LegalAcceptance({
                         <span className="text-[var(--text-primary)] font-medium">
                             I agree to the{' '}
                             <a
-                                href="/terms"
+                                href="/legal/terms-of-service"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-purple-400 hover:text-purple-300 inline-flex items-center gap-1"
@@ -116,8 +116,8 @@ export default function LegalAcceptance({
                             className="sr-only"
                         />
                         <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${privacyChecked
-                                ? 'bg-purple-500 border-purple-500'
-                                : 'border-[var(--text-muted)] group-hover:border-purple-400'
+                            ? 'bg-purple-500 border-purple-500'
+                            : 'border-[var(--text-muted)] group-hover:border-purple-400'
                             }`}>
                             {privacyChecked && <Check className="w-3 h-3 text-white" />}
                         </div>
@@ -126,7 +126,7 @@ export default function LegalAcceptance({
                         <span className="text-[var(--text-primary)] font-medium">
                             I acknowledge the{' '}
                             <a
-                                href="/privacy"
+                                href="/legal/privacy-policy"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-purple-400 hover:text-purple-300 inline-flex items-center gap-1"
@@ -153,15 +153,15 @@ export default function LegalAcceptance({
                                 className="sr-only"
                             />
                             <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${serviceAgreementChecked
-                                    ? 'bg-purple-500 border-purple-500'
-                                    : 'border-[var(--text-muted)] group-hover:border-purple-400'
+                                ? 'bg-purple-500 border-purple-500'
+                                : 'border-[var(--text-muted)] group-hover:border-purple-400'
                                 }`}>
                                 {serviceAgreementChecked && <Check className="w-3 h-3 text-white" />}
                             </div>
                         </div>
                         <div className="flex-1">
                             <span className="text-[var(--text-primary)] font-medium">
-                                I agree to the Service Agreement
+                                I agree to the <a href="/legal/master-services-agreement" target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:underline">Master Services Agreement (MSA)</a>
                             </span>
                             <p className="text-[var(--text-muted)] text-sm mt-1">
                                 AI services provided "as is" • Results may vary • Third-party platforms may change
@@ -217,8 +217,8 @@ export default function LegalAcceptance({
                 onClick={handleContinue}
                 disabled={!canProceed || isLoading}
                 className={`w-full mt-6 py-4 rounded-xl font-semibold text-lg transition flex items-center justify-center gap-2 ${canProceed && !isLoading
-                        ? 'bg-gradient-to-r from-purple-500 to-cyan-500 hover:from-purple-400 hover:to-cyan-400 text-white cursor-pointer shadow-lg shadow-purple-500/25'
-                        : 'bg-[var(--bg-tertiary)] text-[var(--text-muted)] cursor-not-allowed'
+                    ? 'bg-gradient-to-r from-purple-500 to-cyan-500 hover:from-purple-400 hover:to-cyan-400 text-white cursor-pointer shadow-lg shadow-purple-500/25'
+                    : 'bg-[var(--bg-tertiary)] text-[var(--text-muted)] cursor-not-allowed'
                     }`}
             >
                 {isLoading ? (
@@ -252,12 +252,12 @@ function ServiceAgreementText({ clientName }: { clientName: string }) {
 
     return (
         <div className="space-y-4">
-            <h3 className="font-bold text-[var(--text-primary)] text-base">SERVICE AGREEMENT</h3>
+            <h3 className="font-bold text-[var(--text-primary)] text-base">MASTER SERVICES AGREEMENT (MSA)</h3>
             <p className="text-[var(--text-muted)] text-xs">Effective Date: {today}</p>
 
             <p>
-                This Service Agreement ("Agreement") is between OASIS AI Solutions ("Provider"),
-                operating in Ontario, Canada, and {clientName || "[Client]"} ("Client").
+                This Master Services Agreement ("Agreement") is between OASIS AI Solutions ("Developer"),
+                headquartered in Ontario, Canada, and {clientName || "[Client]"} ("Client").
             </p>
 
             <h4 className="font-semibold text-[var(--text-primary)] mt-4">1. NATURE OF SERVICES</h4>
@@ -284,13 +284,13 @@ function ServiceAgreementText({ clientName }: { clientName: string }) {
 
             <h4 className="font-semibold text-[var(--text-primary)] mt-4">3. LIMITATION OF LIABILITY</h4>
             <p>
-                <strong className="text-[var(--text-primary)]">SERVICES ARE PROVIDED "AS IS" WITHOUT WARRANTIES OF ANY KIND.</strong> Provider shall not be liable for:
+                <strong className="text-[var(--text-primary)]">SERVICES ARE PROVIDED "AS IS" WITHOUT WARRANTIES OF ANY KIND.</strong> Developer shall not be liable for:
             </p>
             <ul className="list-disc pl-5 space-y-1 text-[var(--text-muted)]">
                 <li>Lost revenue, profits, or business opportunities</li>
                 <li>Decisions made based on AI outputs</li>
                 <li>Third-party platform outages, changes, or discontinuation</li>
-                <li>Data loss or security breaches beyond Provider's reasonable control</li>
+                <li>Data loss or security breaches beyond Developer's reasonable control</li>
                 <li>Indirect, incidental, or consequential damages of any kind</li>
             </ul>
             <p className="mt-2">
@@ -299,7 +299,7 @@ function ServiceAgreementText({ clientName }: { clientName: string }) {
 
             <h4 className="font-semibold text-[var(--text-primary)] mt-4">4. INDEMNIFICATION</h4>
             <p>
-                Client agrees to indemnify and hold harmless Provider from any claims, damages, or expenses
+                Client agrees to indemnify and hold harmless Developer from any claims, damages, or expenses
                 arising from Client's use of the services, violation of laws, or breach of this Agreement.
             </p>
 

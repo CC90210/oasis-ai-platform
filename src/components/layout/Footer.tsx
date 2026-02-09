@@ -59,11 +59,11 @@ export const Footer = () => {
                         <ul className="space-y-4">
                             <li className="flex items-start gap-3 text-text-secondary">
                                 <Mail className="w-5 h-5 text-oasis-cyan flex-shrink-0 mt-1" />
-                                <a href="mailto:oasisaisolutions@gmail.com" className="hover:text-white transition-colors break-all">oasisaisolutions@gmail.com</a>
+                                <a href="mailto:legal@oasisai.solutions" className="hover:text-white transition-colors break-all">legal@oasisai.solutions</a>
                             </li>
                             <li className="flex items-start gap-3 text-text-secondary">
                                 <MapPin className="w-5 h-5 text-oasis-cyan flex-shrink-0 mt-1" />
-                                <span className="break-words">Collingwood, Ontario, Canada</span>
+                                <span className="break-words">141 Sixth Street, Collingwood, ON</span>
                             </li>
                             <li className="flex items-start gap-3 text-text-secondary">
                                 <Globe className="w-5 h-5 text-oasis-cyan flex-shrink-0 mt-1" />
@@ -78,8 +78,9 @@ export const Footer = () => {
                         © {new Date().getFullYear()} OASIS AI Solutions | Conaugh McKenna, Sole Proprietor | Collingwood, Ontario, Canada
                     </p>
                     <div className="flex gap-8 text-sm text-text-tertiary">
-                        <Link to="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
-                        <Link to="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
+                        <Link to="/legal/privacy-policy" className="hover:text-white transition-colors">Privacy Policy</Link>
+                        <Link to="/legal/terms-of-service" className="hover:text-white transition-colors">Terms of Service</Link>
+                        <Link to="/legal" className="hover:text-white transition-colors">Legal</Link>
                     </div>
                 </div>
             </div>
