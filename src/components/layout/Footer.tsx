@@ -59,7 +59,7 @@ export const Footer = () => {
                         <ul className="space-y-4">
                             <li className="flex items-start gap-3 text-text-secondary">
                                 <Mail className="w-5 h-5 text-oasis-cyan flex-shrink-0 mt-1" />
-                                <a href="mailto:legal@oasisai.solutions" className="hover:text-white transition-colors break-all">legal@oasisai.solutions</a>
+                                <a href="mailto:oasisaisolutions@gmail.com" className="hover:text-white transition-colors break-all">oasisaisolutions@gmail.com</a>
                             </li>
                             <li className="flex items-start gap-3 text-text-secondary">
                                 <MapPin className="w-5 h-5 text-oasis-cyan flex-shrink-0 mt-1" />

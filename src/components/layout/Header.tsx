@@ -240,10 +240,10 @@ export const Header = () => {
                             <div className="text-center text-sm text-gray-500">
                                 <p>Questions? Contact us</p>
                                 <a
-                                    href="mailto:legal@oasisai.solutions"
+                                    href="mailto:oasisaisolutions@gmail.com"
                                     className="text-oasis-cyan hover:text-cyan-300 transition"
                                 >
-                                    legal@oasisai.solutions
+                                    oasisaisolutions@gmail.com
                                 </a>
                             </div>
                         </div>

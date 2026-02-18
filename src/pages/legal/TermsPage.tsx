@@ -93,7 +93,7 @@ export default function TermsPage() {
                         <p className="text-gray-300 m-0">141 Sixth Street</p>
                         <p className="text-gray-300 m-0">Collingwood, Ontario L9Y 1Z1, Canada</p>
                         <p className="text-gray-300 m-0">Tel: +1 240-332-5062</p>
-                        <p className="text-gray-300 m-0">Email: legal@oasisai.solutions</p>
+                        <p className="text-gray-300 m-0">Email: oasisaisolutions@gmail.com</p>
                     </div>
 
                     <div className="bg-purple-500/10 border border-purple-500/30 rounded-lg p-6 my-12 text-center">
