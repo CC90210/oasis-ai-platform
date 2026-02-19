@@ -241,7 +241,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             const metadata = session.metadata;
 
             console.log('✅ CHECKOUT COMPLETED');
-            console.log('Email:', session.customer_email);
             console.log('Amount:', session.amount_total ? `$${session.amount_total / 100}` : 'N/A');
 
             // Store session for later linking during signup
@@ -267,7 +266,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                         metadata?.tier || 'professional'
                     );
 
-                    console.log(`✅ Linked subscription to existing user: ${user.email}`);
+                    console.log(`✅ Linked subscription to existing user: ${user.id}`);
 
                     // Mark pending session as linked
                     await supabase
@@ -279,7 +278,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                         })
                         .eq('stripe_session_id', session.id);
                 } else {
-                    console.log(`⏳ User not found, session stored for later: ${session.customer_email}`);
+                    console.log(`⏳ User not found, session stored for later lookup`);
                 }
             }
             break;
@@ -307,7 +306,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                         subscription.metadata?.productName || 'OASIS AI Automation',
                         subscription.metadata?.tier || 'professional'
                     );
-                    console.log(`✅ Subscription synced for user: ${email}`);
+                    console.log(`✅ Subscription synced for user profile`);
                 }
             }
             break;
@@ -336,7 +335,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             if (invoice.customer_email) {
                 const user = await findUserByEmail(invoice.customer_email);
                 await recordInvoice(user?.id || null, invoice);
-                console.log(`✅ Invoice recorded for: ${invoice.customer_email}`);
+                console.log(`✅ Invoice recorded`);
             }
             break;
         }
@@ -405,7 +404,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 if (agreementError) {
                     console.error('Error deleting custom_agreements:', agreementError);
                 } else {
-                    console.log(`🗑️ Deleted ${deletedAgreements?.length || 0} incomplete custom agreements for ${customerEmail}`);
+                    console.log(`🗑️ Deleted ${deletedAgreements?.length || 0} incomplete custom agreements`);
                 }
 
                 // Delete related legal_acceptances
@@ -418,7 +417,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 if (legalError) {
                     console.error('Error deleting legal_acceptances:', legalError);
                 } else {
-                    console.log(`🗑️ Cleaned up legal acceptances for cancelled custom agreement: ${customerEmail}`);
+                    console.log(`🗑️ Cleaned up legal acceptances for cancelled custom agreement`);
                 }
             } else {
                 // Standard product purchase cleanup
@@ -432,7 +431,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 if (purchaseError) {
                     console.error('Error deleting product_purchases:', purchaseError);
                 } else {
-                    console.log(`🗑️ Deleted ${deletedPurchases?.length || 0} incomplete purchases for ${customerEmail}`);
+                    console.log(`🗑️ Deleted ${deletedPurchases?.length || 0} incomplete purchases`);
                 }
 
                 // Delete related legal_acceptances

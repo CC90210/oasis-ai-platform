@@ -184,28 +184,27 @@ ALTER TABLE public.automation_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.invoices ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.promo_code_usage ENABLE ROW LEVEL SECURITY;
 
--- DROP AND RECREATE POLICIES TO AVOID "ALREADY EXISTS" ERRORS
-DO $$ 
-BEGIN
-    DROP POLICY IF EXISTS "Allow all operations for legal_acceptances" ON legal_acceptances;
-    DROP POLICY IF EXISTS "Allow all operations for custom_agreements" ON custom_agreements;
-    DROP POLICY IF EXISTS "Allow all operations for product_purchases" ON product_purchases;
-    DROP POLICY IF EXISTS "Allow all operations for profiles" ON profiles;
-    DROP POLICY IF EXISTS "Allow all operations for automations" ON automations;
-    DROP POLICY IF EXISTS "Automation access policy" ON automations;
-    DROP POLICY IF EXISTS "Allow all operations for automation_logs" ON automation_logs;
+-- RLS POLICIES (Simplified & Non-Recursive)
+-- 1. Legal Acceptances: Users see their own via email match or Admins
+CREATE POLICY "Legal acceptances access" ON public.legal_acceptances
+  FOR ALL USING (
+    client_email = (SELECT email FROM auth.users WHERE id = auth.uid())
+    OR public.check_is_admin(auth.uid())
+  );
 
-    DROP POLICY IF EXISTS "Profiles access" ON public.profiles;
-    DROP POLICY IF EXISTS "Profiles Access" ON public.profiles;
-    DROP POLICY IF EXISTS "Automations access" ON public.client_automations;
-    DROP POLICY IF EXISTS "Automations Access" ON public.client_automations;
-    DROP POLICY IF EXISTS "Logs access" ON public.automation_logs;
-    DROP POLICY IF EXISTS "Logs Access" ON public.automation_logs;
-END $$;
+-- 2. Custom Agreements: Users see their own via email match or Admins
+CREATE POLICY "Custom agreements access" ON public.custom_agreements
+  FOR ALL USING (
+    client_email = (SELECT email FROM auth.users WHERE id = auth.uid())
+    OR public.check_is_admin(auth.uid())
+  );
 
-CREATE POLICY "Allow all operations for legal_acceptances" ON legal_acceptances FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Allow all operations for custom_agreements" ON custom_agreements FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Allow all operations for product_purchases" ON product_purchases FOR ALL USING (true) WITH CHECK (true);
+-- 3. Product Purchases: Users see their own via email match or Admins
+CREATE POLICY "Product purchases access" ON public.product_purchases
+  FOR ALL USING (
+    client_email = (SELECT email FROM auth.users WHERE id = auth.uid())
+    OR public.check_is_admin(auth.uid())
+  );
 
 -- RLS POLICIES (Simplified & Non-Recursive)
 

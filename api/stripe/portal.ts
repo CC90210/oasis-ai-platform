@@ -1,25 +1,14 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { stripe } from '../lib/stripe';
+import { authenticateUser, setCorsHeaders, supabase } from '../lib/auth';
 
 /**
  * POST /api/stripe/portal
  * Create a Stripe Billing Portal session for the customer
- * 
- * Allows customers to:
- * - Update payment methods
- * - View invoice history
- * - Cancel subscription
- * - Upgrade/downgrade plans (if configured in Stripe Dashboard)
  */
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     // CORS
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
-    res.setHeader(
-        'Access-Control-Allow-Headers',
-        'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
-    );
+    setCorsHeaders(req, res);
 
     if (req.method === 'OPTIONS') {
         res.status(200).end();
@@ -31,10 +20,30 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     try {
+        // 1. Authenticate User (Principle 4)
+        const user = await authenticateUser(req);
+        if (!user) {
+            return res.status(401).json({ error: 'Unauthorized. Please sign in.' });
+        }
+
         const { customerId, returnUrl } = req.body;
 
+        // 2. Validate Input (Principle 2)
         if (!customerId) {
             return res.status(400).json({ error: 'Customer ID required' });
+        }
+
+        // 3. Authorization Check (Principle 4 / 7)
+        // Verify this customer ID belongs to the authenticated user
+        const { data: profile, error: profileError } = await supabase
+            .from('profiles')
+            .select('stripe_customer_id')
+            .eq('id', user.id)
+            .single();
+
+        if (profileError || profile?.stripe_customer_id !== customerId) {
+            console.error(`🔒 Security Alert: User ${user.email} attempted to access portal for different customer: ${customerId}`);
+            return res.status(403).json({ error: 'Access denied. This is not your billing account.' });
         }
 
         // Determine return URL
@@ -45,28 +54,26 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const session = await stripe.billingPortal.sessions.create({
             customer: customerId,
             return_url: finalReturnUrl,
-            // Optional: Configure what the customer can do
-            // This can also be set in Stripe Dashboard under Billing > Customer Portal
         });
 
-        console.log(`✅ Portal session created for customer: ${customerId}`);
+        console.log(`✅ Portal session created for user: ${user.id}`); // Log ID, not PII
 
         return res.status(200).json({
             url: session.url,
             success: true
         });
     } catch (error: any) {
-        console.error('Portal error:', error);
+        console.error('Portal error:', error.message);
 
         // Handle specific Stripe errors
         if (error.code === 'resource_missing') {
             return res.status(404).json({
-                error: 'Customer not found in Stripe. Please contact support.'
+                error: 'Billing account not found. Please contact support.'
             });
         }
 
         return res.status(500).json({
-            error: error.message || 'Failed to create portal session'
+            error: 'Failed to create portal session. Please try again.'
         });
     }
 }

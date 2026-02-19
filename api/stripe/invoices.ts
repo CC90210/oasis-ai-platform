@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { stripe } from '../lib/stripe';
+import { authenticateUser, setCorsHeaders, supabase } from '../lib/auth';
 
 /**
  * GET /api/stripe/invoices?customer_id=xxx
@@ -7,13 +8,7 @@ import { stripe } from '../lib/stripe';
  */
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     // CORS Headers
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-    res.setHeader(
-        'Access-Control-Allow-Headers',
-        'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
-    );
+    setCorsHeaders(req, res);
 
     if (req.method === 'OPTIONS') {
         res.status(200).end();
@@ -25,10 +20,29 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     try {
+        // 1. Authenticate User (Principle 4)
+        const user = await authenticateUser(req);
+        if (!user) {
+            return res.status(401).json({ error: 'Unauthorized. Please sign in.' });
+        }
+
         const { customer_id, limit = '10' } = req.query;
 
         if (!customer_id || typeof customer_id !== 'string') {
             return res.status(400).json({ error: 'Customer ID is required' });
+        }
+
+        // 2. Authorization Check (Principle 4 / 7)
+        // Verify this customer ID belongs to the authenticated user
+        const { data: profile, error: profileError } = await supabase
+            .from('profiles')
+            .select('stripe_customer_id')
+            .eq('id', user.id)
+            .single();
+
+        if (profileError || profile?.stripe_customer_id !== customer_id) {
+            console.error(`🔒 Security Alert: User ${user.id} attempted to access invoices for different customer: ${customer_id}`);
+            return res.status(403).json({ error: 'Access denied. These are not your invoices.' });
         }
 
         // Fetch invoices from Stripe
@@ -57,7 +71,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             subscription_id: typeof (invoice as any).subscription === 'string'
                 ? (invoice as any).subscription
                 : (invoice as any).subscription?.id,
-            line_items: invoice.lines?.data?.map((line) => ({
+            line_items: invoice.lines?.data?.map((line: any) => ({
                 description: line.description,
                 amount: line.amount,
                 quantity: line.quantity,
@@ -71,14 +85,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         });
 
     } catch (error: any) {
-        console.error('Invoices retrieval error:', error);
+        console.error('Invoices retrieval error:', error.message);
 
         if (error.code === 'resource_missing') {
-            return res.status(404).json({ error: 'Customer not found' });
+            return res.status(404).json({ error: 'Billing records not found' });
         }
 
         return res.status(500).json({
-            error: error.message || 'Failed to retrieve invoices'
+            error: 'Failed to retrieve invoices. Please try again.'
         });
     }
 }

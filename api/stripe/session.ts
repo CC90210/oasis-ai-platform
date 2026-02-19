@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { stripe } from '../lib/stripe';
+import { setCorsHeaders } from '../lib/auth';
 
 /**
  * GET /api/stripe/session?session_id=xxx
@@ -7,13 +8,7 @@ import { stripe } from '../lib/stripe';
  */
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     // CORS Headers
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-    res.setHeader(
-        'Access-Control-Allow-Headers',
-        'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
-    );
+    setCorsHeaders(req, res);
 
     if (req.method === 'OPTIONS') {
         res.status(200).end();
@@ -32,6 +27,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
 
         // Retrieve the checkout session from Stripe
+        // Expanded customer and subscription to provide details for the success page
         const session = await stripe.checkout.sessions.retrieve(session_id, {
             expand: ['subscription', 'customer', 'line_items']
         });
@@ -45,21 +41,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const customer = session.customer as any;
         const lineItems = session.line_items?.data || [];
 
-        // Determine plan details from line items or metadata
+        // Determine plan details
         let planType = session.metadata?.type || 'automation';
         let productName = 'OASIS AI Automation';
         let tier = session.metadata?.tier || 'professional';
         let monthlyAmount = 0;
 
-        // Find the recurring line item (monthly subscription)
         for (const item of lineItems) {
             if (item.price?.recurring) {
                 monthlyAmount = (item.amount_total || 0);
-                productName = item.description || item.price?.product?.toString() || productName;
+                productName = item.description || (item.price?.product as any)?.name || productName;
             }
         }
 
-        // If we have a subscription object, get accurate monthly amount
         if (subscription && typeof subscription === 'object') {
             const subItems = subscription.items?.data || [];
             if (subItems.length > 0) {
@@ -76,20 +70,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 id: session.id,
                 status: session.status,
                 payment_status: session.payment_status,
-                customer_email: session.customer_email || customer?.email,
                 amount_total: session.amount_total,
                 currency: session.currency,
             },
             subscription: subscription ? {
                 id: subscription.id,
                 status: subscription.status,
-                current_period_start: subscription.current_period_start,
                 current_period_end: subscription.current_period_end,
             } : null,
             customer: customer ? {
-                id: customer.id,
-                email: customer.email,
+                // Only provide non-sensitive name for the UI
                 name: customer.name,
+                email: customer.email
             } : null,
             plan: {
                 type: planType,
@@ -104,15 +96,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(200).json(response);
 
     } catch (error: any) {
-        console.error('Session retrieval error:', error);
+        console.error('Session retrieval error:', error.message);
 
-        // Handle specific Stripe errors
         if (error.code === 'resource_missing') {
-            return res.status(404).json({ error: 'Session not found or expired' });
+            return res.status(404).json({ error: 'Checkout session not found' });
         }
 
         return res.status(500).json({
-            error: error.message || 'Failed to retrieve session details'
+            error: 'Failed to retrieve session details. Please try again.'
         });
     }
 }

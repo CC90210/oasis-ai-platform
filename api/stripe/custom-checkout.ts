@@ -1,10 +1,9 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { setCorsHeaders } from '../lib/auth';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Set CORS headers
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    setCorsHeaders(req, res);
 
     // Handle preflight
     if (req.method === 'OPTIONS') {
@@ -20,10 +19,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
 
     if (!stripeSecretKey) {
-        console.error('STRIPE_SECRET_KEY is not set in environment variables');
+        console.error('STRIPE_SECRET_KEY is not set');
         return res.status(500).json({
-            error: 'Payment system not configured. Please contact support.',
-            debug: 'STRIPE_SECRET_KEY missing'
+            error: 'Payment system not configured. Please contact support.'
         });
     }
 
@@ -32,10 +30,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     try {
         Stripe = (await import('stripe')).default;
     } catch (importError: any) {
-        console.error('Failed to import Stripe:', importError);
+        console.error('Failed to import Stripe:', importError.message);
         return res.status(500).json({
-            error: 'Payment system error. Please contact support.',
-            debug: 'Stripe import failed: ' + importError.message
+            error: 'Payment system error. Please contact support.'
         });
     }
 
@@ -44,10 +41,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     try {
         stripe = new Stripe(stripeSecretKey, {});
     } catch (initError: any) {
-        console.error('Failed to initialize Stripe:', initError);
+        console.error('Failed to initialize Stripe:', initError.message);
         return res.status(500).json({
-            error: 'Payment system error. Please contact support.',
-            debug: 'Stripe init failed: ' + initError.message
+            error: 'Payment system error. Please contact support.'
         });
     }
 
@@ -163,11 +159,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         });
 
     } catch (error: any) {
-        console.error('Custom checkout error:', error);
+        console.error('Custom checkout error:', error.message);
 
         return res.status(500).json({
-            error: error.message || 'Failed to create checkout session',
-            type: error.type || 'unknown',
+            error: 'Failed to create checkout session. Please try again.'
         });
     }
 }
