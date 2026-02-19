@@ -115,6 +115,26 @@
     ],
     "rewrites": [
         {
+            "source": "/api/stripe/portal",
+            "destination": "/api/stripe/index?flow=portal"
+        },
+        {
+            "source": "/api/stripe/invoices",
+            "destination": "/api/stripe/index?flow=invoices"
+        },
+        {
+            "source": "/api/stripe/checkout",
+            "destination": "/api/stripe/index?flow=checkout"
+        },
+        {
+            "source": "/api/stripe/custom-checkout",
+            "destination": "/api/stripe/index?flow=custom-checkout"
+        },
+        {
+            "source": "/api/stripe/session",
+            "destination": "/api/stripe/index?flow=session"
+        },
+        {
             "source": "/api/(.*)",
             "destination": "/api/$1"
         },
