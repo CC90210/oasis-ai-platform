@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { stripe } from '../lib/stripe';
+import { stripe } from '../_lib/stripe';
 
 // Disable body parsing for raw webhook payload
 export const config = {
