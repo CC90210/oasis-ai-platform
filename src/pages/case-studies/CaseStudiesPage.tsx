@@ -118,28 +118,72 @@ const CaseStudiesPage = () => {
                     <div className="text-center mb-16">
                         <h2 className="text-3xl md:text-4xl font-display font-bold mb-6">More Transformations</h2>
                     </div>
-                    <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-                        {[
-                            {
-                                title: "Grapevine Cottage",
-                                type: "Boutique Digital Transformation",
-                                desc: "A beautifully curated, full-stack digital experience that perfectly captures the charm of their physical location while seamlessly managing robust online operations and sales."
-                            },
-                            {
-                                title: "Kim's E-Commerce",
-                                type: "Autonomous Shopify Agent",
-                                desc: "An advanced, deeply integrated AI solution providing unparalleled 24/7 customer service, intelligent product recommendations, and flawless sales automation."
-                            }
-                        ].map((project, index) => (
-                            <div key={index} className="glass-card p-8 hover:border-oasis-cyan/50 transition-all duration-300">
-                                <div className="p-3 bg-white/5 rounded-lg w-fit mb-6">
+                    <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+                        {/* Grapevine Cottage */}
+                        <div className="glass-card p-8 hover:border-oasis-cyan/50 transition-all duration-300 flex flex-col h-full relative overflow-hidden group">
+                            <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity">
+                                <Star className="w-32 h-32 text-oasis-cyan" />
+                            </div>
+                            <div className="relative z-10 flex flex-col h-full">
+                                <div className="p-3 bg-white/5 rounded-xl w-fit mb-6 border border-white/10">
                                     <Code className="w-6 h-6 text-oasis-cyan" />
                                 </div>
-                                <h3 className="text-2xl font-bold text-white mb-2">{project.title}</h3>
-                                <p className="text-oasis-cyan text-sm font-medium mb-4 uppercase tracking-wider">{project.type}</p>
-                                <p className="text-text-secondary">{project.desc}</p>
+                                <h3 className="text-3xl font-bold text-white mb-2">Grapevine Cottage</h3>
+                                <p className="text-oasis-cyan text-sm font-bold mb-4 uppercase tracking-wider">Boutique Digital Evolution</p>
+                                <p className="text-text-secondary mb-8 leading-relaxed flex-grow">
+                                    End-to-end digital transformation for a cherished local thrift and boutique store. We engineered a highly optimized online presence, built a stunning custom website, and fully digitized their product catalog with seamless payment implementation. By deploying advanced backend automations for chat messaging and form submissions, we saved immense resources and gave the owner her time back.
+                                </p>
+                                <div className="grid grid-cols-2 gap-4 mt-auto pt-6 border-t border-white/5">
+                                    <div>
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <CheckCircle className="w-4 h-4 text-oasis-cyan" />
+                                            <span className="text-xs text-text-secondary uppercase tracking-wider font-bold">Automation</span>
+                                        </div>
+                                        <div className="text-lg font-bold text-white">24/7 Chat & Forms</div>
+                                    </div>
+                                    <div>
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <Star className="w-4 h-4 text-oasis-cyan" />
+                                            <span className="text-xs text-text-secondary uppercase tracking-wider font-bold">E-Commerce</span>
+                                        </div>
+                                        <div className="text-lg font-bold text-white">Listings & Payments</div>
+                                    </div>
+                                </div>
                             </div>
-                        ))}
+                        </div>
+
+                        {/* High-Volume E-Commerce */}
+                        <div className="glass-card p-8 hover:border-oasis-cyan/50 transition-all duration-300 flex flex-col h-full relative overflow-hidden group">
+                            <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity">
+                                <Clock className="w-32 h-32 text-oasis-cyan" />
+                            </div>
+                            <div className="relative z-10 flex flex-col h-full">
+                                <div className="p-3 bg-white/5 rounded-xl w-fit mb-6 border border-white/10">
+                                    <DollarSign className="w-6 h-6 text-oasis-cyan" />
+                                </div>
+                                <h3 className="text-3xl font-bold text-white mb-2">High-Volume E-Commerce</h3>
+                                <p className="text-oasis-cyan text-sm font-bold mb-4 uppercase tracking-wider">Autonomous Shopify Agent</p>
+                                <p className="text-text-secondary mb-8 leading-relaxed flex-grow">
+                                    We deployed an intricate AI integration for a massively successful Shopify brand to entirely automate customer interactions and operational hurdles. By deeply analyzing their business model, we optimized processes that previously drained resources, permanently cutting their operational costs in half compared to human equivalents while effortlessly scaling with massive demand.
+                                </p>
+                                <div className="grid grid-cols-2 gap-4 mt-auto pt-6 border-t border-white/5">
+                                    <div>
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <DollarSign className="w-4 h-4 text-oasis-cyan" />
+                                            <span className="text-xs text-text-secondary uppercase tracking-wider font-bold">Revenue Handled</span>
+                                        </div>
+                                        <div className="text-2xl font-bold text-white">$2M+</div>
+                                    </div>
+                                    <div>
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <Users className="w-4 h-4 text-oasis-cyan" />
+                                            <span className="text-xs text-text-secondary uppercase tracking-wider font-bold">Cost Reduction</span>
+                                        </div>
+                                        <div className="text-2xl font-bold text-white flex items-baseline gap-1">50% <span className="text-sm font-normal text-text-secondary tracking-normal">vs. human</span></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -164,14 +208,14 @@ const CaseStudiesPage = () => {
                                 title: "Real Estate Management"
                             },
                             {
-                                quote: "I was skeptical about a fully autonomous Shopify agent, but OASIS made it flawlessly. It handles everything effortlessly, answering questions perfectly, and now I'm saving 25+ hours a week.",
+                                quote: "OASIS AI brought our boutique to life online. From the stunning website build to automating our chat and form submissions, they optimized our business so we can focus entirely on our products. Truly above and beyond.",
                                 author: "Kim",
-                                title: "E-Commerce Founder"
+                                title: "Owner, Grapevine Cottage"
                             },
                             {
-                                quote: "What impressed me most was how OASIS AI meticulously captured our boutique's essence. This wasn't a cookie-cutter site—it was an elegant digital transformation perfectly built for our business.",
-                                author: "Founder",
-                                title: "Grapevine Cottage"
+                                quote: "Integrating OASIS AI into our Shopify store changed everything. It completely revolutionized our resource efficiency, effortlessly handling a $2M+ influx while cutting our costs by 50%. An absolute machine.",
+                                author: "Operations Director",
+                                title: "High-Volume Shopify Brand"
                             }
                         ].map((testimonial, index) => (
                             <motion.div
