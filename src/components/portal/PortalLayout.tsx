@@ -6,6 +6,7 @@ import {
 import { supabase, logout, Profile } from '@/lib/supabase';
 import { useEffect, useState, useRef } from 'react';
 import { useTheme } from '@/contexts/ThemeContext';
+import { Toaster } from 'sonner';
 
 export default function PortalLayout({ children }: { children: React.ReactNode }) {
     const navigate = useNavigate();
@@ -51,6 +52,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
                         email: user.email!,
                         full_name: user.user_metadata?.full_name || 'Client',
                         company_name: '',
+                        role: 'client',
                         phone: null,
                         avatar_url: null,
                         created_at: new Date().toISOString()
@@ -62,6 +64,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
                         email: user.email!,
                         full_name: user.user_metadata?.full_name || 'Client',
                         company_name: '',
+                        role: 'client',
                         phone: null,
                         avatar_url: null,
                         created_at: new Date().toISOString()
@@ -136,6 +139,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
 
     return (
         <div id="dashboard-root" className={`min-h-screen bg-[var(--bg-main)] flex selection:bg-cyan-500/20 text-[var(--text-primary)] font-sans relative overflow-x-hidden max-w-full transition-colors duration-300 ${theme}`}>
+            <Toaster theme={theme === 'dark' ? 'dark' : 'light'} />
             {/* Stars background is in index.html as pure CSS - always visible, theme-aware */}
 
             {/* Sidebar (Desktop) */}

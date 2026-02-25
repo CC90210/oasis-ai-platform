@@ -16,6 +16,8 @@ import {
 } from 'lucide-react';
 import PortalLayout from '@/components/portal/PortalLayout';
 import { formatRelativeTime } from '@/lib/formatters';
+import { TABLES } from '@/lib/constants';
+import { isAdminUser } from '@/lib/auth-utils';
 
 // Icon mapping for automation types
 const ICON_MAP: Record<string, any> = {
@@ -30,6 +32,8 @@ export default function DashboardPage() {
     const [recentLogs, setRecentLogs] = useState<AutomationLog[]>([]);
     const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
     const loadingTimeout = useRef<NodeJS.Timeout | null>(null);
+    const refreshDebounceRef = useRef<NodeJS.Timeout | null>(null);
+    const isRefreshingRef = useRef<boolean>(false);
 
     useEffect(() => {
         loadDashboardData();
@@ -45,25 +49,33 @@ export default function DashboardPage() {
                 .on('postgres_changes', {
                     event: '*',
                     schema: 'public',
-                    table: 'automation_logs',
+                    table: TABLES.LOGS,
                     filter: `user_id=eq.${user.id}`
                 }, () => {
                     console.log('Real-time event: Refreshing metrics...');
-                    loadDashboardData(false); // Silent refresh
+                    if (refreshDebounceRef.current) {
+                        clearTimeout(refreshDebounceRef.current);
+                    }
+                    refreshDebounceRef.current = setTimeout(() => {
+                        if (!isRefreshingRef.current) {
+                            loadDashboardData(false); // Silent refresh
+                        }
+                    }, 2000);
                 })
                 .subscribe();
         };
         setupRealtime();
 
-        loadingTimeout.current = setTimeout(() => { if (loading) setLoading(false); }, 10000);
         return () => {
             if (loadingTimeout.current) clearTimeout(loadingTimeout.current);
+            if (refreshDebounceRef.current) clearTimeout(refreshDebounceRef.current);
             if (channel) supabase.removeChannel(channel);
         };
     }, []);
 
     const loadDashboardData = async (showLoading = true) => {
         if (showLoading) setLoading(true);
+        isRefreshingRef.current = true;
         setError(null);
 
         try {
@@ -79,12 +91,12 @@ export default function DashboardPage() {
             // Load profile with cross-check for Admin status
             let profileData: any;
             try {
-                const { data, error } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+                const { data, error } = await supabase.from(TABLES.PROFILES).select('*').eq('id', user.id).single();
                 if (error) throw error;
                 profileData = data;
                 setProfile(data);
             } catch (err) {
-                const isWhitelisted = ['konamak@icloud.com', 'kaelamplaysgames@gmail.com'].includes((user.email || '').toLowerCase());
+                const isWhitelisted = isAdminUser(null, user.email);
                 const fallbackProfile = {
                     id: user.id,
                     email: user.email!,
@@ -98,15 +110,10 @@ export default function DashboardPage() {
             }
 
             // Determine admin status
-            const isAdmin =
-                profileData?.role === 'admin' ||
-                profileData?.role === 'super_admin' ||
-                profileData?.is_admin ||
-                profileData?.is_owner ||
-                ['konamak@icloud.com', 'kaelamplaysgames@gmail.com'].includes((user.email || '').toLowerCase());
+            const isAdmin = isAdminUser(profileData, user.email);
 
             // Fetch automations (Strictly Own Automations Only to prevent Data Leakage)
-            let autoQuery = supabase.from('automations').select('*').eq('user_id', user.id);
+            let autoQuery = supabase.from(TABLES.AUTOMATIONS).select('*').eq('user_id', user.id);
             // if (!isAdmin) autoQuery = autoQuery.eq('user_id', user.id); // DISABLED GLOBAL ADMIN VIEW
 
             const { data: automationData, error: autoError } = await autoQuery;
@@ -141,7 +148,7 @@ export default function DashboardPage() {
                 console.warn('[DIAGNOSTIC] Dashboard RPC Failed, trying fallback...', rpcError);
                 // Fallback
                 const automationIds = mappedAutomations.map(a => a.id);
-                let logsQuery = supabase.from('automation_logs').select('*');
+                let logsQuery = supabase.from(TABLES.LOGS).select('*');
                 if (automationIds.length > 0) logsQuery = logsQuery.in('automation_id', automationIds);
                 else logsQuery = logsQuery.eq('user_id', user.id);
 
@@ -155,6 +162,7 @@ export default function DashboardPage() {
             setError('Failed to load dashboard data. Please try refreshing.');
         } finally {
             setLoading(false);
+            isRefreshingRef.current = false;
             if (loadingTimeout.current) clearTimeout(loadingTimeout.current);
         }
     };

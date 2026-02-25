@@ -1,4 +1,5 @@
 import { supabase, AutomationLog } from './supabase';
+import { TABLES } from './constants';
 
 // ============================================
 // TYPES
@@ -108,11 +109,11 @@ export async function fetchDashboardMetrics(userId: string, isAdmin: boolean = f
             monthRes,
             todayRes
         ] = await Promise.all([
-            supabase.from('automation_logs').select('*', { count: 'exact', head: true }).eq('user_id', userId),
-            supabase.from('automation_logs').select('*', { count: 'exact', head: true }).eq('user_id', userId).in('status', ['success', 'completed', 'Success', 'Completed', '']),
-            supabase.from('automation_logs').select('*', { count: 'exact', head: true }).eq('user_id', userId).gte('created_at', startOfWeek.toISOString()),
-            supabase.from('automation_logs').select('*', { count: 'exact', head: true }).eq('user_id', userId).gte('created_at', startOfMonth.toISOString()),
-            supabase.from('automation_logs').select('*', { count: 'exact', head: true }).eq('user_id', userId).gte('created_at', startOfToday.toISOString()),
+            supabase.from(TABLES.LOGS).select('*', { count: 'exact', head: true }).eq('user_id', userId),
+            supabase.from(TABLES.LOGS).select('*', { count: 'exact', head: true }).eq('user_id', userId).in('status', ['success', 'completed', 'Success', 'Completed', '']),
+            supabase.from(TABLES.LOGS).select('*', { count: 'exact', head: true }).eq('user_id', userId).gte('created_at', startOfWeek.toISOString()),
+            supabase.from(TABLES.LOGS).select('*', { count: 'exact', head: true }).eq('user_id', userId).gte('created_at', startOfMonth.toISOString()),
+            supabase.from(TABLES.LOGS).select('*', { count: 'exact', head: true }).eq('user_id', userId).gte('created_at', startOfToday.toISOString()),
         ]);
 
         const totalExecutions = totalRes.count || 0;
@@ -180,9 +181,9 @@ export async function fetchAutomationMetrics(automationId: string, userId: strin
 
         // Parallel count queries for specific automation
         const [totalRes, successRes, weekRes] = await Promise.all([
-            supabase.from('automation_logs').select('*', { count: 'exact', head: true }).eq('automation_id', automationId),
-            supabase.from('automation_logs').select('*', { count: 'exact', head: true }).eq('automation_id', automationId).in('status', ['success', 'completed', 'Success', 'Completed', '']),
-            supabase.from('automation_logs').select('*', { count: 'exact', head: true }).eq('automation_id', automationId).gte('created_at', startOfWeek.toISOString()),
+            supabase.from(TABLES.LOGS).select('*', { count: 'exact', head: true }).eq('automation_id', automationId),
+            supabase.from(TABLES.LOGS).select('*', { count: 'exact', head: true }).eq('automation_id', automationId).in('status', ['success', 'completed', 'Success', 'Completed', '']),
+            supabase.from(TABLES.LOGS).select('*', { count: 'exact', head: true }).eq('automation_id', automationId).gte('created_at', startOfWeek.toISOString()),
         ]);
 
         const totalRuns = totalRes.count || 0;
@@ -192,7 +193,7 @@ export async function fetchAutomationMetrics(automationId: string, userId: strin
 
         // Fetch last run date
         const { data: lastLog } = await supabase
-            .from('automation_logs')
+            .from(TABLES.LOGS)
             .select('created_at')
             .eq('automation_id', automationId)
             .order('created_at', { ascending: false })
@@ -231,7 +232,7 @@ export async function fetchAutomationMetrics(automationId: string, userId: strin
 export async function fetchAllAutomationMetrics(userId: string, isAdmin: boolean = false): Promise<Map<string, AutomationMetrics>> {
     try {
         // STEP 1: Fetch list of automations
-        let autoQuery = supabase.from('automations').select('id');
+        let autoQuery = supabase.from(TABLES.AUTOMATIONS).select('id');
         if (!isAdmin) autoQuery = autoQuery.eq('user_id', userId);
         const { data: automations } = await autoQuery;
         const autos = automations || [];
@@ -239,7 +240,7 @@ export async function fetchAllAutomationMetrics(userId: string, isAdmin: boolean
         // STEP 2: Fetch ALL logs for stats calculation
         // Optimization: For huge datasets, we'd use grouped counts, but for standard user logs,
         // fetching all rows (id, automation_id, status) is fast and reliable.
-        let logQuery = supabase.from('automation_logs').select('automation_id, status, created_at').eq('user_id', userId);
+        let logQuery = supabase.from(TABLES.LOGS).select('automation_id, status, created_at').eq('user_id', userId);
         const { data: allLogs } = await logQuery;
         const logs = allLogs || [];
 

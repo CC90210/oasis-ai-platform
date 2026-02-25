@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
+import { TABLES } from '../../src/lib/constants';
 
 // Initialize Supabase with service role key to bypass RLS
 const supabase = createClient(
@@ -53,7 +54,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         // Get automation to find user_id and verify webhook secret
         const { data: automation, error: autoError } = await supabase
-            .from('client_automations')
+            .from(TABLES.AUTOMATIONS)
             .select('id, user_id, webhook_secret, display_name')
             .eq('id', automation_id)
             .single();
@@ -72,7 +73,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         // Insert log entry
         const { data: logData, error: logError } = await supabase
-            .from('automation_logs')
+            .from(TABLES.LOGS)
             .insert({
                 automation_id,
                 user_id: automation.user_id,
@@ -104,7 +105,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             }));
 
             const { error: metricsError } = await supabase
-                .from('automation_metrics')
+                .from(TABLES.METRICS)
                 .insert(metricRows);
 
             if (metricsError) {
@@ -115,7 +116,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         // Update last_run_at on the automation
         const { error: updateError } = await supabase
-            .from('client_automations')
+            .from(TABLES.AUTOMATIONS)
             .update({ last_run_at: new Date().toISOString() })
             .eq('id', automation_id);
 

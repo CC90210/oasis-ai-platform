@@ -13,6 +13,9 @@ import {
 } from 'lucide-react';
 import PortalLayout from '@/components/portal/PortalLayout';
 import { formatDate, formatRelativeTime } from '@/lib/formatters';
+import { TABLES } from '@/lib/constants';
+import { isAdminUser } from '@/lib/auth-utils';
+import { toast } from 'sonner';
 
 // AI-friendly labels for metadata fields
 const AI_LABELS: Record<string, { label: string; icon: any; color: string }> = {
@@ -79,7 +82,7 @@ export default function AutomationsPage() {
 
             channel = supabase.channel('automations-realtime')
                 .on('postgres_changes', {
-                    event: '*', schema: 'public', table: 'automation_logs', filter: `user_id=eq.${user.id}`
+                    event: '*', schema: 'public', table: TABLES.LOGS, filter: `user_id=eq.${user.id}`
                 }, () => {
                     console.log('Real-time update: Refreshing logs and metrics');
                     // We only refresh if we have a selected automation
@@ -94,12 +97,7 @@ export default function AutomationsPage() {
 
     useEffect(() => {
         if (selectedAuto && userId) {
-            const isAdmin =
-                profile?.role === 'admin' ||
-                profile?.role === 'super_admin' ||
-                profile?.is_admin ||
-                profile?.is_owner ||
-                ['konamak@icloud.com', 'kaelamplaysgames@gmail.com'].includes((profile?.email || '').toLowerCase());
+            const isAdmin = isAdminUser(profile, profile?.email);
 
             loadLogsAndMetrics(selectedAuto.id, userId, isAdmin);
             setNewName(selectedAuto.name || (selectedAuto as any).display_name || '');
@@ -115,12 +113,12 @@ export default function AutomationsPage() {
             if (!user) return;
             setUserId(user.id);
 
-            const { data: profileData } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+            const { data: profileData } = await supabase.from(TABLES.PROFILES).select('*').eq('id', user.id).single();
             setProfile(profileData || { email: user.email, role: 'client' });
 
-            const isAdmin = profileData?.role === 'admin' || profileData?.role === 'super_admin' || profileData?.is_admin || profileData?.is_owner || ['konamak@icloud.com', 'kaelamplaysgames@gmail.com'].includes(user.email || '');
+            const isAdmin = isAdminUser(profileData, user.email);
 
-            let query = supabase.from('automations').select('*').eq('user_id', user.id);
+            let query = supabase.from(TABLES.AUTOMATIONS).select('*').eq('user_id', user.id);
             // if (!isAdmin) query = query.eq('user_id', user.id); // DISABLED GLOBAL ADMIN VIEW
 
             const { data, error } = await query;
@@ -160,7 +158,7 @@ export default function AutomationsPage() {
                 console.error('[DIAGNOSTIC] RPC Fetch Failed:', rpcError);
                 // Fallback to direct fetch if RPC is not yet deployed
                 const { data: directLogs } = await supabase
-                    .from('automation_logs')
+                    .from(TABLES.LOGS)
                     .select('*')
                     .eq('automation_id', automationId)
                     .order('created_at', { ascending: false })
@@ -199,18 +197,18 @@ export default function AutomationsPage() {
         if (!newName.trim() || !selectedAuto || !userId) return;
         setSavingName(true);
         try {
-            const { error } = await supabase.from('client_automations').update({ display_name: newName.trim() }).eq('id', selectedAuto.id).eq('user_id', userId);
+            const { error } = await supabase.from(TABLES.AUTOMATIONS).update({ display_name: newName.trim() }).eq('id', selectedAuto.id).eq('user_id', userId);
             if (!error) {
                 const updatedName = newName.trim();
                 setSelectedAuto(prev => prev ? { ...prev, name: updatedName } : null);
                 setAutomations(prev => prev.map(a => a.id === selectedAuto.id ? { ...a, name: updatedName } : a));
                 setEditingName(false);
             } else {
-                alert('Failed to rename automation');
+                toast.error('Failed to rename automation');
             }
         } catch (err) {
             console.error('Error renaming:', err);
-            alert('Failed to rename automation');
+            toast.error('Failed to rename automation');
         } finally {
             setSavingName(false);
         }
@@ -222,9 +220,10 @@ export default function AutomationsPage() {
         try {
             // Validate deletion by selecting returned rows
             const { error, data } = await supabase
-                .from('automation_logs')
+                .from(TABLES.LOGS)
                 .delete()
                 .eq('id', logId)
+                .eq('user_id', userId)
                 .select();
 
             if (error) {
@@ -246,7 +245,7 @@ export default function AutomationsPage() {
             setAutomationMetrics(metrics);
         } catch (err: any) {
             console.error('Delete operation failed:', err);
-            alert(`Failed to delete log: ${err.message || 'Unknown error'}`);
+            toast.error('Failed to delete log', { description: err.message || 'Unknown error' });
         } finally {
             setDeletingLog(false);
         }
@@ -258,9 +257,10 @@ export default function AutomationsPage() {
         try {
             // Use count to confirm deletion of multiple rows
             const { error, count } = await supabase
-                .from('automation_logs')
+                .from(TABLES.LOGS)
                 .delete({ count: 'exact' })
-                .eq('automation_id', selectedAuto.id);
+                .eq('automation_id', selectedAuto.id)
+                .eq('user_id', userId);
 
             if (error) {
                 console.error('Clear Logs Error:', error);
@@ -274,7 +274,7 @@ export default function AutomationsPage() {
             setAutomationMetrics(metrics);
         } catch (err: any) {
             console.error('Clear operation failed:', err);
-            alert(`Failed to clear logs: ${err.message || 'Unknown error'}`);
+            toast.error('Failed to clear logs', { description: err.message || 'Unknown error' });
         } finally {
             setClearingAllLogs(false);
         }

@@ -83,6 +83,7 @@ export default function ProfilePage() {
                     company_name: user.user_metadata?.company_name || '',
                     phone: '',
                     avatar_url: null,
+                    role: 'client',
                     created_at: new Date().toISOString()
                 });
                 setFormData({
