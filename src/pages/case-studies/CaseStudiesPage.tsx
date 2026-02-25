@@ -118,22 +118,17 @@ const CaseStudiesPage = () => {
                     <div className="text-center mb-16">
                         <h2 className="text-3xl md:text-4xl font-display font-bold mb-6">More Transformations</h2>
                     </div>
-                    <div className="grid md:grid-cols-3 gap-8">
+                    <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
                         {[
                             {
-                                title: "Gym Giant",
-                                type: "Member Management Platform",
-                                desc: "A custom operational dashboard for a large fitness center to track memberships, classes, and trainer schedules."
+                                title: "Grapevine Cottage",
+                                type: "Boutique Digital Transformation",
+                                desc: "A beautifully curated, full-stack digital experience that perfectly captures the charm of their physical location while seamlessly managing robust online operations and sales."
                             },
                             {
-                                title: "Advanced Home Comfort",
-                                type: "HVAC Service Automation",
-                                desc: "Automated dispatching, invoicing, and follow-up system for a busy HVAC service provider."
-                            },
-                            {
-                                title: "Yee & Co",
-                                type: "Boutique Booking System",
-                                desc: "An elegant, custom booking and client management experience for a high-end salon."
+                                title: "Kim's E-Commerce",
+                                type: "Autonomous Shopify Agent",
+                                desc: "An advanced, deeply integrated AI solution providing unparalleled 24/7 customer service, intelligent product recommendations, and flawless sales automation."
                             }
                         ].map((project, index) => (
                             <div key={index} className="glass-card p-8 hover:border-oasis-cyan/50 transition-all duration-300">
@@ -164,19 +159,19 @@ const CaseStudiesPage = () => {
                     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
                         {[
                             {
-                                quote: "Before OASIS AI, I was drowning in admin work. Now my business runs itself while I sleep. Conaugh built exactly what I needed—no fluff, just results. Best investment I've made in years.",
-                                author: "Marcus T.",
-                                title: "Service Business Owner"
+                                quote: "Before OASIS AI, we were drowning in admin work. Now our property management runs itself while we sleep. They built exactly what we needed—no fluff, just results. Best investment we've made.",
+                                author: "PropFlow Team",
+                                title: "Real Estate Management"
                             },
                             {
-                                quote: "I was skeptical about AI automation, but OASIS made it simple. They handled everything from setup to training, and now I'm saving 25+ hours a week. My only regret is not doing this sooner.",
-                                author: "Sarah L.",
-                                title: "E-commerce Founder"
+                                quote: "I was skeptical about a fully autonomous Shopify agent, but OASIS made it flawlessly. It handles everything effortlessly, answering questions perfectly, and now I'm saving 25+ hours a week.",
+                                author: "Kim",
+                                title: "E-Commerce Founder"
                             },
                             {
-                                quote: "What impressed me most was how Conaugh actually listened to my specific needs. This wasn't a cookie-cutter solution—it was built for MY business. The ROI has been incredible.",
-                                author: "David R.",
-                                title: "Clinic Owner"
+                                quote: "What impressed me most was how OASIS AI meticulously captured our boutique's essence. This wasn't a cookie-cutter site—it was an elegant digital transformation perfectly built for our business.",
+                                author: "Founder",
+                                title: "Grapevine Cottage"
                             }
                         ].map((testimonial, index) => (
                             <motion.div
