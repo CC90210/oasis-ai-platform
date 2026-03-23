@@ -14,9 +14,15 @@ export function getStripe(): Stripe {
     return _stripe;
 }
 
-// Backwards-compatible export (lazy getter)
-export const stripe = new Proxy({} as Stripe, {
-    get(_, prop) {
-        return (getStripe() as any)[prop];
-    },
-});
+// Backwards compat — calls getStripe() on first use
+export const stripe = {
+    get webhooks() { return getStripe().webhooks; },
+    get customers() { return getStripe().customers; },
+    get subscriptions() { return getStripe().subscriptions; },
+    get checkout() { return getStripe().checkout; },
+    get invoices() { return getStripe().invoices; },
+    get billingPortal() { return getStripe().billingPortal; },
+    get prices() { return getStripe().prices; },
+    get products() { return getStripe().products; },
+    get paymentIntents() { return getStripe().paymentIntents; },
+} as unknown as Stripe;
