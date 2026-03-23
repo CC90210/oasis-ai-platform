@@ -1,10 +1,10 @@
-import type Stripe from 'stripe';
+let _stripe: any = null;
 
-let _stripe: Stripe | null = null;
-
-export async function getStripe(): Promise<Stripe> {
+export async function getStripe(): Promise<any> {
     if (!_stripe) {
-        const { default: StripeSDK } = await import('stripe');
+        // Use variable to prevent bundler from statically resolving the import
+        const mod = 'stripe';
+        const { default: StripeSDK } = await import(/* webpackIgnore: true */ mod);
         _stripe = new StripeSDK(process.env.STRIPE_SECRET_KEY || '');
     }
     return _stripe;

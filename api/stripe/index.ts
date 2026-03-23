@@ -1,7 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { getStripe } from '../_lib/stripe';
 import { authenticateUser, setCorsHeaders, supabase } from '../_lib/auth';
-import type Stripe from 'stripe';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     setCorsHeaders(req, res);
@@ -107,7 +106,7 @@ async function handleCheckout(req: VercelRequest, res: VercelResponse) {
     const { purchaseId, productId, productName, clientEmail, upfrontCents, monthlyCents, currency = 'usd' } = req.body;
 
     const stripe = await getStripe();
-    const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [];
+    const lineItems: any[] = [];
     if (upfrontCents > 0) {
         lineItems.push({
             price_data: { currency, product_data: { name: `${productName} - Setup Fee` }, unit_amount: upfrontCents },
