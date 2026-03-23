@@ -1,9 +1,10 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { getStripe } from '../_lib/stripe';
 
 export default async function handler(_req: VercelRequest, res: VercelResponse) {
     try {
-        const stripe = await getStripe();
+        // Dynamic import to avoid Node v24 cold-start crash
+        const { default: Stripe } = await import('stripe');
+        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '');
         return res.json({
             status: 'ok',
             stripeLoaded: typeof stripe.webhooks === 'object',
