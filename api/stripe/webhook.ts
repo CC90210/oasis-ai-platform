@@ -1,5 +1,4 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { getStripe } from '../_lib/stripe';
 
 // Disable body parsing for raw webhook payload
 export const config = {
@@ -234,7 +233,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(500).json({ error: 'Webhook secret not configured' });
     }
 
-    const stripe = await getStripe();
+    const { default: Stripe } = await import('stripe');
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '');
 
     try {
         event = stripe.webhooks.constructEvent(
