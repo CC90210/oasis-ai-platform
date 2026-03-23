@@ -9,6 +9,14 @@ export const config = {
 };
 
 async function getRawBody(req: VercelRequest): Promise<Buffer> {
+    // If Vercel already parsed the body (config not picked up), use it directly
+    if (req.body && typeof req.body === 'string') {
+        return Buffer.from(req.body);
+    }
+    if (req.body && Buffer.isBuffer(req.body)) {
+        return req.body;
+    }
+    // Otherwise read from stream
     return new Promise((resolve, reject) => {
         const chunks: any[] = [];
         req.on('data', (chunk) => chunks.push(chunk));
@@ -220,14 +228,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const rawBody = await getRawBody(req);
     let event: any;
 
+    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+    if (!webhookSecret) {
+        console.error('STRIPE_WEBHOOK_SECRET env var is not set');
+        return res.status(500).json({ error: 'Webhook secret not configured' });
+    }
+
     try {
         event = stripe.webhooks.constructEvent(
             rawBody,
             signature as string,
-            process.env.STRIPE_WEBHOOK_SECRET!
+            webhookSecret
         );
     } catch (err: any) {
         console.error('Webhook signature verification failed:', err.message);
+        console.error('Raw body length:', rawBody.length, 'Signature:', (signature as string).substring(0, 30) + '...');
         return res.status(400).json({ error: 'Invalid signature' });
     }
 
