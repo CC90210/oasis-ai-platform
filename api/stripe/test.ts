@@ -1,9 +1,8 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { stripe } from '../_lib/stripe';
 
 export default function handler(_req: VercelRequest, res: VercelResponse) {
     try {
-        // Test 1: Can we import stripe?
-        const { stripe } = require('../_lib/stripe');
         const hasWebhooks = typeof stripe.webhooks === 'object';
 
         return res.json({
