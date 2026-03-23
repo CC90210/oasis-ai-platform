@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { authenticateUser, setCorsHeaders, supabase } from '../_lib/auth';
+import { authenticateUser, setCorsHeaders, getSupabaseClient } from '../_lib/auth';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     setCorsHeaders(req, res);
@@ -45,6 +45,7 @@ async function handlePortal(req: VercelRequest, res: VercelResponse) {
     const { customerId, returnUrl } = req.body;
     if (!customerId) return res.status(400).json({ error: 'Customer ID required' });
 
+    const supabase = await getSupabaseClient();
     const { data: profile } = await supabase.from('profiles').select('stripe_customer_id').eq('id', user.id).single();
     if (profile?.stripe_customer_id !== customerId) return res.status(403).json({ error: 'Access denied' });
 
@@ -71,6 +72,7 @@ async function handleInvoices(req: VercelRequest, res: VercelResponse) {
     const { customer_id, limit = '10' } = req.query;
     if (!customer_id) return res.status(400).json({ error: 'Customer ID required' });
 
+    const supabase = await getSupabaseClient();
     const { data: profile } = await supabase.from('profiles').select('stripe_customer_id').eq('id', user.id).single();
     if (profile?.stripe_customer_id !== customer_id) return res.status(403).json({ error: 'Access denied' });
 

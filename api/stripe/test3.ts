@@ -1,8 +1,9 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { authenticateUser, setCorsHeaders, supabase } from '../_lib/auth';
+import { authenticateUser, setCorsHeaders, getSupabaseClient } from '../_lib/auth';
 
 export default async function handler(_req: VercelRequest, res: VercelResponse) {
     try {
+        const supabase = await getSupabaseClient();
         return res.json({
             status: 'ok',
             supabaseLoaded: typeof supabase === 'object',

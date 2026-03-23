@@ -1,10 +1,16 @@
-import { createClient } from '@supabase/supabase-js';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
-const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || '';
+let _supabase: any = null;
 
-export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+async function getSupabase() {
+    if (!_supabase) {
+        const { createClient } = await import('@supabase/supabase-js');
+        const url = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
+        const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || '';
+        _supabase = createClient(url, key);
+    }
+    return _supabase;
+}
 
 /**
  * Validates the Supabase session from the request headers
@@ -14,6 +20,7 @@ export async function authenticateUser(req: VercelRequest) {
     const authHeader = req.headers.authorization;
     if (!authHeader) return null;
 
+    const supabase = await getSupabase();
     const token = authHeader.replace('Bearer ', '');
     const { data: { user }, error } = await supabase.auth.getUser(token);
 
@@ -23,6 +30,13 @@ export async function authenticateUser(req: VercelRequest) {
     }
 
     return user;
+}
+
+/**
+ * Get supabase client for direct queries
+ */
+export async function getSupabaseClient() {
+    return getSupabase();
 }
 
 /**
@@ -41,7 +55,6 @@ export function setCorsHeaders(req: VercelRequest, res: VercelResponse) {
     if (origin && allowedOrigins.includes(origin)) {
         res.setHeader('Access-Control-Allow-Origin', origin);
     } else {
-        // Fallback or deny - for production we should be strict
         res.setHeader('Access-Control-Allow-Origin', 'https://oasisai.work');
     }
 
