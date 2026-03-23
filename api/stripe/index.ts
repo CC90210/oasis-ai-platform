@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { stripe } from '../_lib/stripe';
+import { getStripe } from '../_lib/stripe';
 import { authenticateUser, setCorsHeaders, supabase } from '../_lib/auth';
-import Stripe from 'stripe';
+import type Stripe from 'stripe';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     setCorsHeaders(req, res);
@@ -51,6 +51,7 @@ async function handlePortal(req: VercelRequest, res: VercelResponse) {
     if (profile?.stripe_customer_id !== customerId) return res.status(403).json({ error: 'Access denied' });
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://oasisai.work';
+    const stripe = await getStripe();
     const session = await stripe.billingPortal.sessions.create({
         customer: customerId,
         return_url: returnUrl || `${appUrl}/portal/billing`,
@@ -74,6 +75,7 @@ async function handleInvoices(req: VercelRequest, res: VercelResponse) {
     const { data: profile } = await supabase.from('profiles').select('stripe_customer_id').eq('id', user.id).single();
     if (profile?.stripe_customer_id !== customer_id) return res.status(403).json({ error: 'Access denied' });
 
+    const stripe = await getStripe();
     const invoices = await stripe.invoices.list({
         customer: customer_id as string,
         limit: Math.min(parseInt(limit as string) || 10, 100),
@@ -104,6 +106,7 @@ async function handleCheckout(req: VercelRequest, res: VercelResponse) {
 
     const { purchaseId, productId, productName, clientEmail, upfrontCents, monthlyCents, currency = 'usd' } = req.body;
 
+    const stripe = await getStripe();
     const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [];
     if (upfrontCents > 0) {
         lineItems.push({
@@ -145,6 +148,7 @@ async function handleCustomCheckout(req: VercelRequest, res: VercelResponse) {
 
     const { clientEmail, automationType, upfrontCostCents, monthlyCostCents, currency = 'usd', clientName, companyName } = req.body;
 
+    const stripe = await getStripe();
     const lineItems: any[] = [];
     if (upfrontCostCents > 0) {
         lineItems.push({
@@ -189,6 +193,7 @@ async function handleSession(req: VercelRequest, res: VercelResponse) {
     const { session_id } = req.query;
     if (!session_id) return res.status(400).json({ error: 'Session ID required' });
 
+    const stripe = await getStripe();
     const session = await stripe.checkout.sessions.retrieve(session_id as string, {
         expand: ['subscription', 'customer', 'line_items']
     });
