@@ -1,5 +1,53 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { authenticateUser, setCorsHeaders, getSupabaseClient } from '../_lib/auth';
+
+// === Inline utilities (cannot import from _lib/ — Vercel bundler pre-bundles dependencies) ===
+
+function setCorsHeaders(req: VercelRequest, res: VercelResponse) {
+    const allowedOrigins = [
+        'https://oasisai.work',
+        'https://www.oasisai.work',
+        'http://localhost:3000',
+        'http://localhost:5173'
+    ];
+    const origin = req.headers.origin;
+    if (origin && allowedOrigins.includes(origin)) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+    } else {
+        res.setHeader('Access-Control-Allow-Origin', 'https://oasisai.work');
+    }
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
+    res.setHeader(
+        'Access-Control-Allow-Headers',
+        'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization'
+    );
+}
+
+let _supabase: any = null;
+async function getSupabase() {
+    if (!_supabase) {
+        const { createClient } = await import('@supabase/supabase-js');
+        const url = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
+        const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || '';
+        _supabase = createClient(url, key);
+    }
+    return _supabase;
+}
+
+async function authenticateUser(req: VercelRequest) {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) return null;
+    const supabase = await getSupabase();
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error } = await supabase.auth.getUser(token);
+    if (error || !user) {
+        console.error('Authentication error:', error?.message);
+        return null;
+    }
+    return user;
+}
+
+// === Handler ===
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     setCorsHeaders(req, res);
@@ -9,7 +57,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return;
     }
 
-    // Route based on a 'flow' query parameter or request body
     const flow = req.query.flow || req.body?.flow;
 
     try {
@@ -33,9 +80,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 }
 
-/**
- * Logic from portal.ts
- */
+// === Flow Handlers ===
+
 async function handlePortal(req: VercelRequest, res: VercelResponse) {
     if (req.method !== 'POST') return res.status(405).end();
 
@@ -45,7 +91,7 @@ async function handlePortal(req: VercelRequest, res: VercelResponse) {
     const { customerId, returnUrl } = req.body;
     if (!customerId) return res.status(400).json({ error: 'Customer ID required' });
 
-    const supabase = await getSupabaseClient();
+    const supabase = await getSupabase();
     const { data: profile } = await supabase.from('profiles').select('stripe_customer_id').eq('id', user.id).single();
     if (profile?.stripe_customer_id !== customerId) return res.status(403).json({ error: 'Access denied' });
 
@@ -60,9 +106,6 @@ async function handlePortal(req: VercelRequest, res: VercelResponse) {
     return res.status(200).json({ url: session.url, success: true });
 }
 
-/**
- * Logic from invoices.ts
- */
 async function handleInvoices(req: VercelRequest, res: VercelResponse) {
     if (req.method !== 'GET') return res.status(405).end();
 
@@ -72,7 +115,7 @@ async function handleInvoices(req: VercelRequest, res: VercelResponse) {
     const { customer_id, limit = '10' } = req.query;
     if (!customer_id) return res.status(400).json({ error: 'Customer ID required' });
 
-    const supabase = await getSupabaseClient();
+    const supabase = await getSupabase();
     const { data: profile } = await supabase.from('profiles').select('stripe_customer_id').eq('id', user.id).single();
     if (profile?.stripe_customer_id !== customer_id) return res.status(403).json({ error: 'Access denied' });
 
@@ -100,9 +143,6 @@ async function handleInvoices(req: VercelRequest, res: VercelResponse) {
     return res.status(200).json({ success: true, invoices: formattedInvoices, has_more: invoices.has_more });
 }
 
-/**
- * Logic from checkout.ts
- */
 async function handleCheckout(req: VercelRequest, res: VercelResponse) {
     if (req.method !== 'POST') return res.status(405).end();
 
@@ -143,9 +183,6 @@ async function handleCheckout(req: VercelRequest, res: VercelResponse) {
     return res.status(200).json({ url: session.url });
 }
 
-/**
- * Logic from custom-checkout.ts
- */
 async function handleCustomCheckout(req: VercelRequest, res: VercelResponse) {
     if (req.method !== 'POST') return res.status(405).end();
 
@@ -188,9 +225,6 @@ async function handleCustomCheckout(req: VercelRequest, res: VercelResponse) {
     return res.status(200).json({ url: session.url, sessionId: session.id });
 }
 
-/**
- * Logic from session.ts
- */
 async function handleSession(req: VercelRequest, res: VercelResponse) {
     if (req.method !== 'GET') return res.status(405).end();
 
