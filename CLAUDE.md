@@ -204,7 +204,34 @@ npm run preview    # Preview production build locally
 - **Platform:** Vercel — auto-deploys on push to `main`
 - **Live URL:** https://oasisai.work
 - **Supabase project:** `sajanpiqysuwviucycjh`
-- SQL migration files are in the repo root (`.sql` files) — run in Supabase SQL Editor
+- Legacy SQL migrations archived in `_archive/sql-legacy/`
+
+## Premium Design Stack (2026-04-14)
+
+React 19.2.5 + premium web design toolkit installed for landing page redesign.
+
+**Drop-in components:** `src/components/premium/`
+- `PremiumStarfield.tsx` — GPU cosmic stars (R3F + drei)
+- `OasisGradient.tsx` — flowy blue-green WebGL mesh (shadergradient)
+- `LenisProvider.tsx` — buttery smooth scroll wrapper
+
+**Stack:** @react-three/fiber, @react-three/drei, shadergradient, lenis, motion, gsap, @tsparticles/react
+
+**Color palette:**
+- Background: `#fafafa` warm white
+- Gradients: `#06b6d4` teal / `#0ea5e9` sky / `#f0fdf4` mist
+- Text: `#0f172a` slate-900
+
+**Typography:** Instrument Serif (headlines) + Geist/Inter (body)
+
+**References:** linear.app, vercel.com, basement.studio. See `src/components/premium/README.md`.
+
+## Repo Housekeeping
+
+- `_archive/status-docs/` — historical progress/audit markdown (don't edit, don't reference)
+- `_archive/deploy-scripts/` — legacy one-off `.bat` deployment scripts
+- `_archive/sql-legacy/` — pre-migration SQL fixes
+- `_archive/logs/` — old build/deployment log captures
 
 ## Part of Business-Empire-Agent
 
