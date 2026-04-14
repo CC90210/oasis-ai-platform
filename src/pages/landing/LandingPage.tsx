@@ -45,16 +45,26 @@ const LandingPage = () => {
     return (
         <div className="min-h-screen overflow-x-hidden font-sans text-white">
             {/* ═══════════════════════════════════════════════════════════════
-                LAYER 0 — GLOBAL LIVING BACKGROUND
+                LAYER 0 — STABLE DARK OCEAN BASE
+                Fixed dark base stops the "weird white flashing" and gives every
+                section a consistent canvas. Shader sits ABOVE at low opacity.
                 ═══════════════════════════════════════════════════════════════ */}
+            <div
+                className="fixed inset-0 -z-20"
+                style={{
+                    background: 'linear-gradient(180deg, #020617 0%, #0c1b33 40%, #0a1f2e 70%, #020617 100%)'
+                }}
+            />
+
+            {/* Slow atmospheric shader wash */}
             <Suspense fallback={null}>
-                <OasisGradient opacity={0.45} />
-                <PremiumStarfield density={4000} opacity={0.35} />
+                <OasisGradient opacity={0.35} />
+                <PremiumStarfield density={3000} opacity={0.5} />
             </Suspense>
 
-            {/* Ambient warm wash overlay — gives the tropical dawn feel */}
+            {/* Subtle teal vignette — same across all sections for visual cohesion */}
             <div className="fixed inset-0 pointer-events-none z-0" style={{
-                background: 'radial-gradient(ellipse at top, rgba(240,253,244,0.08) 0%, transparent 60%), radial-gradient(ellipse at bottom, rgba(6,182,212,0.12) 0%, transparent 70%)'
+                background: 'radial-gradient(ellipse at 50% 30%, rgba(6,182,212,0.08) 0%, transparent 65%)'
             }} />
 
             {/* ═══════════════════════════════════════════════════════════════

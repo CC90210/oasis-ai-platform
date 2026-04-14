@@ -1,11 +1,9 @@
 import { ShaderGradientCanvas, ShaderGradient } from "shadergradient";
 
 /**
- * OasisGradient — animated blue-green WebGL mesh gradient.
- * The "flowy oasis water" background effect.
- *
- * Usage:
- *   <OasisGradient />
+ * OasisGradient — slow, atmospheric deep-ocean gradient.
+ * Tuned for a stable, non-distracting background wash.
+ * Drop as a fixed-position layer behind content.
  */
 export default function OasisGradient({
   opacity = 0.55,
@@ -25,9 +23,9 @@ export default function OasisGradient({
           type="waterPlane"
           animate="on"
           uTime={0}
-          uSpeed={0.2}
-          uStrength={2.5}
-          uDensity={1.5}
+          uSpeed={0.05}
+          uStrength={1.2}
+          uDensity={0.9}
           uFrequency={0}
           uAmplitude={0}
           positionX={0}
@@ -36,17 +34,17 @@ export default function OasisGradient({
           rotationX={50}
           rotationY={0}
           rotationZ={-60}
-          color1="#06b6d4"
-          color2="#0ea5e9"
-          color3="#f0fdf4"
-          reflection={0.1}
+          color1="#0c4a6e"
+          color2="#0e7490"
+          color3="#164e63"
+          reflection={0.05}
           cAzimuthAngle={180}
           cPolarAngle={80}
-          cDistance={2.8}
-          cameraZoom={9.1}
+          cDistance={3.2}
+          cameraZoom={9.5}
           lightType="3d"
-          brightness={1.2}
-          envPreset="city"
+          brightness={0.85}
+          envPreset="night"
           grain="on"
           toggleAxis={false}
           zoomOut={false}
