@@ -5,8 +5,6 @@ import { motion } from 'framer-motion';
 import { ALL_AUTOMATIONS, BUNDLES as BUNDLES_OBJ, BundleProduct } from '@/lib/pricing';
 import { SimplePricingCard } from '@/components/pricing/SimplePricingCard';
 import { COMMON_INCLUSIONS } from '@/data/pricingData';
-import GlobalBackground from '../../components/GlobalBackground';
-
 const BOOKING_LINK = 'https://calendar.app.google/tpfvJYBGircnGu8G8';
 
 const BUNDLES: BundleProduct[] = Object.values(BUNDLES_OBJ);
@@ -25,17 +23,7 @@ const PricingPage: React.FC = () => {
     const navigate = useNavigate();
 
     return (
-        <div className="relative min-h-screen overflow-hidden font-sans text-white">
-            {/* Background */}
-            <div
-                className="fixed inset-0 -z-20"
-                style={{ background: 'linear-gradient(180deg, #030712 0%, #071426 50%, #030712 100%)' }}
-            />
-            <GlobalBackground intensity="high" showDNA={false} />
-            <div className="fixed inset-0 pointer-events-none -z-10" style={{
-                background: 'radial-gradient(ellipse at 50% 20%, rgba(6,182,212,0.08) 0%, transparent 65%)'
-            }} />
-
+        <div className="min-h-screen overflow-x-hidden font-sans text-white">
             {/* Hero */}
             <section className="relative pt-32 pb-20 px-6 z-10">
                 <motion.div
