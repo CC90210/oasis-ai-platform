@@ -128,7 +128,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
     // Show minimal loading only on initial load
     if (loading && !profile) {
         return (
-            <div className="min-h-screen bg-[var(--bg-main)] flex items-center justify-center transition-colors duration-300">
+            <div className="min-h-screen bg-transparent flex items-center justify-center transition-colors duration-300">
                 <div className="text-center">
                     <div className="w-12 h-12 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
                     <p className="text-[var(--text-secondary)] text-sm">Loading portal...</p>
@@ -138,7 +138,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
     }
 
     return (
-        <div id="dashboard-root" className={`min-h-screen bg-[var(--bg-main)] flex selection:bg-cyan-500/20 text-[var(--text-primary)] font-sans relative overflow-x-hidden max-w-full transition-colors duration-300 ${theme}`}>
+        <div id="dashboard-root" className={`min-h-screen bg-transparent flex selection:bg-cyan-500/20 text-[var(--text-primary)] font-sans relative overflow-x-hidden max-w-full transition-colors duration-300 ${theme}`}>
             <Toaster theme={theme === 'dark' ? 'dark' : 'light'} />
             {/* Stars background is in index.html as pure CSS - always visible, theme-aware */}
 

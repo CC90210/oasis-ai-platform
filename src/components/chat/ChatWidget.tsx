@@ -112,13 +112,13 @@ export const ChatWidget = () => {
                         {/* Header */}
                         <div className="p-4 bg-bg-tertiary border-b border-white/5 flex items-center justify-between">
                             <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 bg-oasis-cyan/20 rounded-lg flex items-center justify-center">
-                                    <MessageSquare className="w-5 h-5 text-oasis-cyan" />
+                                <div className="w-8 h-8 bg-oasis-teal/20 rounded-lg flex items-center justify-center">
+                                    <MessageSquare className="w-5 h-5 text-oasis-teal" />
                                 </div>
                                 <div>
                                     <h3 className="font-bold text-white text-sm">OASIS Assistant</h3>
-                                    <span className="flex items-center gap-1.5 text-xs text-oasis-cyan">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-oasis-cyan animate-pulse" />
+                                    <span className="flex items-center gap-1.5 text-xs text-oasis-teal">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-oasis-teal animate-pulse" />
                                         Online
                                     </span>
                                 </div>
@@ -148,7 +148,7 @@ export const ChatWidget = () => {
                                 >
                                     <div
                                         className={`max-w-[85%] p-3 rounded-2xl text-sm leading-relaxed ${msg.sender === 'user'
-                                            ? 'bg-oasis-cyan text-bg-primary rounded-tr-none font-medium'
+                                            ? 'bg-oasis-teal text-bg-primary rounded-tr-none font-medium'
                                             : 'bg-bg-tertiary text-text-secondary rounded-tl-none border border-white/5'
                                             }`}
                                     >
@@ -170,8 +170,8 @@ export const ChatWidget = () => {
 
                         {/* Input */}
                         <div className="p-4 bg-bg-tertiary border-t border-white/5">
-                            <div className="flex items-center gap-2 bg-bg-primary border border-white/10 rounded-xl p-2 focus-within:border-oasis-cyan/50 transition-colors">
-                                <button className="p-2 text-text-tertiary hover:text-oasis-cyan transition-colors">
+                            <div className="flex items-center gap-2 bg-bg-primary border border-white/10 rounded-xl p-2 focus-within:border-oasis-teal/50 transition-colors">
+                                <button className="p-2 text-text-tertiary hover:text-oasis-teal transition-colors">
                                     <Paperclip className="w-4 h-4" />
                                 </button>
                                 <input
@@ -185,7 +185,7 @@ export const ChatWidget = () => {
                                 <button
                                     onClick={handleSendMessage}
                                     disabled={!inputValue.trim()}
-                                    className="p-2 bg-oasis-cyan text-bg-primary rounded-lg hover:bg-oasis-cyan/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                    className="p-2 bg-oasis-teal text-bg-primary rounded-lg hover:bg-oasis-teal/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                                 >
                                     <Send className="w-4 h-4" />
                                 </button>
@@ -208,7 +208,7 @@ export const ChatWidget = () => {
                     setIsOpen(!isOpen);
                     setIsMinimized(false);
                 }}
-                className={`w-14 h-14 sm:w-16 sm:h-16 bg-oasis-cyan rounded-full shadow-lg shadow-oasis-cyan/20 flex items-center justify-center text-bg-primary transition-all z-[10000]`}
+                className={`w-14 h-14 sm:w-16 sm:h-16 bg-oasis-teal rounded-full shadow-lg shadow-oasis-teal/20 flex items-center justify-center text-bg-primary transition-all z-[10000]`}
             >
                 {isOpen && !isMinimized ? <X className="w-7 h-7 sm:w-8 sm:h-8" /> : <MessageSquare className="w-7 h-7 sm:w-8 sm:h-8" />}
             </motion.button>

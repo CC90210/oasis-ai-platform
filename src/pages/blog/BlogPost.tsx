@@ -25,7 +25,7 @@ const BlogPost = () => {
         <div className="bg-bg-primary min-h-screen pt-24 pb-20">
             {/* Progress Bar */}
             <motion.div
-                className="fixed top-0 left-0 right-0 h-1 bg-oasis-cyan z-50 origin-left"
+                className="fixed top-0 left-0 right-0 h-1 bg-oasis-teal z-50 origin-left"
                 initial={{ scaleX: 0 }}
                 animate={{ scaleX: 1 }}
                 transition={{ duration: 0.5 }}
@@ -33,13 +33,13 @@ const BlogPost = () => {
             />
 
             <article className="max-w-4xl mx-auto px-6">
-                <Link to="/blog" className="inline-flex items-center text-text-secondary hover:text-oasis-cyan mb-8 transition-colors">
+                <Link to="/blog" className="inline-flex items-center text-text-secondary hover:text-oasis-teal mb-8 transition-colors">
                     <ArrowLeft className="w-4 h-4 mr-2" /> Back to Insights
                 </Link>
 
                 <header className="mb-12 text-center">
-                    <div className="flex items-center justify-center gap-4 text-sm text-oasis-cyan font-medium mb-6">
-                        <span className="bg-oasis-cyan/10 px-3 py-1 rounded-full">{post.category}</span>
+                    <div className="flex items-center justify-center gap-4 text-sm text-oasis-teal font-medium mb-6">
+                        <span className="bg-oasis-teal/10 px-3 py-1 rounded-full">{post.category}</span>
                         <span className="flex items-center gap-1"><Calendar className="w-4 h-4" /> {post.date}</span>
                         <span className="flex items-center gap-1"><Clock className="w-4 h-4" /> {post.readTime}</span>
                     </div>
@@ -47,8 +47,8 @@ const BlogPost = () => {
                         {post.title}
                     </h1>
                     <div className="flex items-center justify-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-oasis-cyan/20 flex items-center justify-center">
-                            <User className="w-5 h-5 text-oasis-cyan" />
+                        <div className="w-10 h-10 rounded-full bg-oasis-teal/20 flex items-center justify-center">
+                            <User className="w-5 h-5 text-oasis-teal" />
                         </div>
                         <div className="text-left">
                             <div className="text-white font-medium">{post.author}</div>
@@ -67,7 +67,7 @@ const BlogPost = () => {
 
                 <div className="grid md:grid-cols-[1fr_250px] gap-12">
                     <div
-                        className="prose prose-invert prose-lg max-w-none prose-headings:font-display prose-headings:font-bold prose-a:text-oasis-cyan prose-img:rounded-xl"
+                        className="prose prose-invert prose-lg max-w-none prose-headings:font-display prose-headings:font-bold prose-a:text-oasis-teal prose-img:rounded-xl"
                         dangerouslySetInnerHTML={{ __html: post.content }}
                     />
 
@@ -85,7 +85,7 @@ const BlogPost = () => {
                                 <button className="p-2 bg-white/5 rounded-lg hover:bg-[#4267B2]/20 hover:text-[#4267B2] transition-colors">
                                     <Facebook className="w-5 h-5" />
                                 </button>
-                                <button className="p-2 bg-white/5 rounded-lg hover:bg-oasis-cyan/20 hover:text-oasis-cyan transition-colors">
+                                <button className="p-2 bg-white/5 rounded-lg hover:bg-oasis-teal/20 hover:text-oasis-teal transition-colors">
                                     <Share2 className="w-5 h-5" />
                                 </button>
                             </div>
@@ -108,13 +108,13 @@ const BlogPost = () => {
                     <h2 className="text-2xl font-display font-bold text-white mb-8">Related Articles</h2>
                     <div className="grid md:grid-cols-2 gap-8">
                         {relatedPosts.map(related => (
-                            <Link key={related.slug} to={`/blog/${related.slug}`} className="group glass-card p-6 flex gap-6 hover:border-oasis-cyan/30 transition-all">
+                            <Link key={related.slug} to={`/blog/${related.slug}`} className="group glass-card p-6 flex gap-6 hover:border-oasis-teal/40 transition-all">
                                 <div className="w-32 h-24 rounded-lg overflow-hidden flex-shrink-0">
                                     <img src={related.image} alt={related.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                                 </div>
                                 <div>
-                                    <div className="text-xs text-oasis-cyan font-medium mb-2">{related.category}</div>
-                                    <h3 className="font-bold text-white mb-2 group-hover:text-oasis-cyan transition-colors line-clamp-2">
+                                    <div className="text-xs text-oasis-teal font-medium mb-2">{related.category}</div>
+                                    <h3 className="font-bold text-white mb-2 group-hover:text-oasis-teal transition-colors line-clamp-2">
                                         {related.title}
                                     </h3>
                                     <span className="text-xs text-text-tertiary">{related.readTime}</span>

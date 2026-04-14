@@ -80,10 +80,10 @@ export const Header = () => {
                         <img
                             src="/images/oasis-logo.jpg"
                             alt="OASIS AI"
-                            className="w-8 h-8 lg:w-10 lg:h-10 rounded-lg object-cover shadow-lg shadow-oasis-cyan/20 group-hover:shadow-oasis-cyan/40 transition-all flex-shrink-0"
+                            className="w-8 h-8 lg:w-10 lg:h-10 rounded-lg object-cover shadow-lg shadow-oasis-teal/20 group-hover:shadow-oasis-teal/40 transition-all flex-shrink-0"
                         />
                         <span className="font-display font-bold text-base sm:text-lg lg:text-xl tracking-tight text-white whitespace-nowrap">
-                            OASIS <span className="text-oasis-cyan">AI</span>
+                            OASIS <span className="text-oasis-teal">AI</span>
                         </span>
                     </Link>
 
@@ -94,7 +94,7 @@ export const Header = () => {
                                 key={link.name}
                                 to={link.path}
                                 className={({ isActive }) =>
-                                    `px-4 py-2 rounded-lg text-sm font-medium transition-colors hover:text-oasis-cyan hover:bg-white/5 ${isActive ? 'text-oasis-cyan' : 'text-text-secondary'
+                                    `px-4 py-2 rounded-lg text-sm font-medium transition-colors hover:text-oasis-teal hover:bg-white/5 ${isActive ? 'text-oasis-teal' : 'text-text-secondary'
                                     }`
                                 }
                             >
@@ -111,7 +111,7 @@ export const Header = () => {
                         >
                             <ShoppingCart className="w-5 h-5" />
                             {items.length > 0 && (
-                                <span className="absolute -top-1 -right-1 w-5 h-5 bg-oasis-cyan text-bg-primary text-xs font-bold rounded-full flex items-center justify-center">
+                                <span className="absolute -top-1 -right-1 w-5 h-5 bg-oasis-teal text-bg-primary text-xs font-bold rounded-full flex items-center justify-center">
                                     {items.length}
                                 </span>
                             )}
@@ -119,7 +119,7 @@ export const Header = () => {
                         <NavLink
                             to="/portal/login"
                             className={({ isActive }) =>
-                                `px-4 py-2 text-sm font-medium transition-colors hover:text-oasis-cyan ${isActive ? 'text-oasis-cyan' : 'text-white'
+                                `px-4 py-2 text-sm font-medium transition-colors hover:text-oasis-teal ${isActive ? 'text-oasis-teal' : 'text-white'
                                 }`
                             }
                         >
@@ -142,7 +142,7 @@ export const Header = () => {
                         >
                             <ShoppingCart className="w-5 h-5" />
                             {items.length > 0 && (
-                                <span className="absolute top-1 right-1 w-4 h-4 bg-oasis-cyan text-bg-primary text-[10px] font-bold rounded-full flex items-center justify-center">
+                                <span className="absolute top-1 right-1 w-4 h-4 bg-oasis-teal text-bg-primary text-[10px] font-bold rounded-full flex items-center justify-center">
                                     {items.length}
                                 </span>
                             )}
@@ -202,7 +202,7 @@ export const Header = () => {
                                         to={link.path}
                                         onClick={handleNavClick}
                                         className={`block px-4 py-3 rounded-xl text-base font-medium transition-all ${isActive
-                                            ? 'bg-oasis-cyan/10 text-oasis-cyan border border-oasis-cyan/20'
+                                            ? 'bg-oasis-teal/10 text-oasis-teal border border-oasis-teal/40'
                                             : 'text-gray-300 hover:bg-white/5 hover:text-white'
                                             }`}
                                     >
@@ -241,7 +241,7 @@ export const Header = () => {
                                 <p>Questions? Contact us</p>
                                 <a
                                     href="mailto:conaugh@oasisai.work"
-                                    className="text-oasis-cyan hover:text-cyan-300 transition"
+                                    className="text-oasis-teal hover:text-cyan-300 transition"
                                 >
                                     conaugh@oasisai.work
                                 </a>

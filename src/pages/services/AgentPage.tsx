@@ -184,7 +184,7 @@ const AgentPage = () => {
             {/* Hero Section */}
             <section className="relative pt-32 pb-20 px-4 sm:px-6 lg:px-8 overflow-hidden">
                 <div className="absolute inset-0 pointer-events-none">
-                    <div className="absolute top-20 right-10 w-96 h-96 bg-oasis-cyan/10 rounded-full blur-[120px] animate-pulse-glow" />
+                    <div className="absolute top-20 right-10 w-96 h-96 bg-oasis-teal/10 rounded-full blur-[120px] animate-pulse-glow" />
                 </div>
 
                 <div className="max-w-7xl mx-auto relative z-10">
@@ -194,8 +194,8 @@ const AgentPage = () => {
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.6 }}
                         >
-                            <div className="inline-flex items-center justify-center p-3 bg-oasis-cyan/10 rounded-xl mb-6">
-                                <Icon className="w-8 h-8 text-oasis-cyan" />
+                            <div className="inline-flex items-center justify-center p-3 bg-oasis-teal/10 rounded-xl mb-6">
+                                <Icon className="w-8 h-8 text-oasis-teal" />
                             </div>
                             <h1 className="text-4xl md:text-5xl font-display font-bold text-white mb-6 leading-tight">
                                 {agent.title}
@@ -204,18 +204,18 @@ const AgentPage = () => {
                                 {agent.description}
                             </p>
                             <div className="flex items-center space-x-4 mb-8">
-                                <div className="text-3xl font-bold text-oasis-cyan">
+                                <div className="text-3xl font-bold text-oasis-teal">
                                     ${agent.price}
                                     {!hasConsultation && <span className="text-sm text-text-tertiary font-normal ml-2">one-time setup</span>}
                                 </div>
                             </div>
                             <div className="flex flex-col sm:flex-row gap-4">
                                 {hasConsultation ? (
-                                    <Link to="/contact" className="btn-primary text-center shadow-oasis">
+                                    <Link to="/contact" className="btn-primary text-center shadow-oasis-glow">
                                         Book Consultation
                                     </Link>
                                 ) : (
-                                    <Link to={`/pricing/${PRICING_MAP[safeSlug] || safeSlug}`} className="btn-primary text-center shadow-oasis">
+                                    <Link to={`/pricing/${PRICING_MAP[safeSlug] || safeSlug}`} className="btn-primary text-center shadow-oasis-glow">
                                         Configure Plan
                                     </Link>
                                 )}
@@ -231,13 +231,13 @@ const AgentPage = () => {
                             transition={{ duration: 0.6, delay: 0.2 }}
                             className="relative"
                         >
-                            <div className="absolute inset-0 bg-oasis-cyan/20 blur-3xl rounded-full opacity-30" />
-                            <div className="glass-card p-8 relative z-10 border-oasis-cyan/30 shadow-oasis">
+                            <div className="absolute inset-0 bg-oasis-teal/20 blur-3xl rounded-full opacity-30" />
+                            <div className="glass-card p-8 relative z-10 border-oasis-teal/40 shadow-oasis-glow">
                                 <h3 className="text-xl font-display font-bold text-white mb-6">What's Included</h3>
                                 <ul className="space-y-4">
                                     {agent.features.map((feature, index) => (
                                         <li key={index} className="flex items-start">
-                                            <Check className="w-5 h-5 text-oasis-cyan mr-3 mt-1 flex-shrink-0" />
+                                            <Check className="w-5 h-5 text-oasis-teal mr-3 mt-1 flex-shrink-0" />
                                             <span className="text-text-secondary">{feature}</span>
                                         </li>
                                     ))}
@@ -272,9 +272,9 @@ const AgentPage = () => {
                                     whileInView={{ opacity: 1, y: 0 }}
                                     transition={{ delay: index * 0.1 }}
                                     viewport={{ once: true }}
-                                    className="glass-card p-6 text-center hover:shadow-oasis transition-all"
+                                    className="glass-card p-6 text-center hover:shadow-oasis-glow transition-all"
                                 >
-                                    <div className="text-3xl font-bold text-oasis-cyan mb-2">{value as React.ReactNode}</div>
+                                    <div className="text-3xl font-bold text-oasis-teal mb-2">{value as React.ReactNode}</div>
                                     <div className="text-text-tertiary capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</div>
                                 </motion.div>
                             ))}
@@ -289,19 +289,19 @@ const AgentPage = () => {
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
-                    className="max-w-4xl mx-auto text-center glass-card p-12 border-oasis-cyan/30 relative overflow-hidden shadow-oasis-strong"
+                    className="max-w-4xl mx-auto text-center glass-card p-12 border-oasis-teal/40 relative overflow-hidden shadow-oasis-strong"
                 >
-                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-oasis-cyan to-transparent" />
+                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-oasis-teal to-transparent" />
                     <h2 className="text-3xl font-display font-bold text-white mb-6">Ready to Automate?</h2>
                     <p className="text-text-secondary mb-8 text-lg">
                         Get your {agent.title} set up and running in just a few days.
                     </p>
                     {hasConsultation ? (
-                        <Link to="/contact" className="btn-primary inline-flex items-center shadow-oasis">
+                        <Link to="/contact" className="btn-primary inline-flex items-center shadow-oasis-glow">
                             Book Strategy Call <ArrowRight className="ml-2 w-5 h-5" />
                         </Link>
                     ) : (
-                        <Link to={`/pricing/${PRICING_MAP[safeSlug] || safeSlug}`} className="btn-primary inline-flex items-center shadow-oasis">
+                        <Link to={`/pricing/${PRICING_MAP[safeSlug] || safeSlug}`} className="btn-primary inline-flex items-center shadow-oasis-glow">
                             Get Started Now <ArrowRight className="ml-2 w-5 h-5" />
                         </Link>
                     )}

@@ -8,9 +8,9 @@ export const Footer = () => {
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-8 md:gap-12 mb-16">
                     <div className="col-span-2">
                         <Link to="/" className="flex items-center gap-2 mb-6 group">
-                            <img src="/images/oasis-logo.jpg" alt="OASIS AI" className="w-10 h-10 rounded-xl shadow-lg shadow-oasis-cyan/20 group-hover:shadow-oasis-cyan/40 transition-all" />
+                            <img src="/images/oasis-logo.jpg" alt="OASIS AI" className="w-10 h-10 rounded-xl shadow-lg shadow-oasis-teal/20 group-hover:shadow-oasis-teal/40 transition-all" />
                             <span className="font-display font-bold text-xl tracking-tight text-white">
-                                OASIS <span className="text-oasis-cyan">AI</span>
+                                OASIS <span className="text-oasis-teal">AI</span>
                             </span>
                         </Link>
                         <p className="text-gray-300 mb-8 max-w-md leading-relaxed">
@@ -18,13 +18,13 @@ export const Footer = () => {
                             Empowering businesses with enterprise-grade technology.
                         </p>
                         <div className="flex gap-4">
-                            <a href="https://www.instagram.com/oasisaisolutions?igsh=MWtjYWk3bHdreXYxYg%3D%3D&utm_source=qr" target="_blank" rel="noopener noreferrer" className="p-2 bg-white/5 rounded-lg hover:bg-oasis-cyan/20 hover:text-oasis-cyan transition-colors">
+                            <a href="https://www.instagram.com/oasisaisolutions?igsh=MWtjYWk3bHdreXYxYg%3D%3D&utm_source=qr" target="_blank" rel="noopener noreferrer" className="p-2 bg-white/5 rounded-lg hover:bg-oasis-teal/20 hover:text-oasis-teal transition-colors">
                                 <Instagram className="w-5 h-5" />
                             </a>
-                            <a href="https://x.com/Conaugh90210" target="_blank" rel="noopener noreferrer" className="p-2 bg-white/5 rounded-lg hover:bg-oasis-cyan/20 hover:text-oasis-cyan transition-colors">
+                            <a href="https://x.com/Conaugh90210" target="_blank" rel="noopener noreferrer" className="p-2 bg-white/5 rounded-lg hover:bg-oasis-teal/20 hover:text-oasis-teal transition-colors">
                                 <Twitter className="w-5 h-5" />
                             </a>
-                            <a href="https://www.linkedin.com/in/conaugh-mckenna-a82471352" target="_blank" rel="noopener noreferrer" className="p-2 bg-white/5 rounded-lg hover:bg-oasis-cyan/20 hover:text-oasis-cyan transition-colors">
+                            <a href="https://www.linkedin.com/in/conaugh-mckenna-a82471352" target="_blank" rel="noopener noreferrer" className="p-2 bg-white/5 rounded-lg hover:bg-oasis-teal/20 hover:text-oasis-teal transition-colors">
                                 <Linkedin className="w-5 h-5" />
                             </a>
 
@@ -37,20 +37,20 @@ export const Footer = () => {
                     <div>
                         <h4 className="font-bold text-white mb-6">Products</h4>
                         <ul className="space-y-4">
-                            <li><Link to="/pricing" className="text-text-secondary hover:text-oasis-cyan transition-colors">OASIS Launchpad</Link></li>
-                            <li><Link to="/pricing" className="text-text-secondary hover:text-oasis-cyan transition-colors">Integration Suite</Link></li>
-                            <li><Link to="/contact" className="text-text-secondary hover:text-oasis-cyan transition-colors">Enterprise Partnership</Link></li>
-                            <li><Link to="/services" className="text-text-secondary hover:text-oasis-cyan transition-colors">Custom Automations</Link></li>
+                            <li><Link to="/pricing" className="text-text-secondary hover:text-oasis-teal transition-colors">OASIS Launchpad</Link></li>
+                            <li><Link to="/pricing" className="text-text-secondary hover:text-oasis-teal transition-colors">Integration Suite</Link></li>
+                            <li><Link to="/contact" className="text-text-secondary hover:text-oasis-teal transition-colors">Enterprise Partnership</Link></li>
+                            <li><Link to="/services" className="text-text-secondary hover:text-oasis-teal transition-colors">Custom Automations</Link></li>
                         </ul>
                     </div>
 
                     <div>
                         <h4 className="font-bold text-white mb-6">Company</h4>
                         <ul className="space-y-4">
-                            <li><Link to="/about" className="text-text-secondary hover:text-oasis-cyan transition-colors">About</Link></li>
-                            <li><Link to="/case-studies" className="text-text-secondary hover:text-oasis-cyan transition-colors">Case Studies</Link></li>
-                            <li><Link to="/blog" className="text-text-secondary hover:text-oasis-cyan transition-colors">Blog</Link></li>
-                            <li><Link to="/contact" className="text-text-secondary hover:text-oasis-cyan transition-colors">Contact</Link></li>
+                            <li><Link to="/about" className="text-text-secondary hover:text-oasis-teal transition-colors">About</Link></li>
+                            <li><Link to="/case-studies" className="text-text-secondary hover:text-oasis-teal transition-colors">Case Studies</Link></li>
+                            <li><Link to="/blog" className="text-text-secondary hover:text-oasis-teal transition-colors">Blog</Link></li>
+                            <li><Link to="/contact" className="text-text-secondary hover:text-oasis-teal transition-colors">Contact</Link></li>
                         </ul>
                     </div>
 
@@ -58,15 +58,15 @@ export const Footer = () => {
                         <h4 className="font-bold text-white mb-6">Contact</h4>
                         <ul className="space-y-4">
                             <li className="flex items-start gap-3 text-text-secondary">
-                                <Mail className="w-5 h-5 text-oasis-cyan flex-shrink-0 mt-1" />
+                                <Mail className="w-5 h-5 text-oasis-teal flex-shrink-0 mt-1" />
                                 <a href="mailto:conaugh@oasisai.work" className="hover:text-white transition-colors break-all">conaugh@oasisai.work</a>
                             </li>
                             <li className="flex items-start gap-3 text-text-secondary">
-                                <MapPin className="w-5 h-5 text-oasis-cyan flex-shrink-0 mt-1" />
+                                <MapPin className="w-5 h-5 text-oasis-teal flex-shrink-0 mt-1" />
                                 <span className="break-words">141 Sixth Street, Collingwood, ON</span>
                             </li>
                             <li className="flex items-start gap-3 text-text-secondary">
-                                <Globe className="w-5 h-5 text-oasis-cyan flex-shrink-0 mt-1" />
+                                <Globe className="w-5 h-5 text-oasis-teal flex-shrink-0 mt-1" />
                                 <span>Serving Clients Worldwide</span>
                             </li>
                         </ul>
