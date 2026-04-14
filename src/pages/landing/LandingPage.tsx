@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Bot, Zap, Clock, TrendingUp, CheckCircle, ArrowRight, MessageSquare, Calendar, Mail, Database, Phone, ChevronDown, ChevronUp, Target } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import GlobalBackground from '../../components/GlobalBackground';
 
 const BOOKING_LINK = 'https://calendar.app.google/tpfvJYBGircnGu8G8';
 
@@ -41,23 +40,8 @@ const LandingPage = () => {
 
     return (
         <div className="min-h-screen overflow-x-hidden font-sans text-white">
-            {/* ═══════════════════════════════════════════════════════════════
-                BACKGROUND — Stable dark ocean + lightweight canvas starfield
-                (Canvas 2D twinkling stars, not heavy WebGL — same layer the
-                original site used, no latency, no flashing.)
-                ═══════════════════════════════════════════════════════════════ */}
-            <div
-                className="fixed inset-0 -z-20"
-                style={{
-                    background: 'linear-gradient(180deg, #030712 0%, #071426 50%, #030712 100%)'
-                }}
-            />
-            <GlobalBackground intensity="high" showDNA={false} />
-
-            {/* Subtle teal vignette — unified feel across all sections */}
-            <div className="fixed inset-0 pointer-events-none -z-10" style={{
-                background: 'radial-gradient(ellipse at 50% 20%, rgba(6,182,212,0.08) 0%, transparent 65%)'
-            }} />
+            {/* Background layers are mounted at App root — stars + cursor
+                glow stay consistent across all pages and scroll positions. */}
 
             {/* ═══════════════════════════════════════════════════════════════
                 SECTION 1 — HERO

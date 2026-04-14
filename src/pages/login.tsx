@@ -232,11 +232,11 @@ const LoginPage: React.FC = () => {
                     </p>
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-4 text-sm">
                         <a
-                            href="mailto:oasisaisolutions@gmail.com"
+                            href="mailto:conaugh@oasisai.work"
                             className="text-[#00D4FF] hover:text-white transition-colors flex items-center gap-2"
                         >
                             <Mail className="h-4 w-4" />
-                            oasisaisolutions@gmail.com
+                            conaugh@oasisai.work
                         </a>
                         <span className="hidden sm:inline text-gray-500">|</span>
                         <a

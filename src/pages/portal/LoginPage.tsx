@@ -188,8 +188,8 @@ export default function LoginPage() {
             <div className="mt-8 text-center text-gray-500 text-sm">
                 <p>Need help accessing your account?</p>
                 <div className="flex items-center justify-center gap-4 mt-2">
-                    <a href="mailto:oasisaisolutions@gmail.com" className="text-cyan-400 hover:text-cyan-300">
-                        oasisaisolutions@gmail.com
+                    <a href="mailto:conaugh@oasisai.work" className="text-cyan-400 hover:text-cyan-300">
+                        conaugh@oasisai.work
                     </a>
                     <span>|</span>
                     <a href="tel:+12403325062" className="text-cyan-400 hover:text-cyan-300">

@@ -57,7 +57,7 @@ Effective Date: {{DATE}}
 
 This Non-Disclosure Agreement ("Agreement") is entered into by and between:
 
-OASIS AI Solutions ("Company"), a business entity operating in Ontario, Canada, with contact email oasisaisolutions@gmail.com
+OASIS AI Solutions ("Company"), a business entity operating in Ontario, Canada, with contact email conaugh@oasisai.work
 
 and
 

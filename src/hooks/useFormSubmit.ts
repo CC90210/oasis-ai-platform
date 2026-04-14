@@ -100,7 +100,7 @@ export function useFormSubmit(): UseFormSubmitReturn {
 
         } catch (error) {
             setIsError(true);
-            setErrorMessage('Something went wrong. Please try again or email us at oasisaisolutions@gmail.com');
+            setErrorMessage('Something went wrong. Please try again or email us at conaugh@oasisai.work');
             console.error('Form submission error:', error);
         } finally {
             setIsSubmitting(false);

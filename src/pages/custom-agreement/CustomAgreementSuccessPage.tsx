@@ -111,8 +111,8 @@ export default function CustomAgreementSuccessPage() {
                     {/* Contact Support */}
                     <p className="text-xs text-gray-500 mt-8">
                         Questions? Email us at{' '}
-                        <a href="mailto:oasisaisolutions@gmail.com" className="text-cyan-400 hover:underline">
-                            oasisaisolutions@gmail.com
+                        <a href="mailto:conaugh@oasisai.work" className="text-cyan-400 hover:underline">
+                            conaugh@oasisai.work
                         </a>
                     </p>
                 </div>

@@ -7,6 +7,7 @@ import { CartDrawer } from './components/cart/CartDrawer';
 import { Analytics } from '@vercel/analytics/react';
 import { ThemeProvider } from './contexts/ThemeContext';
 import ProtectedRoute from './components/auth/ProtectedRoute';
+import GlobalBackground from './components/GlobalBackground';
 
 // Lazy load pages for performance
 import { Navigate } from 'react-router-dom';
@@ -64,7 +65,24 @@ function App() {
     return (
         <ErrorBoundary>
             <ThemeProvider>
-                {/* LenisProvider removed — was adding scroll latency with heavy canvas layers */}
+                {/* ═══════════════════════════════════════════════════════════
+                    GLOBAL BACKGROUND LAYERS
+                    Mounted at App root so stars + cursor glow stay consistent
+                    across ALL pages and ALL scroll positions. Rendering here
+                    (outside Router) prevents page-level transforms from
+                    breaking fixed-position containment.
+                    ═══════════════════════════════════════════════════════════ */}
+                <div
+                    className="fixed inset-0 -z-20 pointer-events-none"
+                    style={{ background: 'linear-gradient(180deg, #030712 0%, #071426 50%, #030712 100%)' }}
+                    aria-hidden="true"
+                />
+                <GlobalBackground intensity="high" showDNA={false} />
+                <div
+                    className="fixed inset-0 -z-10 pointer-events-none"
+                    style={{ background: 'radial-gradient(ellipse at 50% 20%, rgba(6,182,212,0.08) 0%, transparent 65%)' }}
+                    aria-hidden="true"
+                />
                 {/* Main content - immediate access */}
                 <Router>
                     <ScrollToTop />

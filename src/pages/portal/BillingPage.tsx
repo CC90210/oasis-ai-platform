@@ -418,11 +418,11 @@ export default function BillingPage() {
                         {isCustomAgreement && (
                             <div className="flex gap-3 mt-3">
                                 <a
-                                    href="mailto:oasisaisolutions@gmail.com"
+                                    href="mailto:conaugh@oasisai.work"
                                     className="inline-flex items-center gap-2 text-cyan-400 hover:text-cyan-300"
                                 >
                                     <Mail className="w-4 h-4" />
-                                    oasisaisolutions@gmail.com
+                                    conaugh@oasisai.work
                                 </a>
                                 <a
                                     href="tel:+12403325062"
@@ -526,7 +526,7 @@ export default function BillingPage() {
                                 <FileText className="w-12 h-12 text-gray-600 mx-auto mb-4" />
                                 <p className="text-[var(--text-secondary)] mb-2">No invoices yet</p>
                                 <p className="text-sm text-[var(--text-muted)]">
-                                    Contact <a href="mailto:oasisaisolutions@gmail.com" className="text-cyan-400 hover:underline">oasisaisolutions@gmail.com</a> for invoice requests.
+                                    Contact <a href="mailto:conaugh@oasisai.work" className="text-cyan-400 hover:underline">conaugh@oasisai.work</a> for invoice requests.
                                 </p>
                             </div>
                         ) : (
@@ -654,7 +654,7 @@ export default function BillingPage() {
                                                     </p>
                                                     <div className="flex flex-wrap gap-3">
                                                         <a
-                                                            href="mailto:oasisaisolutions@gmail.com"
+                                                            href="mailto:conaugh@oasisai.work"
                                                             className="flex items-center gap-2 px-4 py-2 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 rounded-lg transition border border-cyan-500/30"
                                                         >
                                                             <Mail className="w-4 h-4" />
@@ -724,7 +724,7 @@ export default function BillingPage() {
                                         // Custom Agreement Actions
                                         <>
                                             <a
-                                                href="mailto:oasisaisolutions@gmail.com?subject=Billing%20Inquiry"
+                                                href="mailto:conaugh@oasisai.work?subject=Billing%20Inquiry"
                                                 className="w-full flex items-center justify-between p-4 bg-[var(--bg-tertiary)] hover:bg-[var(--bg-secondary)] rounded-xl border border-[var(--border)] transition group"
                                             >
                                                 <div className="flex items-center gap-3">
@@ -740,7 +740,7 @@ export default function BillingPage() {
                                             </a>
 
                                             <a
-                                                href="mailto:oasisaisolutions@gmail.com?subject=Update%20Payment%20Method"
+                                                href="mailto:conaugh@oasisai.work?subject=Update%20Payment%20Method"
                                                 className="w-full flex items-center justify-between p-4 bg-[var(--bg-tertiary)] hover:bg-[var(--bg-secondary)] rounded-xl border border-[var(--border)] transition group"
                                             >
                                                 <div className="flex items-center gap-3">
@@ -845,7 +845,7 @@ export default function BillingPage() {
                                     </p>
                                     {isCustomAgreement && (
                                         <a
-                                            href="mailto:oasisaisolutions@gmail.com?subject=Invoice%20Request"
+                                            href="mailto:conaugh@oasisai.work?subject=Invoice%20Request"
                                             className="inline-flex items-center gap-2 text-cyan-400 hover:text-cyan-300 text-sm mt-3"
                                         >
                                             <Mail className="w-4 h-4" />
@@ -917,7 +917,7 @@ export default function BillingPage() {
                     </p>
                     <div className="flex flex-wrap gap-3">
                         <a
-                            href="mailto:oasisaisolutions@gmail.com"
+                            href="mailto:conaugh@oasisai.work"
                             className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-500 to-cyan-400 text-black font-semibold rounded-lg hover:from-cyan-400 hover:to-cyan-300 transition"
                         >
                             <Mail className="w-4 h-4" />

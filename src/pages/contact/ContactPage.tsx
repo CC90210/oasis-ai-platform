@@ -110,7 +110,7 @@ const ContactPage = () => {
                                 {
                                     icon: Mail,
                                     title: "Email Us",
-                                    content: <a href="mailto:oasisaisolutions@gmail.com" className="text-white/60 hover:text-oasis-teal transition-colors break-all text-sm">oasisaisolutions@gmail.com</a>
+                                    content: <a href="mailto:conaugh@oasisai.work" className="text-white/60 hover:text-oasis-teal transition-colors break-all text-sm">conaugh@oasisai.work</a>
                                 },
                                 {
                                     icon: Phone,

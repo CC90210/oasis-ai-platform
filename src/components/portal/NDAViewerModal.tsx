@@ -89,7 +89,7 @@ export default function NDAViewerModal({ agreement, onClose }: NDAViewerModalPro
 
                         <p className="text-gray-300 mb-2">
                             <strong className="text-white">OASIS AI Solutions</strong> ("Company"), a business entity
-                            operating in Ontario, Canada, with contact email oasisaisolutions@gmail.com
+                            operating in Ontario, Canada, with contact email conaugh@oasisai.work
                         </p>
 
                         <p className="text-gray-300 mb-4">and</p>
@@ -236,7 +236,7 @@ This agreement was digitally signed and is legally binding.
 ================================================================================
 
 OASIS AI Solutions
-Email: oasisaisolutions@gmail.com
+Email: conaugh@oasisai.work
 Phone: +1 (240) 332-5062
 Website: https://oasisai.work
   `.trim();
