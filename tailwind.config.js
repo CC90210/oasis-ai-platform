@@ -16,9 +16,18 @@ export default {
             colors: {
                 // OASIS AI Brand Colors
                 oasis: {
+                    // Legacy neon cyan — kept for backward compat
                     cyan: '#00D4FF',
                     'cyan-dark': '#00A3CC',
                     'cyan-glow': 'rgba(0, 212, 255, 0.3)',
+                    // V2 palette — tropical oasis blue-green (2026-04-14)
+                    teal: '#06b6d4',
+                    sky: '#0ea5e9',
+                    mist: '#f0fdf4',
+                    // Warm neutrals for light mode
+                    sand: '#fafafa',
+                    dune: '#f5f5f4',
+                    slate: '#0f172a',
                 },
                 bg: {
                     primary: '#0A0A0F',
@@ -79,10 +88,17 @@ export default {
             backgroundImage: {
                 'gradient-oasis': 'linear-gradient(135deg, #00D4FF 0%, #00A3CC 100%)',
                 'gradient-dark': 'linear-gradient(180deg, #0A0A0F 0%, #0D1117 100%)',
+                // V2 gradients (2026-04-14) — tropical oasis
+                'gradient-water': 'linear-gradient(135deg, #06b6d4 0%, #0ea5e9 60%, #f0fdf4 100%)',
+                'gradient-dawn': 'linear-gradient(180deg, #f0fdf4 0%, #fafafa 100%)',
+                'gradient-lagoon': 'linear-gradient(120deg, #0ea5e9 0%, #06b6d4 50%, #14b8a6 100%)',
             },
             boxShadow: {
                 'oasis': '0 0 20px rgba(0, 212, 255, 0.3), 0 0 40px rgba(0, 212, 255, 0.2)',
                 'oasis-strong': '0 0 30px rgba(0, 212, 255, 0.5), 0 0 60px rgba(0, 212, 255, 0.3)',
+                // V2 shadows (2026-04-14) — soft premium depth
+                'oasis-glow': '0 10px 40px -10px rgba(6, 182, 212, 0.35)',
+                'oasis-elevated': '0 20px 60px -20px rgba(14, 165, 233, 0.3), 0 8px 24px -8px rgba(6, 182, 212, 0.2)',
             },
             keyframes: {
                 "accordion-down": {
@@ -112,6 +128,8 @@ export default {
                 sans: ['Inter', 'sans-serif'],
                 display: ['Space Grotesk', 'sans-serif'],
                 mono: ['JetBrains Mono', 'monospace'],
+                // V2 editorial font (2026-04-14) — Linear/Vercel vibe
+                editorial: ['"Instrument Serif"', 'Georgia', 'serif'],
             }
         },
     },

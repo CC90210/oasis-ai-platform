@@ -1,4 +1,4 @@
-import { useState, Suspense, lazy } from 'react';
+import { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { MainLayout } from './components/layout/MainLayout';
 import ScrollToTop from './components/ScrollToTop';
@@ -7,6 +7,7 @@ import { CartDrawer } from './components/cart/CartDrawer';
 import { Analytics } from '@vercel/analytics/react';
 import { ThemeProvider } from './contexts/ThemeContext';
 import ProtectedRoute from './components/auth/ProtectedRoute';
+import LenisProvider from './components/premium/LenisProvider';
 
 // Lazy load pages for performance
 import { Navigate } from 'react-router-dom';
@@ -64,6 +65,7 @@ function App() {
     return (
         <ErrorBoundary>
             <ThemeProvider>
+                <LenisProvider>
                 {/* Main content - immediate access */}
                 <Router>
                     <ScrollToTop />
@@ -164,6 +166,7 @@ function App() {
                     </Suspense>
                     <Analytics />
                 </Router>
+                </LenisProvider>
             </ThemeProvider>
         </ErrorBoundary>
     );
