@@ -7,7 +7,6 @@ import { CartDrawer } from './components/cart/CartDrawer';
 import { Analytics } from '@vercel/analytics/react';
 import { ThemeProvider } from './contexts/ThemeContext';
 import ProtectedRoute from './components/auth/ProtectedRoute';
-import LenisProvider from './components/premium/LenisProvider';
 
 // Lazy load pages for performance
 import { Navigate } from 'react-router-dom';
@@ -65,7 +64,7 @@ function App() {
     return (
         <ErrorBoundary>
             <ThemeProvider>
-                <LenisProvider>
+                {/* LenisProvider removed — was adding scroll latency with heavy canvas layers */}
                 {/* Main content - immediate access */}
                 <Router>
                     <ScrollToTop />
@@ -166,7 +165,6 @@ function App() {
                     </Suspense>
                     <Analytics />
                 </Router>
-                </LenisProvider>
             </ThemeProvider>
         </ErrorBoundary>
     );
