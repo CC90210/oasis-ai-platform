@@ -139,6 +139,14 @@
             "destination": "/api/$1"
         },
         {
+            "source": "/app",
+            "destination": "https://agent-dashboard-cc90210.vercel.app/"
+        },
+        {
+            "source": "/app/(.*)",
+            "destination": "https://agent-dashboard-cc90210.vercel.app/$1"
+        },
+        {
             "source": "/(.*)",
             "destination": "/index.html"
         }
