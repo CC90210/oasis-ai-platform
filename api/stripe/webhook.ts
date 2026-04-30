@@ -264,14 +264,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             await storePendingSession(session);
 
             // Bridge: provision the customer in the OASIS Command Center
-            // (separate Supabase project — bravo). Fire-and-forget so a bridge
-            // hiccup never blocks the local subscription linking below.
+            // (separate Supabase project — bravo). Only fires for products that
+            // include the Command Center entitlement; everything else (one-off
+            // automations, custom builds, etc.) skips the bridge.
+            //
+            // Gate via metadata.command_center === 'true' on the Stripe Price
+            // (set this in Stripe Dashboard → Products → metadata).
             try {
-                if (session.customer_email) {
-                    const bridgeUrl = process.env.COMMAND_CENTER_BRIDGE_URL
-                        || 'https://oasisai.work/app/api/auth/provision-from-stripe';
-                    const bridgeSecret = process.env.COMMAND_CENTER_BRIDGE_SECRET || '';
-                    if (bridgeSecret) {
+                const wantsCommandCenter =
+                    metadata?.command_center === 'true' ||
+                    metadata?.product_type === 'command_center' ||
+                    metadata?.includes_dashboard === 'true';
+
+                if (wantsCommandCenter && session.customer_email) {
+                    const bridgeUrl = process.env.COMMAND_CENTER_BRIDGE_URL;
+                    const bridgeSecret = process.env.COMMAND_CENTER_BRIDGE_SECRET;
+                    if (!bridgeUrl || !bridgeSecret) {
+                        console.warn('🌉 Bridge skipped — COMMAND_CENTER_BRIDGE_URL or _SECRET not set');
+                    } else {
                         const bridgeRes = await fetch(bridgeUrl, {
                             method: 'POST',
                             headers: {
@@ -290,9 +300,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                         });
                         const bridgeBody = await bridgeRes.json().catch(() => ({}));
                         console.log(`🌉 Command Center bridge: ${bridgeRes.status}`, bridgeBody);
-                    } else {
-                        console.warn('🌉 Bridge skipped — COMMAND_CENTER_BRIDGE_SECRET not set');
                     }
+                } else if (session.customer_email) {
+                    console.log('🌉 Bridge skipped — product metadata does not include command_center=true');
                 }
             } catch (bridgeErr) {
                 // Bridge errors must not break local Stripe linking
