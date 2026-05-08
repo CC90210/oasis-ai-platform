@@ -119,8 +119,8 @@ const ContactPage = () => {
                                 },
                                 {
                                     icon: MapPin,
-                                    title: "Our Location",
-                                    content: <p className="text-white/60">Collingwood, Ontario, Canada</p>
+                                    title: "Our Reach",
+                                    content: <p className="text-white/60">International — clients worldwide</p>
                                 }
                             ].map((item, i) => (
                                 <motion.div

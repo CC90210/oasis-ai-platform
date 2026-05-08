@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Twitter, Linkedin, Github, Mail, MapPin, Globe, Instagram, MessageCircle } from 'lucide-react';
+import { Twitter, Linkedin, Github, Mail, Globe, Instagram, MessageCircle } from 'lucide-react';
 
 export const Footer = () => {
     return (
@@ -62,12 +62,8 @@ export const Footer = () => {
                                 <a href="mailto:conaugh@oasisai.work" className="hover:text-white transition-colors break-all">conaugh@oasisai.work</a>
                             </li>
                             <li className="flex items-start gap-3 text-text-secondary">
-                                <MapPin className="w-5 h-5 text-oasis-teal flex-shrink-0 mt-1" />
-                                <span className="break-words">141 Sixth Street, Collingwood, ON</span>
-                            </li>
-                            <li className="flex items-start gap-3 text-text-secondary">
                                 <Globe className="w-5 h-5 text-oasis-teal flex-shrink-0 mt-1" />
-                                <span>Serving Clients Worldwide</span>
+                                <span>International — serving clients worldwide</span>
                             </li>
                         </ul>
                     </div>
@@ -75,7 +71,7 @@ export const Footer = () => {
 
                 <div className="border-t border-white/5 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
                     <p className="text-text-tertiary text-sm">
-                        © {new Date().getFullYear()} OASIS AI Solutions | Conaugh McKenna, Sole Proprietor | Collingwood, Ontario, Canada
+                        © {new Date().getFullYear()} OASIS AI Solutions | Conaugh McKenna, Sole Proprietor | International
                     </p>
                     <div className="flex gap-8 text-sm text-text-tertiary">
                         <Link to="/legal/privacy-policy" className="hover:text-white transition-colors">Privacy Policy</Link>

@@ -113,7 +113,7 @@ const AboutPage = () => {
                             <div className="text-text-secondary text-lg leading-relaxed space-y-6">
                                 <p>
                                     OASIS AI Solutions was founded by Conaugh McKenna with a mission to help small and medium-sized businesses
-                                    harness the power of AI automation. Based in Collingwood, Ontario, we specialize in creating custom
+                                    harness the power of AI automation. Operating internationally, we specialize in creating custom
                                     AI workflows that help business owners work ON their business, not IN their business.
                                 </p>
                                 <p>
@@ -221,8 +221,8 @@ const AboutPage = () => {
                             className="glass-card p-12 border border-white/5 hover:border-oasis-teal/40/30 transition-all hover:-translate-y-1 group text-center"
                         >
                             <MapPin className="w-16 h-16 text-oasis-teal mb-6 mx-auto group-hover:scale-110 transition-transform" />
-                            <h3 className="text-3xl font-display font-bold mb-2 text-white">Collingwood, Ontario</h3>
-                            <p className="text-text-secondary text-lg">Headquarters & Sole Proprietorship</p>
+                            <h3 className="text-3xl font-display font-bold mb-2 text-white">International</h3>
+                            <p className="text-text-secondary text-lg">Sole Proprietorship · Serving Clients Worldwide</p>
                         </motion.div>
                     </div>
 
